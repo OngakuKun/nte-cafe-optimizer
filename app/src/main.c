@@ -1,6 +1,7 @@
 #include "data.h"
 #include "types.h"
 #include "webui.h"
+#include "trend.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,6 +51,20 @@ static CharacterState character_state[MAX_CHARACTER_POOL];
 static bool character_state_initialized = false;
 static DishState dish_state[MAX_DISH_POOL];
 static bool dish_state_initialized = false;
+static CafeSettings cafe_settings = {1, TAG_NONE, "None", 0.0, 0.0, false};
+static bool cafe_settings_initialized = false;
+
+static void ensure_cafe_settings(void) {
+  if (cafe_settings_initialized) return;
+  cafe_settings.cafes_owned = 1;
+  cafe_settings.trend_tag = TAG_NONE;
+  cafe_settings.trend_name = "None";
+  cafe_settings.hotori_cat_decor = false;
+  cafe_settings.popularity_bonus = 0.0;
+  Trend t = {TREND_NONE, "None"};
+  cafe_settings.trend_bonus = get_trend_bonus(t.type);
+  cafe_settings_initialized = true;
+}
 
 static void ensure_character_state(void) {
   if (character_state_initialized)
@@ -260,6 +275,48 @@ static void set_dish_state(webui_event_t *e) {
   webui_return_string(e, "{\"ok\":true}");
 }
 
+static void get_optimizer_settings(webui_event_t *e) {
+  ensure_cafe_settings();
+  TrendOptions opts = get_trend_options();
+  size_t cap = 2048 + opts.count * 128;
+  char *buf = (char*)malloc(cap);
+  if (!buf) { webui_return_string(e, "{}"); return; }
+  size_t off = 0;
+  char trend_name[128];
+  json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name, sizeof(trend_name));
+  off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"trends\":[",
+                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false");
+  for (size_t i = 0; i < opts.count && off + 160 < cap; i++) {
+    char n[128]; json_escape(opts.trends[i].name ? opts.trends[i].name : "", n, sizeof(n));
+    const char *tt = "none";
+    if (opts.trends[i].type == TREND_TAG) tt = "tag";
+    else if (opts.trends[i].type == TREND_CATEGORY) tt = "category";
+    else if (opts.trends[i].type == TREND_INGREDIENT) tt = "ingredient";
+    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"type\":\"%s\"}", i?",":"", n, tt);
+  }
+  if (off + 8 < cap) off += snprintf(buf+off, cap-off, "]}");
+  webui_return_string(e, buf);
+  free(buf);
+}
+
+static void set_optimizer_settings(webui_event_t *e) {
+  ensure_cafe_settings();
+  const char *trend_name = webui_get_string_at(e, 0);
+  bool hotori = webui_get_bool_at(e, 1);
+  TrendOptions opts = get_trend_options();
+  Trend selected = {TREND_NONE, "None"};
+  for (size_t i = 0; i < opts.count; i++) {
+    if (opts.trends[i].name && trend_name && strcmp(opts.trends[i].name, trend_name) == 0) {
+      selected = opts.trends[i]; break;
+    }
+  }
+  cafe_settings.trend_name = selected.name;
+  cafe_settings.trend_tag = get_trend_tag(selected);
+  cafe_settings.trend_bonus = get_trend_bonus(selected.type);
+  cafe_settings.hotori_cat_decor = hotori;
+  webui_return_string(e, "{\"ok\":true}");
+}
+
 static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state) {
   char name[128];
   json_escape(CHARACTERS[i].name ? CHARACTERS[i].name : "", name, sizeof(name));
@@ -352,6 +409,8 @@ int main(int argc, char **argv) {
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getDishStates", get_dish_states);
   webui_bind(win, "setDishState", set_dish_state);
+  webui_bind(win, "getOptimizerSettings", get_optimizer_settings);
+  webui_bind(win, "setOptimizerSettings", set_optimizer_settings);
   webui_bind(win, "getCharacters", get_characters);
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);

@@ -7,11 +7,32 @@
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
+    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 20px; }
+    .panel h2 { margin:0 0 14px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+    .field { display:flex; flex-direction:column; gap:8px; }
+    .field label { font-size:13px; color:var(--muted); }
+    select.input {
+      background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; font: inherit; width: 100%;
+    }
+    select.input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .toggle-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 10px 0; }
+    .toggle-row .text { display:flex; flex-direction:column; gap:2px; }
+    .toggle-row .title { font-size:14px; font-weight:600; }
+    .toggle-row .desc { font-size:13px; color:var(--muted); }
+    .switch { position:relative; width:46px; height:26px; flex-shrink:0; }
+    .switch input { opacity:0; width:0; height:0; }
+    .slider { position:absolute; inset:0; cursor:pointer; background: var(--ctp-surface1); border-radius:999px; transition:.15s; }
+    .slider::before { content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; background: var(--ctp-base); border-radius:50%; transition:.15s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider::before { transform: translateX(20px); }
+    .switch input:focus-visible + .slider { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .save-state { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 1.2em; }
     .placeholder {
-      margin-top: 24px; padding: 48px 24px; text-align: center;
+      margin-top: 20px; padding: 32px 24px; text-align: center;
       background: var(--panel); border: 1px dashed var(--border); border-radius: 12px;
     }
-    .placeholder h2 { margin: 0 0 10px; font-size: 22px; }
+    .placeholder h2 { margin: 0 0 10px; font-size: 20px; }
     .placeholder p { margin: 0; color: var(--muted); }
   </style>
 </head>
@@ -28,7 +49,7 @@
       <a class="nav-link" href="/status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status">Ready</div>
+      <div class="pill" id="status">Loading...</div>
       <div class="settings-wrap">
         <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
@@ -48,20 +69,79 @@
 
   <main>
     <div id="error" class="err"></div>
+    <div class="panel-grid">
+      <section class="card panel">
+        <h2>Trend</h2>
+        <div class="field">
+          <label for="trendSelect">Current trend</label>
+          <select id="trendSelect" class="input"></select>
+        </div>
+        <div class="save-state" id="saveState"></div>
+      </section>
+
+      <section class="card panel">
+        <h2>Decor</h2>
+        <div class="toggle-row">
+          <div class="text">
+            <div class="title">Hotori's Cat Decor</div>
+            <div class="desc">Apply the Hotori cat decor bonus in optimization.</div>
+          </div>
+          <label class="switch" aria-label="Hotori's Cat Decor">
+            <input id="hotoriCatDecor" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+    </div>
+
     <section class="placeholder">
-      <h2>Optimizer UI coming next</h2>
-      <p>This will be the main optimizer page. Use <a href="/status" style="color:var(--accent)">Status</a> for backend/data diagnostics.</p>
+      <h2>Optimizer results coming next</h2>
+      <p>Configure trend and decor here, then run optimization once the results UI is wired up.</p>
     </section>
   </main>
 
   <script src="/ui/theme.js"></script>
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      NteTheme.initTheme();
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
+
+    async function saveSettings() {
+      setSave('Saving...');
+      try {
+        const trend = document.getElementById('trendSelect').value;
+        const hotori = document.getElementById('hotoriCatDecor').checked;
+        const obj = JSON.parse(await setOptimizerSettings(trend, hotori));
+        if (!obj.ok) throw new Error(obj.error || 'Save failed');
+        setSave('Saved');
+      } catch (e) {
+        setSave('Save failed', true);
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+
+    function render(settings) {
+      const sel = document.getElementById('trendSelect');
+      sel.innerHTML = (settings.trends || []).map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
+      sel.value = settings.trend || 'None';
+      document.getElementById('hotoriCatDecor').checked = !!settings.hotoriCatDecor;
+    }
+
+    async function load() {
       const status = document.getElementById('status');
-      status.textContent = 'Ready';
-      status.classList.remove('error');
-    });
+      try {
+        for (let i=0; i<50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getOptimizerSettings !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        render(JSON.parse(await getOptimizerSettings()));
+        status.textContent = 'Connected'; status.classList.remove('error');
+        document.getElementById('trendSelect').addEventListener('change', saveSettings);
+        document.getElementById('hotoriCatDecor').addEventListener('change', saveSettings);
+      } catch (e) {
+        status.textContent = 'Error'; status.classList.add('error');
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
   </script>
 </body>
 </html>
