@@ -284,8 +284,8 @@ static void get_optimizer_settings(webui_event_t *e) {
   size_t off = 0;
   char trend_name[128];
   json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name, sizeof(trend_name));
-  off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"trends\":[",
-                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false");
+  off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"cafesOwned\":%d,\"trends\":[",
+                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false", cafe_settings.cafes_owned);
   for (size_t i = 0; i < opts.count && off + 160 < cap; i++) {
     char n[128]; json_escape(opts.trends[i].name ? opts.trends[i].name : "", n, sizeof(n));
     const char *tt = "none";
@@ -303,6 +303,7 @@ static void set_optimizer_settings(webui_event_t *e) {
   ensure_cafe_settings();
   const char *trend_name = webui_get_string_at(e, 0);
   bool hotori = webui_get_bool_at(e, 1);
+  long long cafes = webui_get_int_at(e, 2);
   TrendOptions opts = get_trend_options();
   Trend selected = {TREND_NONE, "None"};
   for (size_t i = 0; i < opts.count; i++) {
@@ -310,6 +311,9 @@ static void set_optimizer_settings(webui_event_t *e) {
       selected = opts.trends[i]; break;
     }
   }
+  if (cafes < 1) cafes = 1;
+  if (cafes > 5) cafes = 5;
+  cafe_settings.cafes_owned = (int)cafes;
   cafe_settings.trend_name = selected.name;
   cafe_settings.trend_tag = get_trend_tag(selected);
   cafe_settings.trend_bonus = get_trend_bonus(selected.type);

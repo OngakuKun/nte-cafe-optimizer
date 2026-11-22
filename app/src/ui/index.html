@@ -7,7 +7,7 @@
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
-    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:14px; margin-top: 20px; align-items: stretch; }
+    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 20px; align-items: stretch; }
     .panel h2 { margin:0 0 14px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
     .field { display:flex; flex-direction:column; gap:8px; }
     .field label { font-size:13px; color:var(--muted); }
@@ -51,6 +51,10 @@
     .toggle-desc { font-size:13px; color:var(--muted); margin-top:6px; max-width: 28ch; }
     .toggle-meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
     .chip { font-size:11px; padding:5px 7px; border-radius:999px; background: var(--ctp-surface0); color: var(--ctp-sky); }
+    .cafe-card .avatar-wrap { left: 38%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%); }
+    .cafe-card .avatar-wrap .cafe-icon { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:72px; color: var(--accent); background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--ctp-surface0)), var(--ctp-mantle)); }
+    .cafe-card .toggle-body { max-width: 58%; }
+    .cafe-controls { position:absolute; right:16px; bottom:16px; z-index:3; display:flex; gap:8px; align-items:center; }
 
     .placeholder {
       margin-top: 20px; padding: 32px 24px; text-align: center;
@@ -94,6 +98,29 @@
   <main>
     <div id="error" class="err"></div>
     <div class="panel-grid">
+      <section class="toggle-card cafe-card owned" aria-label="Cafes owned">
+        <div class="avatar-wrap">
+          <div class="cafe-icon" aria-hidden="true">☕</div>
+        </div>
+        <div class="overlay"></div>
+        <div class="owned-badge">Cafes</div>
+        <div class="toggle-body">
+          <div>
+            <h2 class="toggle-name">Cafes Owned</h2>
+            <div class="toggle-desc">Set how many cafes are used for optimization.</div>
+          </div>
+          <div class="toggle-meta">
+            <span class="chip" id="cafeChip">1 cafe</span>
+          </div>
+        </div>
+        <div class="cafe-controls">
+          <span class="level-label">Count</span>
+          <select id="cafesOwned" class="input" style="width:auto; min-width:72px; padding:6px 10px;">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          </select>
+        </div>
+      </section>
+
       <section class="card panel">
         <h2>Trend</h2>
         <div class="field">
@@ -133,6 +160,7 @@
     function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
 
     let hotoriCatDecor = false;
+    let cafesOwned = 1;
 
     function renderDecor() {
       const card = document.getElementById('decorCard');
@@ -145,7 +173,7 @@
       setSave('Saving...');
       try {
         const trend = document.getElementById('trendSelect').value;
-        const obj = JSON.parse(await setOptimizerSettings(trend, hotoriCatDecor));
+        const obj = JSON.parse(await setOptimizerSettings(trend, hotoriCatDecor, cafesOwned));
         if (!obj.ok) throw new Error(obj.error || 'Save failed');
         setSave('Saved');
       } catch (e) {
@@ -159,6 +187,9 @@
       sel.innerHTML = (settings.trends || []).map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('');
       sel.value = settings.trend || 'None';
       hotoriCatDecor = !!settings.hotoriCatDecor;
+      cafesOwned = Math.min(5, Math.max(1, Number(settings.cafesOwned) || 1));
+      document.getElementById('cafesOwned').value = String(cafesOwned);
+      document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
       renderDecor();
     }
 
@@ -170,6 +201,11 @@
         render(JSON.parse(await getOptimizerSettings()));
         status.textContent = 'Connected'; status.classList.remove('error');
         document.getElementById('trendSelect').addEventListener('change', saveSettings);
+        document.getElementById('cafesOwned').addEventListener('change', async (e) => {
+          cafesOwned = Math.min(5, Math.max(1, Number(e.target.value) || 1));
+          document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
+          await saveSettings();
+        });
         const card = document.getElementById('decorCard');
         const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); };
         card.addEventListener('click', toggle);
