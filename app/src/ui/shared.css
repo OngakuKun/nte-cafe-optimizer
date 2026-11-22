@@ -63,17 +63,19 @@
 }
 
 * { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
 body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
   background: linear-gradient(180deg, var(--bg-gradient) 0%, var(--bg) 100%);
   color: var(--text);
   min-height: 100vh;
+  padding-top: var(--header-h, 73px);
 }
 header {
-  position: sticky;
-  top: 0;
-  z-index: 30;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
   padding: 20px 28px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -143,6 +145,7 @@ main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
 .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
 .err { color: var(--error); white-space: pre-wrap; margin-top: 12px; }
 @media (max-width: 900px) {
+  body { padding-top: var(--header-h, 61px); }
   header { padding: 14px 16px; gap: 12px; }
   main { padding: 16px; }
   .brand h1 { font-size: 24px; }
