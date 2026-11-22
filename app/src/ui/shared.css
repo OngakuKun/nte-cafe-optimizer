@@ -98,7 +98,7 @@ nav { display: flex; gap: 8px; align-items: center; }
 .nav-link:hover { color: var(--text); background: var(--panel-alt); }
 .nav-link.active { color: var(--accent); background: var(--panel-alt); border-color: var(--border); }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.nav-overlay { display: none; position: fixed; top: var(--header-h, 73px); right: 0; bottom: 0; left: 0; background: rgba(0,0,0,.35); z-index: 35; }
+.nav-overlay { display: none; position: fixed; top: var(--header-h, 73px); right: 0; height: calc(100dvh - var(--header-h, 73px)); left: 0; background: rgba(0,0,0,.35); z-index: 35; }
 .nav-overlay.open { display: block; }
 .icon-btn {
   background: var(--panel); color: var(--text); border: 1px solid var(--border);
@@ -111,7 +111,7 @@ nav { display: flex; gap: 8px; align-items: center; }
 .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .settings-wrap { position: relative; }
 .settings-panel {
-  position: fixed; top: var(--header-h, 73px); right: 0; bottom: 0; width: min(320px, 90vw);
+  position: fixed; top: var(--header-h, 73px); right: 0; height: calc(100dvh - var(--header-h, 73px)); width: min(320px, 90vw);
   background: var(--panel); border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px var(--shadow);
   padding: 16px; z-index: 40;
@@ -152,7 +152,7 @@ main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
   .icon-btn.menu-btn { display: inline-flex; }
   .settings-wrap { display: none !important; }
   nav {
-    position: fixed; top: var(--header-h, 61px); right: 0; bottom: 0; width: min(300px, 86vw);
+    position: fixed; top: var(--header-h, 61px); right: 0; height: calc(100dvh - var(--header-h, 61px)); width: min(300px, 86vw);
     background: var(--panel); border-left: 1px solid var(--border);
     box-shadow: -8px 0 24px var(--shadow);
     flex-direction: column; align-items: stretch; gap: 4px;
