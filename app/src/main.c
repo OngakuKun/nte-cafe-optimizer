@@ -511,9 +511,22 @@ int main(int argc, char **argv) {
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);
 
-  const size_t port = 18423;
+  const char *port_env = getenv("PORT");
+  size_t port = 80;
+  if (port_env && *port_env) {
+    char *end = NULL;
+    unsigned long parsed = strtoul(port_env, &end, 10);
+    if (end != port_env && *end == '\0' && parsed > 0 && parsed <= 65535) {
+      port = (size_t)parsed;
+    }
+  }
   if (!webui_set_port(win, port)) {
-    fprintf(stderr, "Warning: could not set preferred port %zu, using a free port\n", port);
+    if (port == 80 && webui_set_port(win, 8080)) {
+      port = 8080;
+      fprintf(stderr, "Warning: could not bind port 80, falling back to 8080\n");
+    } else {
+      fprintf(stderr, "Warning: could not set preferred port %zu, using a free port\n", port);
+    }
   }
 
   const char *url = webui_start_server(win, "/");

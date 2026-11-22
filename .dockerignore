@@ -1,0 +1,14 @@
+.git
+.gitmodules
+build
+build-*
+**/build
+**/build-*
+**/.cache
+**/CMakeFiles
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/compile_commands.json
+Dockerfile
+.dockerignore
+*.md
