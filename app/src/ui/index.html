@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NTE Cafe - Backend Status</title>
+  <script src="/webui.js"></script>
+  <style>
+    :root {
+      --bg: #111318;
+      --panel: #181c24;
+      --border: #2a3140;
+      --text: #e7ebf3;
+      --muted: #98a3b8;
+      --accent: #f0a52b;
+      --good: #7dca98;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+      background: linear-gradient(180deg, #151923 0%, var(--bg) 100%);
+      color: var(--text);
+    }
+    header {
+      padding: 24px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+    }
+    h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .pill {
+      font-size: 12px; color: #111; background: var(--good);
+      padding: 6px 10px; border-radius: 999px; font-weight: 700;
+    }
+    main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px;
+    }
+    .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+    .value { font-size: 28px; font-weight: 700; margin-top: 8px; }
+    .value.small { font-size: 18px; word-break: break-word; }
+    .section { margin-top: 22px; }
+    .section h2 {
+      margin: 0 0 10px; font-size: 14px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #232a38; vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: #1b2130; }
+    tr:last-child td { border-bottom: 0; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #cdd7ea; }
+    .err { color: #ff8b8b; white-space: pre-wrap; }
+    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1><span>NTE Cafe</span> Backend Status</h1>
+      <div class="sub">Basic WebUI test page showing library/backend info, loaded dishes, and characters.</div>
+    </div>
+    <div class="pill" id="status">Loading...</div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <div class="card"><div class="label">App</div><div class="value small" id="appName">-</div></div>
+      <div class="card"><div class="label">WebUI Version</div><div class="value small" id="webuiVersion">-</div></div>
+      <div class="card"><div class="label">Dishes Loaded</div><div class="value" id="dishCount">-</div></div>
+      <div class="card"><div class="label">Characters Loaded</div><div class="value" id="charCount">-</div></div>
+    </div>
+
+    <div id="error" class="err"></div>
+
+    <section class="section">
+      <h2>Dishes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Price L1</th><th>Price L2</th><th>Ingredients</th></tr></thead>
+          <tbody id="dishBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Characters</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Skills</th><th>Skill Details</th></tr></thead>
+          <tbody id="charBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function esc(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function fmtSkill(s) {
+      const val = s.type.includes('mult') ? (s.value * 100).toFixed(2) + '%' : s.value.toFixed(2);
+      const tag = s.tag && s.tag !== 'none' ? ' [' + s.tag + ']' : '';
+      return `L${s.level} ${s.type} ${val}${tag} (req ${s.req})`;
+    }
+
+    async function load() {
+      const err = document.getElementById('error');
+      try {
+        // Wait briefly for WebUI to inject bindings
+        for (let i = 0; i < 50 && typeof getAppInfo !== 'function'; i++) {
+          await new Promise(r => setTimeout(r, 100));
+        }
+        if (typeof getAppInfo !== 'function') {
+          throw new Error('WebUI backend bindings are not available. Open this page through the nte-cafe-app executable (not a static file server).');
+        }
+        const [infoRaw, dishesRaw, charsRaw] = await Promise.all([
+          getAppInfo(), getDishes(), getCharacters()
+        ]);
+        const info = JSON.parse(infoRaw);
+        const dishes = JSON.parse(dishesRaw);
+        const chars = JSON.parse(charsRaw);
+
+        document.getElementById('appName').textContent = info.app || '-';
+        document.getElementById('webuiVersion').textContent = info.webui || '-';
+        document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
+        document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
+        document.getElementById('status').textContent = 'Connected';
+
+        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${esc(d.name)}</td>
+            <td>${esc(d.type)}</td>
+            <td>${Number(d.priceL1).toFixed(2)}</td>
+            <td>${Number(d.priceL2).toFixed(2)}</td>
+            <td>${d.ingredients}</td>
+          </tr>`).join('');
+
+        document.getElementById('charBody').innerHTML = chars.map((c, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${esc(c.name)}</td>
+            <td>${c.skillCount}</td>
+            <td><code>${esc((c.skills || []).map(fmtSkill).join('; '))}</code></td>
+          </tr>`).join('');
+      } catch (e) {
+        document.getElementById('status').textContent = 'Error';
+        document.getElementById('status').style.background = '#ff8b8b';
+        err.textContent = String(e && e.stack ? e.stack : e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', load);
+  </script>
+</body>
+</html>
