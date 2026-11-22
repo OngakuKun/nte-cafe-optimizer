@@ -98,7 +98,7 @@
 
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function avatarUrl(name) { return AVATAR_URLS[name] || ''; }
-    function initials(name) { return name.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0].toUpper()).join(''); }
+    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join(''); }
     function fmtSkill(s) {
       const val = s.type.includes('mult') ? (s.value * 100).toFixed(2)+'%' : '+' + s.value.toFixed(2);
       const kind = s.type.includes('price') ? 'price' : 'traffic';
