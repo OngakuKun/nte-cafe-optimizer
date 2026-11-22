@@ -49,7 +49,7 @@
     .name { font-size: 20px; font-weight: 700; margin: 0; }
     .char-card { cursor: pointer; }
     .char-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .skills { display:flex; flex-wrap:wrap; gap:6px; max-width: 100%; }
+    .skills { display:flex; flex-direction:column; align-items:flex-start; gap:6px; max-width: calc(100% - 120px); }
     .controls { position:absolute; right:16px; bottom:16px; z-index:3; display:flex; gap:8px; align-items:center; }
     .level-label { font-size: 13px; color: var(--muted); }
     .level-picker { position: relative; }
