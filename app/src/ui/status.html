@@ -29,6 +29,7 @@
     <nav aria-label="Primary">
       <a class="nav-link" href="/">Optimizer</a>
       <a class="nav-link" href="/characters">Characters</a>
+      <a class="nav-link" href="/dishes">Dishes</a>
       <a class="nav-link active" href="/status">Status</a>
     </nav>
     <div class="header-right">
@@ -99,7 +100,7 @@
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
         status.textContent = 'Connected'; status.classList.remove('error');
-        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${d.ingredients}</td></tr>`).join('');
+        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${Array.isArray(d.ingredients)?d.ingredients.map(esc).join(', '):d.ingredients}</td></tr>`).join('');
         document.getElementById('charBody').innerHTML = chars.map((c, i) => `<tr><td>${i+1}</td><td>${esc(c.name)}</td><td>${c.skillCount}</td><td><code>${esc((c.skills||[]).map(fmtSkill).join('; '))}</code></td></tr>`).join('');
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');

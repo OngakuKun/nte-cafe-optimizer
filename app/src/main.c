@@ -9,6 +9,7 @@
 #define APP_HTML_PATH "/ui/index.html"
 #define STATUS_HTML_PATH "/ui/status.html"
 #define CHARACTERS_HTML_PATH "/ui/characters.html"
+#define DISHES_HTML_PATH "/ui/dishes.html"
 
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
@@ -70,6 +71,9 @@ static const void *file_handler(const char *filename, int *length) {
   else if (strcmp(path, "/characters") == 0 || strcmp(path, "/characters.html") == 0 ||
            strcmp(path, "/ui/characters.html") == 0)
     path = CHARACTERS_HTML_PATH;
+  else if (strcmp(path, "/dishes") == 0 || strcmp(path, "/dishes.html") == 0 ||
+           strcmp(path, "/ui/dishes.html") == 0)
+    path = DISHES_HTML_PATH;
 
   if (path[0] == '/')
     path++;
@@ -173,8 +177,7 @@ static void get_app_info(webui_event_t *e) {
 }
 
 static void get_dishes(webui_event_t *e) {
-  /* rough size: names/types are small */
-  size_t cap = 256 + DISH_COUNT * 160;
+  size_t cap = 512 + DISH_COUNT * 512;
   char *buf = (char *)malloc(cap);
   if (!buf) {
     webui_return_string(e, "[]");
@@ -182,19 +185,25 @@ static void get_dishes(webui_event_t *e) {
   }
   size_t off = 0;
   off += snprintf(buf + off, cap - off, "[");
-  for (size_t i = 0; i < DISH_COUNT && off + 200 < cap; i++) {
+  for (size_t i = 0; i < DISH_COUNT && off + 300 < cap; i++) {
     char name[128];
     char type[128];
     json_escape(DISHES[i].name ? DISHES[i].name : "", name, sizeof(name));
     json_escape(DISHES[i].type ? DISHES[i].type : "", type, sizeof(type));
     off += snprintf(buf + off, cap - off,
                     "%s{\"name\":\"%s\",\"type\":\"%s\",\"priceL1\":%.2f,"
-                    "\"priceL2\":%.2f,\"ingredients\":%zu}",
-                    i ? "," : "", name, type, DISHES[i].price_l1,
-                    DISHES[i].price_l2, DISHES[i].ingredient_count);
+                    "\"priceL2\":%.2f,\"ingredients\":[",
+                    i ? "," : "", name, type, DISHES[i].price_l1, DISHES[i].price_l2);
+    for (size_t j = 0; j < DISHES[i].ingredient_count && off + 80 < cap; j++) {
+      int idx = DISHES[i].ingredients[j];
+      const char *iname = (idx >= 0 && (size_t)idx < INGREDIENT_COUNT && INGREDIENTS[idx].name) ? INGREDIENTS[idx].name : "?";
+      char ing[128];
+      json_escape(iname, ing, sizeof(ing));
+      off += snprintf(buf + off, cap - off, "%s\"%s\"", j ? "," : "", ing);
+    }
+    if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]}");
   }
-  if (off + 2 < cap)
-    off += snprintf(buf + off, cap - off, "]");
+  if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
   webui_return_string(e, buf);
   free(buf);
 }

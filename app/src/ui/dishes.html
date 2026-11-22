@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" data-theme="macchiato">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NTE Cafe - Dishes</title>
+  <script src="/webui.js"></script>
+  <link rel="stylesheet" href="/ui/shared.css">
+  <style>
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
+    .toolbar .muted { color: var(--muted); font-size: 13px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
+    .dish-card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      box-shadow: 0 1px 2px var(--shadow); display:flex; flex-direction:column;
+    }
+    .dish-card:hover { border-color: var(--ctp-surface2); }
+    .img-wrap { background: linear-gradient(180deg, var(--ctp-surface0), var(--panel-alt)); aspect-ratio: 1/1; display:flex; align-items:center; justify-content:center; padding: 16px; }
+    .img-wrap img { width:100%; height:100%; object-fit: contain; display:block; }
+    .fallback { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 40px; font-weight:700; color: var(--accent); }
+    .body { padding: 14px; display:flex; flex-direction:column; gap:10px; flex:1; }
+    .name { margin:0; font-size: 18px; font-weight: 700; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--ctp-surface0); color: var(--muted); }
+    .badge.type-Beverages { color: var(--ctp-sky); }
+    .badge.type-Desserts { color: var(--ctp-pink); }
+    .badge.type-MainDishes { color: var(--ctp-peach); }
+    .prices { font-size: 13px; color: var(--muted); }
+    .ingredients { display:flex; flex-wrap:wrap; gap:6px; }
+    .ing { font-size: 11px; padding: 4px 7px; border-radius: 999px; background: var(--ctp-surface0); color: var(--subtext1, var(--ctp-subtext1)); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub">Dish menu and recipes</div>
+    </div>
+    <nav aria-label="Primary">
+      <a class="nav-link" href="/">Optimizer</a>
+      <a class="nav-link" href="/characters">Characters</a>
+      <a class="nav-link active" href="/dishes">Dishes</a>
+      <a class="nav-link" href="/status">Status</a>
+    </nav>
+    <div class="header-right">
+      <div class="pill" id="status">Loading...</div>
+      <div class="settings-wrap">
+        <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
+        </button>
+        <div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Settings">
+          <div class="settings-title">Settings</div>
+          <div class="settings-row">
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
+            <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
+            <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <span class="muted">Cafe dishes loaded from backend data.</span>
+    </div>
+    <div id="error" class="err"></div>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <script src="/ui/theme.js"></script>
+  <script>
+    const DISH_IMAGES = {
+      'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
+      'Ice Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
+      'Apple Pie': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/dc/Item_Apple_Pie.png/revision/latest?cb=20261111041147',
+      'Tomato & Fried Egg': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
+      'Tuna Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/da/Item_Tuna_Sandwich.png/revision/latest?cb=20261111041511',
+      'Amber Glamor': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/5e/Item_Amber_Glamor.png/revision/latest?cb=20261111041238',
+      'Matacha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
+      'Snowy Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/55/Item_Snowy_Latte.png/revision/latest?cb=20261111041255',
+      'Thick-Cut Fresh Beef Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/c/ca/Item_Thick-Cut_Fresh_Beef_Sandwich.png/revision/latest?cb=20261111041334',
+      'Red Bean & Butter Crossiant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
+      'Strawberry Box Cake': 'https://static.wikia.nocookie.net/neverness-to-everness/images/3/30/Item_Strawberry_Box_Cake.png/revision/latest?cb=20261111041346',
+      'Orange Hot Coffee': 'https://static.wikia.nocookie.net/neverness-to-everness/images/b/be/Item_Orange_Hot_Coffee.png/revision/latest?cb=20261111041352',
+      'Pork Cutlet': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
+      'Coconut Macchiato': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f1/Item_Coconut_Macchiato.png/revision/latest?cb=20261111041949',
+      'Matcha Latte with Milk Cap': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/25/Item_Matcha_Latte_with_Milk_Cap.png/revision/latest?cb=20261111041943',
+      'Tiramisu': 'https://static.wikia.nocookie.net/neverness-to-everness/images/1/12/Item_Tiramisu_%28Origen%29.png/revision/latest?cb=20261111041930',
+      'Ham & Cheese': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
+      'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
+    };
+
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join(''); }
+    function typeClass(t) { return 'type-' + String(t).replace(/\s+/g,''); }
+
+    function render(dishes) {
+      document.getElementById('grid').innerHTML = dishes.map(d => {
+        const url = DISH_IMAGES[d.name] || '';
+        const img = url
+          ? `<img src="${esc(url)}" alt="${esc(d.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'fallback\\'>${esc(initials(d.name))}</div>'">`
+          : `<div class="fallback">${esc(initials(d.name))}</div>`;
+        const ings = Array.isArray(d.ingredients) ? d.ingredients : [];
+        return `
+          <article class="dish-card">
+            <div class="img-wrap">${img}</div>
+            <div class="body">
+              <h2 class="name">${esc(d.name)}</h2>
+              <div class="meta">
+                <span class="badge ${typeClass(d.type)}">${esc(d.type)}</span>
+                <span class="prices">L1 ${Number(d.priceL1).toFixed(2)} · L2 ${Number(d.priceL2).toFixed(2)}</span>
+              </div>
+              <div class="ingredients">${ings.map(i => `<span class="ing">${esc(i)}</span>`).join('')}</div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    async function load() {
+      const status = document.getElementById('status');
+      try {
+        for (let i=0; i<50 && typeof getDishes !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getDishes !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        render(JSON.parse(await getDishes()));
+        status.textContent = 'Connected'; status.classList.remove('error');
+      } catch (e) {
+        status.textContent = 'Error'; status.classList.add('error');
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
+  </script>
+</body>
+</html>
