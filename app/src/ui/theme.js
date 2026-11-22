@@ -108,7 +108,7 @@
       btn.id = 'menuBtn'; btn.className = 'icon-btn menu-btn'; btn.type = 'button';
       btn.setAttribute('aria-label', 'Menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', nav.id || 'siteNav');
       btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>';
-      headerRight.insertBefore(btn, headerRight.firstChild);
+      headerRight.appendChild(btn);
     }
     if (!nav.id) nav.id = 'siteNav';
     if (!overlay) { overlay = document.createElement('div'); overlay.id = 'navOverlay'; overlay.className = 'nav-overlay'; document.body.appendChild(overlay); }
