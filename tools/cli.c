@@ -26,7 +26,7 @@ int main(void) {
                      CHARACTER_COUNT,
                      dish_state,
                      character_state,
-                     {5, TAG_DESSERTS, "Desserts", 1.00, 0.0, true}};
+                     {5, TAG_MAIN_DISHES, "Main Dish", 1.00, 0.0, true}};
 
   OptimizationResult result;
   if (!optimize_cafe(&ctx, &result)) {
