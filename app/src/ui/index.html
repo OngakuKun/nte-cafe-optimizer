@@ -176,12 +176,15 @@
       const sel = document.getElementById('trendSelect');
       const trends = settings.trends || [];
       const groups = [
-        { label: 'Special', items: trends.filter(t => t.type === 'none') },
+        { label: '', items: trends.filter(t => t.type === 'none') },
         { label: 'Dish Types', items: trends.filter(t => t.type === 'tag') },
         { label: 'Categories', items: trends.filter(t => t.type === 'category' && /^fruits?$/i.test(t.name || '')) },
         { label: 'Ingredients', items: trends.filter(t => t.type === 'ingredient') },
       ].filter(g => g.items.length);
-      sel.innerHTML = groups.map(g => `<optgroup label="${esc(g.label)}">${g.items.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}</optgroup>`).join('');
+      sel.innerHTML = groups.map(g => g.label
+        ? `<optgroup label="${esc(g.label)}">${g.items.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}</optgroup>`
+        : g.items.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')
+      ).join('');
       sel.value = settings.trend || 'None';
       hotoriCatDecor = !!settings.hotoriCatDecor;
       cafesOwned = Math.min(5, Math.max(1, Number(settings.cafesOwned) || 1));
