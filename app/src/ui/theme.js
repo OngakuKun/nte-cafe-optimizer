@@ -1,6 +1,27 @@
 (() => {
   const THEME_KEY = 'nte-cafe-theme';
   const IMPORTED_THEMES_KEY = 'nte-cafe-imported-themes';
+  const LANG_KEY = 'nte-cafe-lang';
+  const LANGS = [
+    { id: 'en', name: 'English' },
+    { id: 'de', name: 'Deutsch' },
+    { id: 'ja', name: '日本語' },
+    { id: 'zh-CN', name: '简体中文' },
+  ];
+  const I18N = {
+    de: {
+      'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.status':'Status',
+      'settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache'
+    },
+    ja: {
+      'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.status':'ステータス',
+      'settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語'
+    },
+    'zh-CN': {
+      'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.status':'状态',
+      'settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言'
+    }
+  };
   const BUILTIN_THEMES = [
     { id: 'latte', name: 'Catppuccin Latte' },
     { id: 'frappe', name: 'Catppuccin Frappe' },
@@ -95,6 +116,34 @@
     importedThemes = Array.from(map.values());
     saveImportedThemes(); applyImportedThemeCss(); rebuildThemeSelect(); applyTheme(themes[themes.length - 1].id, true);
   }
+  function currentLang() {
+    try { const s = localStorage.getItem(LANG_KEY); if (LANGS.some(l => l.id === s)) return s; } catch (_) {}
+    const nav = (navigator.language || 'en').toLowerCase();
+    if (nav.startsWith('de')) return 'de';
+    if (nav.startsWith('ja')) return 'ja';
+    if (nav.startsWith('zh')) return 'zh-CN';
+    return 'en';
+  }
+  function t(key) {
+    const lang = document.documentElement.lang || 'en';
+    return (I18N[lang] && I18N[lang][key]) || (I18N.en && I18N.en[key]) || null;
+  }
+  function applyLanguage(lang, persist) {
+    const next = LANGS.some(l => l.id === lang) ? lang : 'en';
+    document.documentElement.lang = next;
+    if (persist) { try { localStorage.setItem(LANG_KEY, next); } catch (_) {} }
+    const sel = document.getElementById('langSelect');
+    if (sel) sel.value = next;
+    const dict = I18N[next] || {};
+    const map = { '/':'nav.optimizer','/characters':'nav.characters','/dishes':'nav.dishes','/status':'nav.status' };
+    document.querySelectorAll('nav a.nav-link').forEach(a => {
+      const k = map[a.getAttribute('href')]; if (k && dict[k]) a.textContent = dict[k];
+    });
+    const st = document.querySelector('#navSettings .settings-title'); if (st) st.textContent = dict['settings.title'] || 'Settings';
+    const tl = document.querySelector('label[for="themeSelect"]'); if (tl) tl.textContent = dict['settings.theme'] || 'Theme';
+    const ib = document.getElementById('importThemeBtn'); if (ib) ib.textContent = dict['settings.import'] || 'Import Theme';
+    const ll = document.querySelector('label[for="langSelect"]'); if (ll) ll.textContent = dict['settings.language'] || 'Language';
+  }
   function initSettingsPanel() {}
 
   function initNav() {
@@ -124,6 +173,8 @@
           <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
           <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+          <label for="langSelect">Language</label>
+          <select id="langSelect" class="theme-select" aria-label="Language"></select>
         </div>`;
     }
 
@@ -182,7 +233,13 @@
         catch (ex) { const err = document.getElementById('error'); if (err) err.textContent = 'Theme import failed: ' + (ex && ex.message ? ex.message : String(ex)); }
       });
     }
+    const langSelect = document.getElementById('langSelect');
+    if (langSelect) {
+      langSelect.innerHTML = LANGS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+      langSelect.addEventListener('change', (e) => applyLanguage(e.target.value, true));
+    }
+    applyLanguage(currentLang(), false);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage };
 })();
