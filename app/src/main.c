@@ -382,7 +382,7 @@ static void run_optimization(webui_event_t *e) {
   if (!buf) { webui_return_string(e, "{\"ok\":false,\"error\":\"Out of memory\"}"); return; }
   size_t off = 0;
   off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier);
-  for (size_t i = 0; i < res.dish_count && off + 320 < cap; i++) {
+  for (size_t i = 0; i < res.dish_count && off + 360 < cap; i++) {
     char n[128]; json_escape(res.dishes[i]->name ? res.dishes[i]->name : "", n, sizeof(n));
     int level = 1;
     double base_price = 0.0;
@@ -395,7 +395,8 @@ static void run_optimization(webui_event_t *e) {
       }
     }
     double fph = (base_price + res.price_buff) * res.price_multiplier * (res.traffic / 100.0);
-    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"level\":%d,\"fonsPerHour\":%.2f}", i?",":"", n, level, fph);
+    bool in_trend = dish_matches_trend(res.dishes[i], &cafe_settings);
+    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"level\":%d,\"fonsPerHour\":%.2f,\"inTrend\":%s}", i?",":"", n, level, fph, in_trend ? "true" : "false");
   }
   off += snprintf(buf+off, cap-off, "],\"characters\":[");
   for (size_t i = 0; i < res.character_count && off + 256 < cap; i++) {
