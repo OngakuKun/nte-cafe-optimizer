@@ -7,6 +7,7 @@
 #include <string.h>
 
 #define APP_HTML_PATH "/ui/index.html"
+#define STATUS_HTML_PATH "/ui/status.html"
 
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
@@ -49,9 +50,10 @@ static const void *file_handler(const char *filename, int *length) {
       strcmp(path, "/index.html") == 0 || strcmp(path, "/ui/index.html") == 0 ||
       strcmp(path, "ui/index.html") == 0)
     path = APP_HTML_PATH;
-  /* normalize accidental encoded-slash style or missing leading slash */
-  if (strcmp(path, "ui/index.html") == 0)
-    path = APP_HTML_PATH;
+  else if (strcmp(path, "/status") == 0 || strcmp(path, "/status.html") == 0 ||
+           strcmp(path, "/ui/status.html") == 0)
+    path = STATUS_HTML_PATH;
+
   if (path[0] == '/')
     path++;
 

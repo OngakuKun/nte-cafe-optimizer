@@ -3,377 +3,53 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe - Backend Status</title>
+  <title>NTE Cafe - Optimizer</title>
   <script src="/webui.js"></script>
+  <link rel="stylesheet" href="/ui/shared.css">
   <style>
-    /* Catppuccin themes. Override semantic tokens below to add/customize themes. */
-    :root,
-    [data-theme="mocha"] {
-      --ctp-rosewater: #f5e0dc; --ctp-flamingo: #f2cdcd; --ctp-pink: #f5c2e7;
-      --ctp-mauve: #cba6f7; --ctp-red: #f38ba8; --ctp-maroon: #eba0ac;
-      --ctp-peach: #fab387; --ctp-yellow: #f9e2af; --ctp-green: #a6e3a1;
-      --ctp-teal: #94e2d5; --ctp-sky: #89dceb; --ctp-sapphire: #74c7ec;
-      --ctp-blue: #89b4fa; --ctp-lavender: #b4befe; --ctp-text: #cdd6f4;
-      --ctp-subtext1: #bac2de; --ctp-subtext0: #a6adc8; --ctp-overlay2: #9399b2;
-      --ctp-overlay1: #7f849c; --ctp-overlay0: #6c7086; --ctp-surface2: #585b70;
-      --ctp-surface1: #45475a; --ctp-surface0: #313244; --ctp-base: #1e1e2e;
-      --ctp-mantle: #181825; --ctp-crust: #11111b;
+    .placeholder {
+      margin-top: 24px; padding: 48px 24px; text-align: center;
+      background: var(--panel); border: 1px dashed var(--border); border-radius: 12px;
     }
-    [data-theme="macchiato"] {
-      --ctp-rosewater: #f4dbd6; --ctp-flamingo: #f0c6c6; --ctp-pink: #f5bde6;
-      --ctp-mauve: #c6a0f6; --ctp-red: #ed8796; --ctp-maroon: #ee99a0;
-      --ctp-peach: #f5a97f; --ctp-yellow: #eed49f; --ctp-green: #a6da95;
-      --ctp-teal: #8bd5ca; --ctp-sky: #91d7e3; --ctp-sapphire: #7dc4e4;
-      --ctp-blue: #8aadf4; --ctp-lavender: #b7bdf8; --ctp-text: #cad3f5;
-      --ctp-subtext1: #b8c0e0; --ctp-subtext0: #a5adcb; --ctp-overlay2: #939ab7;
-      --ctp-overlay1: #8087a2; --ctp-overlay0: #6e738d; --ctp-surface2: #5b6078;
-      --ctp-surface1: #494d64; --ctp-surface0: #363a4f; --ctp-base: #24273a;
-      --ctp-mantle: #1e2030; --ctp-crust: #181926;
-    }
-    [data-theme="frappe"] {
-      --ctp-rosewater: #f2d5cf; --ctp-flamingo: #eebebe; --ctp-pink: #f4b8e4;
-      --ctp-mauve: #ca9ee6; --ctp-red: #e78284; --ctp-maroon: #ea999c;
-      --ctp-peach: #ef9f76; --ctp-yellow: #e5c890; --ctp-green: #a6d189;
-      --ctp-teal: #81c8be; --ctp-sky: #99d1db; --ctp-sapphire: #85c1dc;
-      --ctp-blue: #8caaee; --ctp-lavender: #babbf1; --ctp-text: #c6d0f5;
-      --ctp-subtext1: #b5bfe2; --ctp-subtext0: #a5adce; --ctp-overlay2: #949cbb;
-      --ctp-overlay1: #838ba7; --ctp-overlay0: #737994; --ctp-surface2: #626880;
-      --ctp-surface1: #51576d; --ctp-surface0: #414559; --ctp-base: #303446;
-      --ctp-mantle: #292c3c; --ctp-crust: #232634;
-    }
-    [data-theme="latte"] {
-      --ctp-rosewater: #dc8a78; --ctp-flamingo: #dd7878; --ctp-pink: #ea76cb;
-      --ctp-mauve: #8839ef; --ctp-red: #d20f39; --ctp-maroon: #e64553;
-      --ctp-peach: #fe640b; --ctp-yellow: #df8e1d; --ctp-green: #40a02b;
-      --ctp-teal: #179299; --ctp-sky: #04a5e5; --ctp-sapphire: #209fb5;
-      --ctp-blue: #1e66f5; --ctp-lavender: #7287fd; --ctp-text: #4c4f69;
-      --ctp-subtext1: #5c5f77; --ctp-subtext0: #6c6f85; --ctp-overlay2: #7c7f93;
-      --ctp-overlay1: #8c8fa1; --ctp-overlay0: #9ca0b0; --ctp-surface2: #acb0be;
-      --ctp-surface1: #bcc0cc; --ctp-surface0: #ccd0da; --ctp-base: #eff1f5;
-      --ctp-mantle: #e6e9ef; --ctp-crust: #dce0e8;
-    }
-
-    /* Semantic app tokens mapped to the active Catppuccin theme. */
-    :root {
-      --bg: var(--ctp-base);
-      --bg-gradient: var(--ctp-mantle);
-      --panel: var(--ctp-mantle);
-      --panel-alt: var(--ctp-crust);
-      --border: var(--ctp-surface0);
-      --border-subtle: var(--ctp-surface1);
-      --text: var(--ctp-text);
-      --muted: var(--ctp-subtext0);
-      --accent: var(--ctp-peach);
-      --good: var(--ctp-green);
-      --good-fg: var(--ctp-crust);
-      --error: var(--ctp-red);
-      --code: var(--ctp-lavender);
-      --shadow: color-mix(in srgb, var(--ctp-crust) 35%, transparent);
-    }
-
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
-      background: linear-gradient(180deg, var(--bg-gradient) 0%, var(--bg) 100%);
-      color: var(--text);
-    }
-    header {
-      padding: 24px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-    }
-    h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
-    h1 span { color: var(--accent); }
-    .sub { color: var(--muted); margin-top: 6px; font-size: 14px; }
-    .header-right { display: flex; align-items: center; gap: 10px; }
-    .theme-select {
-      background: var(--panel); color: var(--text); border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px;
-    }
-    .theme-select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .theme-btn {
-      background: var(--panel); color: var(--text); border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px; cursor: pointer;
-    }
-    .theme-btn:hover { border-color: var(--accent); }
-    .theme-btn:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .pill {
-      font-size: 12px; color: var(--good-fg); background: var(--good);
-      padding: 6px 10px; border-radius: 999px; font-weight: 700;
-    }
-    .pill.error { color: var(--ctp-crust); background: var(--error); }
-    main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
-    .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
-    .card {
-      background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-      padding: 16px; box-shadow: 0 1px 2px var(--shadow);
-    }
-    .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
-    .value { font-size: 18px; font-weight: 700; margin-top: 8px; word-break: break-word; }
-    .value.small { font-size: 18px; }
-    .section { margin-top: 22px; }
-    .section h2 {
-      margin: 0 0 10px; font-size: 14px; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .08em;
-    }
-    .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-subtle); vertical-align: top; }
-    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel-alt); }
-    tr:last-child td { border-bottom: 0; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: var(--code); }
-    .err { color: var(--error); white-space: pre-wrap; }
-    @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    .placeholder h2 { margin: 0 0 10px; font-size: 22px; }
+    .placeholder p { margin: 0; color: var(--muted); }
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1><span>NTE Cafe</span> Backend Status</h1>
-      <div class="sub">Basic WebUI test page showing library/backend info, loaded dishes, and characters.</div>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub">Roster optimization workspace</div>
     </div>
+    <nav aria-label="Primary">
+      <a class="nav-link active" href="/">Optimizer</a>
+      <a class="nav-link" href="/status">Status</a>
+    </nav>
     <div class="header-right">
       <label class="label" for="themeSelect" style="margin:0">Theme</label>
       <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
       <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
       <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
-      <div class="pill" id="status">Loading...</div>
+      <div class="pill" id="status">Ready</div>
     </div>
   </header>
 
   <main>
-    <div class="grid">
-      <div class="card"><div class="label">App</div><div class="value small" id="appName">-</div></div>
-      <div class="card"><div class="label">WebUI Version</div><div class="value small" id="webuiVersion">-</div></div>
-      <div class="card"><div class="label">Dishes Loaded</div><div class="value" id="dishCount">-</div></div>
-      <div class="card"><div class="label">Characters Loaded</div><div class="value" id="charCount">-</div></div>
-    </div>
-
     <div id="error" class="err"></div>
-
-    <section class="section">
-      <h2>Dishes</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Price L1</th><th>Price L2</th><th>Ingredients</th></tr></thead>
-          <tbody id="dishBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Characters</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>#</th><th>Name</th><th>Skills</th><th>Skill Details</th></tr></thead>
-          <tbody id="charBody"></tbody>
-        </table>
-      </div>
+    <section class="placeholder">
+      <h2>Optimizer UI coming next</h2>
+      <p>This will be the main optimizer page. Use <a href="/status" style="color:var(--accent)">Status</a> for backend/data diagnostics.</p>
     </section>
   </main>
 
+  <script src="/ui/theme.js"></script>
   <script>
-    const THEME_KEY = 'nte-cafe-theme';
-    const IMPORTED_THEMES_KEY = 'nte-cafe-imported-themes';
-    const BUILTIN_THEMES = [
-      { id: 'latte', name: 'Catppuccin Latte' },
-      { id: 'frappe', name: 'Catppuccin Frappe' },
-      { id: 'macchiato', name: 'Catppuccin Macchiato' },
-      { id: 'mocha', name: 'Catppuccin Mocha' },
-    ];
-    const REQUIRED_VARS = ['rosewater','flamingo','pink','mauve','red','maroon','peach','yellow','green','teal','sky','sapphire','blue','lavender','text','subtext1','subtext0','overlay2','overlay1','overlay0','surface2','surface1','surface0','base','mantle','crust'];
-
-    let importedThemes = loadImportedThemes();
-
-    function loadImportedThemes() {
-      try {
-        const raw = localStorage.getItem(IMPORTED_THEMES_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return normalizeImportedThemes(parsed).themes;
-      } catch (_) { return []; }
-    }
-
-    function saveImportedThemes() {
-      try { localStorage.setItem(IMPORTED_THEMES_KEY, JSON.stringify({ themes: importedThemes })); } catch (_) {}
-    }
-
-    function allThemes() { return [...BUILTIN_THEMES, ...importedThemes]; }
-    function themeIds() { return allThemes().map(t => t.id); }
-
-    function preferredTheme() {
-      try { return window.matchMedia('(prefers-color-scheme: light)').matches ? 'latte' : 'macchiato'; }
-      catch (_) { return 'macchiato'; }
-    }
-
-    function normalizeImportedThemes(input) {
-      const root = input && typeof input === 'object' ? input : null;
-      if (!root || !Array.isArray(root.themes)) throw new Error('Invalid theme.json: expected a top-level "themes" array.');
-      const seen = new Set(BUILTIN_THEMES.map(t => t.id));
-      const themes = [];
-      for (let i = 0; i < root.themes.length; i++) {
-        const t = root.themes[i];
-        if (!t || typeof t !== 'object') throw new Error(`Theme ${i + 1} is not an object.`);
-        const id = String(t.id || '').trim();
-        const name = String(t.name || '').trim();
-        if (!/^[a-z0-9-]+$/.test(id)) throw new Error(`Theme ${i + 1} has invalid id "${t.id}". Use lowercase letters, numbers, dashes.`);
-        if (!name) throw new Error(`Theme "${id}" is missing a name.`);
-        if (seen.has(id)) throw new Error(`Duplicate or reserved theme id "${id}".`);
-        const vars = t.vars && typeof t.vars === 'object' ? t.vars : null;
-        if (!vars) throw new Error(`Theme "${id}" is missing a vars object.`);
-        const cleanVars = {};
-        for (const k of REQUIRED_VARS) {
-          const v = vars[k];
-          if (typeof v !== 'string' || !v.trim()) throw new Error(`Theme "${id}" is missing var "${k}".`);
-          cleanVars[k] = v.trim();
-        }
-        seen.add(id);
-        themes.push({ id, name, vars: cleanVars });
-      }
-      if (themes.length === 0) throw new Error('No themes found in theme.json.');
-      return { themes };
-    }
-
-    function applyImportedThemeCss() {
-      let el = document.getElementById('imported-theme-css');
-      if (!el) { el = document.createElement('style'); el.id = 'imported-theme-css'; document.head.appendChild(el); }
-      el.textContent = importedThemes.map(t => {
-        const body = REQUIRED_VARS.map(k => `--ctp-${k}: ${t.vars[k]};`).join(' ');
-        return `[data-theme="${t.id}"] { ${body} }`;
-      }).join('\n');
-    }
-
-    function rebuildThemeSelect() {
-      const select = document.getElementById('themeSelect');
-      const current = document.documentElement.dataset.theme;
-      select.innerHTML = '';
-      for (const t of BUILTIN_THEMES) {
-        const opt = document.createElement('option');
-        opt.value = t.id; opt.textContent = t.name; select.appendChild(opt);
-      }
-      if (importedThemes.length) {
-        const group = document.createElement('optgroup');
-        group.label = 'Imported';
-        for (const t of importedThemes) {
-          const opt = document.createElement('option');
-          opt.value = t.id; opt.textContent = t.name; group.appendChild(opt);
-        }
-        select.appendChild(group);
-      }
-      if (themeIds().includes(current)) select.value = current;
-    }
-
-    function applyTheme(theme, persist) {
-      const ids = themeIds();
-      const next = ids.includes(theme) ? theme : preferredTheme();
-      document.documentElement.dataset.theme = next;
-      const select = document.getElementById('themeSelect');
-      if (select && ids.includes(next)) select.value = next;
-      if (persist) { try { localStorage.setItem(THEME_KEY, next); } catch (_) {} }
-    }
-
-    async function importThemeFile(file) {
-      const err = document.getElementById('error');
-      err.textContent = '';
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const { themes } = normalizeImportedThemes(parsed);
-      // Replace/append imported themes by id
-      const map = new Map(importedThemes.map(t => [t.id, t]));
-      for (const t of themes) map.set(t.id, t);
-      importedThemes = Array.from(map.values());
-      saveImportedThemes();
-      applyImportedThemeCss();
-      rebuildThemeSelect();
-      applyTheme(themes[themes.length - 1].id, true);
-    }
-
-    function initTheme() {
-      applyImportedThemeCss();
-      rebuildThemeSelect();
-      let saved = '';
-      try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (_) {}
-      applyTheme(themeIds().includes(saved) ? saved : preferredTheme(), false);
-      document.getElementById('themeSelect').addEventListener('change', (e) => applyTheme(e.target.value, true));
-      document.getElementById('importThemeBtn').addEventListener('click', () => document.getElementById('importThemeFile').click());
-      document.getElementById('importThemeFile').addEventListener('change', async (e) => {
-        const file = e.target.files && e.target.files[0];
-        e.target.value = '';
-        if (!file) return;
-        try { await importThemeFile(file); }
-        catch (ex) { document.getElementById('error').textContent = 'Theme import failed: ' + (ex && ex.message ? ex.message : String(ex)); }
-      });
-    }
-
-    function esc(s) {
-      return String(s)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
-    function fmtSkill(s) {
-      const val = s.type.includes('mult') ? (s.value * 100).toFixed(2) + '%' : s.value.toFixed(2);
-      const tag = s.tag && s.tag !== 'none' ? ' [' + s.tag + ']' : '';
-      return `L${s.level} ${s.type} ${val}${tag} (req ${s.req})`;
-    }
-
-    async function load() {
-      const err = document.getElementById('error');
+    window.addEventListener('DOMContentLoaded', () => {
+      NteTheme.initTheme();
       const status = document.getElementById('status');
-      try {
-        // Wait briefly for WebUI to inject bindings
-        for (let i = 0; i < 50 && typeof getAppInfo !== 'function'; i++) {
-          await new Promise(r => setTimeout(r, 100));
-        }
-        if (typeof getAppInfo !== 'function') {
-          throw new Error('WebUI backend bindings are not available. Open this page through the nte-cafe-app executable (not a static file server).');
-        }
-        const [infoRaw, dishesRaw, charsRaw] = await Promise.all([
-          getAppInfo(), getDishes(), getCharacters()
-        ]);
-        const info = JSON.parse(infoRaw);
-        const dishes = JSON.parse(dishesRaw);
-        const chars = JSON.parse(charsRaw);
-
-        document.getElementById('appName').textContent = info.app || '-';
-        document.getElementById('webuiVersion').textContent = info.webui || '-';
-        document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
-        document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
-        status.textContent = 'Connected';
-        status.classList.remove('error');
-
-        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${esc(d.name)}</td>
-            <td>${esc(d.type)}</td>
-            <td>${Number(d.priceL1).toFixed(2)}</td>
-            <td>${Number(d.priceL2).toFixed(2)}</td>
-            <td>${d.ingredients}</td>
-          </tr>`).join('');
-
-        document.getElementById('charBody').innerHTML = chars.map((c, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${esc(c.name)}</td>
-            <td>${c.skillCount}</td>
-            <td><code>${esc((c.skills || []).map(fmtSkill).join('; '))}</code></td>
-          </tr>`).join('');
-      } catch (e) {
-        status.textContent = 'Error';
-        status.classList.add('error');
-        err.textContent = String(e && e.stack ? e.stack : e);
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => { initTheme(); load(); });
+      status.textContent = 'Ready';
+      status.classList.remove('error');
+    });
   </script>
 </body>
 </html>
