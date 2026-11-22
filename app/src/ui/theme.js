@@ -108,19 +108,16 @@
       btn.id = 'menuBtn'; btn.className = 'icon-btn menu-btn'; btn.type = 'button';
       btn.setAttribute('aria-label', 'Menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', nav.id || 'siteNav');
       btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>';
-      headerRight.insertBefore(btn, headerRight.firstChild);
+      headerRight.appendChild(btn);
     }
     if (!nav.id) nav.id = 'siteNav';
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'navOverlay'; overlay.className = 'nav-overlay';
-      document.body.appendChild(overlay);
-    }
+    if (!overlay) { overlay = document.createElement('div'); overlay.id = 'navOverlay'; overlay.className = 'nav-overlay'; document.body.appendChild(overlay); }
 
-    if (!document.getElementById('navSettings')) {
-      const wrap = document.createElement('div');
-      wrap.className = 'nav-settings';
-      wrap.innerHTML = `
+    let settings = document.getElementById('navSettings');
+    if (!settings) {
+      settings = document.createElement('div');
+      settings.id = 'navSettings'; settings.className = 'nav-settings';
+      settings.innerHTML = `
         <div class="settings-title">Settings</div>
         <div class="settings-row">
           <label for="themeSelect">Theme</label>
@@ -128,17 +125,40 @@
           <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
         </div>`;
-      wrap.id = 'navSettings';
-      nav.appendChild(wrap);
     }
 
-    const close = () => { nav.classList.remove('open'); overlay.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
-    const open = () => { nav.classList.add('open'); overlay.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
-    btn.addEventListener('click', (e) => { e.stopPropagation(); nav.classList.contains('open') ? close() : open(); });
-    overlay.addEventListener('click', close);
-    nav.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    window.addEventListener('resize', () => { if (window.innerWidth > 900) close(); });
+    let settingsBtn = document.getElementById('settingsBtn');
+    let settingsPanel = document.getElementById('settingsPanel');
+    if (!settingsBtn) {
+      const wrap = document.createElement('div');
+      wrap.className = 'settings-wrap';
+      wrap.innerHTML = `<button id="settingsBtn" class="icon-btn settings-btn" type="button" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg></button><div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Settings"></div>`;
+      headerRight.insertBefore(wrap, btn);
+      settingsBtn = wrap.querySelector('#settingsBtn');
+      settingsPanel = wrap.querySelector('#settingsPanel');
+    }
+
+    const placeSettings = () => {
+      if (window.innerWidth <= 900) {
+        if (settings.parentElement !== nav) nav.appendChild(settings);
+        settingsPanel.classList.remove('open'); settingsBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        if (settings.parentElement !== settingsPanel) settingsPanel.appendChild(settings);
+      }
+    };
+    placeSettings();
+
+    const closeNav = () => { nav.classList.remove('open'); overlay.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+    const openNav = () => { nav.classList.add('open'); overlay.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); settingsPanel.classList.remove('open'); settingsBtn.setAttribute('aria-expanded','false'); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); nav.classList.contains('open') ? closeNav() : openNav(); });
+    overlay.addEventListener('click', closeNav);
+    nav.addEventListener('click', (e) => { if (e.target.closest('a')) closeNav(); });
+
+    settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); const open = settingsPanel.classList.toggle('open'); settingsBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+    settingsPanel.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', () => { settingsPanel.classList.remove('open'); settingsBtn.setAttribute('aria-expanded', 'false'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeNav(); settingsPanel.classList.remove('open'); settingsBtn.setAttribute('aria-expanded','false'); } });
+    window.addEventListener('resize', () => { if (window.innerWidth > 900) closeNav(); placeSettings(); });
   }
 
   function initTheme() {
