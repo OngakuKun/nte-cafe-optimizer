@@ -171,7 +171,7 @@
     const close = () => { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
     const sync = () => {
       menu.innerHTML = '';
-      Array.from(select.options).forEach(opt => {
+      const addOption = (opt) => {
         const b = document.createElement('button');
         b.type = 'button'; b.className = 'cselect-option' + (opt.selected ? ' selected' : '');
         b.textContent = opt.textContent; b.dataset.value = opt.value; b.setAttribute('role', 'option');
@@ -182,6 +182,17 @@
           sync(); close();
         });
         menu.appendChild(b);
+      };
+      Array.from(select.children).forEach(child => {
+        if (child.tagName === 'OPTGROUP') {
+          const label = document.createElement('div');
+          label.className = 'cselect-group';
+          label.textContent = child.label;
+          menu.appendChild(label);
+          Array.from(child.children).forEach(o => { if (o.tagName === 'OPTION') addOption(o); });
+        } else if (child.tagName === 'OPTION') {
+          addOption(child);
+        }
       });
       const sel = select.options[select.selectedIndex] || select.options[0];
       btn.textContent = sel ? sel.textContent : '';
