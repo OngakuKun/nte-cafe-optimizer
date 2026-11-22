@@ -449,6 +449,7 @@ int main(int argc, char **argv) {
 
   size_t win = webui_new_window();
   webui_set_file_handler(win, file_handler);
+  webui_set_public(win, true);
   webui_bind(win, "getAppInfo", get_app_info);
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getDishStates", get_dish_states);
