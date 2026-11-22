@@ -1,0 +1,10 @@
+services:
+  nte-cafe:
+    build: .
+    image: nte-cafe:latest
+    container_name: nte-cafe
+    restart: unless-stopped
+    ports:
+      - "18423:80"
+    environment:
+      - PORT=80
