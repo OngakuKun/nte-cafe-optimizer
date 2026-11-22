@@ -224,6 +224,14 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
     select.addEventListener('change', sync);
     new MutationObserver(sync).observe(select, { childList: true, subtree: true, attributes: true });
+    const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+    if (desc && desc.set && desc.get) {
+      Object.defineProperty(select, 'value', {
+        get() { return desc.get.call(this); },
+        set(v) { desc.set.call(this, v); sync(); },
+        configurable: true,
+      });
+    }
     sync();
   }
   function enhanceSelects(root = document) {
