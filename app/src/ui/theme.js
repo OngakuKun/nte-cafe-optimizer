@@ -168,13 +168,14 @@
     wrap.appendChild(btn); wrap.appendChild(menu);
     select.insertAdjacentElement('afterend', wrap);
 
+    const resetScroll = () => { menu.style.overflow = 'hidden'; menu.scrollTop = 0; menu.style.overflow = ''; };
     const close = () => {
       if (!wrap.classList.contains('open')) return;
-      menu.scrollTop = 0;
+      resetScroll();
       wrap.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
-      setTimeout(() => { menu.scrollTop = 0; }, 0);
     };
+    wrap._closeCselect = close;
     const sync = () => {
       menu.innerHTML = '';
       const addOption = (opt) => {
@@ -211,9 +212,8 @@
       if (!open) {
         wrap.classList.add('open');
         btn.setAttribute('aria-expanded', 'true');
-        menu.scrollTop = 0;
-        requestAnimationFrame(() => { menu.scrollTop = 0; });
-        setTimeout(() => { menu.scrollTop = 0; }, 50);
+        resetScroll();
+        requestAnimationFrame(resetScroll);
       }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
