@@ -240,10 +240,14 @@ int main(int argc, char **argv) {
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getCharacters", get_characters);
 
-  if (!webui_show(win, "/")) {
-    fprintf(stderr, "Failed to show WebUI window\n");
+  const char *url = webui_start_server(win, "/");
+  if (!url) {
+    fprintf(stderr, "Failed to start WebUI server\n");
     return 1;
   }
+
+  printf("NTE Cafe server running at %s\n", url);
+  fflush(stdout);
 
   webui_wait();
   webui_clean();
