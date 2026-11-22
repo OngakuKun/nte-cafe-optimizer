@@ -1,0 +1,13 @@
+--- a/src/webui.c
++++ b/src/webui.c
+@@ -6539,8 +6539,8 @@
+     int c = WEBUI_SN_PRINTF_DYN(
+         js, len,
+         "%s\n document.addEventListener(\"DOMContentLoaded\",function(){ globalThis.webui = "
+-        "new WebuiBridge({ secure: %s, token: %" PRIu32 ", port: %zu, log: %s, customWindowDrag: %s, ",
+-        webui_javascript_bridge, TLS, token, win->server_port, log, CUSTOM_WEBUI_WINDOW_DRAG
++        "new WebuiBridge({ secure: (globalThis.location.protocol === 'https:'), token: %" PRIu32 ", port: (globalThis.location.port ? parseInt(globalThis.location.port, 10) : (globalThis.location.protocol === 'https:' ? 443 : 80)), log: %s, customWindowDrag: %s, ",
++        webui_javascript_bridge, token, log, CUSTOM_WEBUI_WINDOW_DRAG
+     );
+     // Window Size
+     if (win->size_set)
