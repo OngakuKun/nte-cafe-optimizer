@@ -20,6 +20,13 @@
     }
     select.input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
     .save-state { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 1.2em; }
+    .result-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .result-stat { padding: 14px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); text-align: center; }
+    .result-stat.primary { background: color-mix(in srgb, var(--accent) 12%, var(--panel-alt)); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent); }
+    .result-stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .result-stat .value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .result-stat.primary .value { color: var(--accent); font-size: 28px; }
+    @media (max-width: 720px) { .result-stats { grid-template-columns: 1fr; } }
 
     .toggle-card {
       position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
@@ -232,8 +239,12 @@
         const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
-          `<div><span style="color:var(--muted)">Income:</span> <strong>${Number(res.income).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Traffic:</span> <strong>${Number(res.traffic).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Price buff:</span> <strong>${Number(res.priceBuff).toFixed(2)}</strong></div>` +
-          `<div style="margin-top:8px"><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
+          `<div class="result-stats">` +
+            `<div class="result-stat"><div class="label">Traffic</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
+            `<div class="result-stat primary"><div class="label">Income</div><div class="value">${Number(res.income).toFixed(2)}</div></div>` +
+            `<div class="result-stat"><div class="label">Price Buff</div><div class="value">${Number(res.priceBuff).toFixed(2)}</div></div>` +
+          `</div>` +
+          `<div><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
           `<div style="margin-top:4px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
       } catch (e) {
         resultContent.style.color = 'var(--error)';
