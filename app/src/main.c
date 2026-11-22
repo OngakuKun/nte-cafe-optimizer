@@ -242,6 +242,11 @@ int main(int argc, char **argv) {
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getCharacters", get_characters);
 
+  const size_t port = 18423;
+  if (!webui_set_port(win, port)) {
+    fprintf(stderr, "Warning: could not set preferred port %zu, using a free port\n", port);
+  }
+
   const char *url = webui_start_server(win, "/");
   if (!url) {
     fprintf(stderr, "Failed to start WebUI server\n");

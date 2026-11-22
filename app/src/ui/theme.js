@@ -95,6 +95,18 @@
     importedThemes = Array.from(map.values());
     saveImportedThemes(); applyImportedThemeCss(); rebuildThemeSelect(); applyTheme(themes[themes.length - 1].id, true);
   }
+  function initSettingsPanel() {
+    const btn = document.getElementById('settingsBtn');
+    const panel = document.getElementById('settingsPanel');
+    if (!btn || !panel) return;
+    const close = () => { panel.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+    const open = () => { panel.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.contains('open') ? close() : open(); });
+    panel.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  }
+
   function initTheme() {
     applyImportedThemeCss(); rebuildThemeSelect();
     let saved = ''; try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (_) {}
@@ -111,6 +123,7 @@
         catch (ex) { const err = document.getElementById('error'); if (err) err.textContent = 'Theme import failed: ' + (ex && ex.message ? ex.message : String(ex)); }
       });
     }
+    initSettingsPanel();
   }
   window.NteTheme = { initTheme, applyTheme };
 })();
