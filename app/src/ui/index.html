@@ -34,22 +34,15 @@
     }
     .placeholder h2 { margin: 0 0 10px; font-size: 20px; }
     .placeholder p { margin: 0; color: var(--muted); }
-    body {
+    .decor-panel {
+      position: relative;
+      overflow: hidden;
       background:
-        linear-gradient(180deg, color-mix(in srgb, var(--ctp-base) 82%, transparent), color-mix(in srgb, var(--ctp-base) 94%, transparent)),
-        url('/ui/assets/decor/exclusive-customer-service.png') right -40px bottom -40px / min(520px, 55vw) auto no-repeat,
-        var(--ctp-base);
-      background-attachment: fixed, fixed, fixed;
+        linear-gradient(90deg, color-mix(in srgb, var(--panel) 94%, transparent) 0%, color-mix(in srgb, var(--panel) 88%, transparent) 42%, color-mix(in srgb, var(--panel) 45%, transparent) 100%),
+        url('/ui/assets/decor/exclusive-customer-service.png') right 8px center / auto 92% no-repeat,
+        var(--panel);
     }
-    @media (max-width: 700px) {
-      body {
-        background:
-          linear-gradient(180deg, color-mix(in srgb, var(--ctp-base) 86%, transparent), color-mix(in srgb, var(--ctp-base) 96%, transparent)),
-          url('/ui/assets/decor/exclusive-customer-service.png') right -20px bottom -20px / 72vw auto no-repeat,
-          var(--ctp-base);
-        background-attachment: scroll, scroll, scroll;
-      }
-    }
+    .decor-panel .toggle-row { min-height: 72px; }
   </style>
 </head>
 <body>
@@ -95,7 +88,7 @@
         <div class="save-state" id="saveState"></div>
       </section>
 
-      <section class="card panel">
+      <section class="card panel decor-panel">
         <h2>Decor</h2>
         <div class="toggle-row">
           <div class="text">
