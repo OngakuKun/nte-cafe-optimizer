@@ -51,12 +51,12 @@ static CharacterState character_state[MAX_CHARACTER_POOL];
 static bool character_state_initialized = false;
 static DishState dish_state[MAX_DISH_POOL];
 static bool dish_state_initialized = false;
-static CafeSettings cafe_settings = {1, TAG_NONE, "None", 0.0, 0.0, false};
+static CafeSettings cafe_settings = {5, TAG_NONE, "None", 0.0, 0.0, false};
 static bool cafe_settings_initialized = false;
 
 static void ensure_cafe_settings(void) {
   if (cafe_settings_initialized) return;
-  cafe_settings.cafes_owned = 1;
+  cafe_settings.cafes_owned = 5;
   cafe_settings.trend_tag = TAG_NONE;
   cafe_settings.trend_name = "None";
   cafe_settings.hotori_cat_decor = false;
