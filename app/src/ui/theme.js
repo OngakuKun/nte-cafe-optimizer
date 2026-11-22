@@ -155,6 +155,53 @@
   }
   function initSettingsPanel() {}
 
+  function enhanceSelect(select) {
+    if (!select || select.dataset.enhanced) return;
+    select.dataset.enhanced = '1';
+    select.classList.add('enhanced-select');
+    const wrap = document.createElement('div');
+    wrap.className = 'cselect' + (select.classList.contains('compact-select') ? ' compact' : '');
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'cselect-btn'; btn.setAttribute('aria-haspopup', 'listbox');
+    const menu = document.createElement('div');
+    menu.className = 'cselect-menu'; menu.setAttribute('role', 'listbox');
+    wrap.appendChild(btn); wrap.appendChild(menu);
+    select.insertAdjacentElement('afterend', wrap);
+
+    const close = () => { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+    const sync = () => {
+      menu.innerHTML = '';
+      Array.from(select.options).forEach(opt => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'cselect-option' + (opt.selected ? ' selected' : '');
+        b.textContent = opt.textContent; b.dataset.value = opt.value; b.setAttribute('role', 'option');
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
+          select.value = opt.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          sync(); close();
+        });
+        menu.appendChild(b);
+      });
+      const sel = select.options[select.selectedIndex] || select.options[0];
+      btn.textContent = sel ? sel.textContent : '';
+      btn.setAttribute('aria-expanded', wrap.classList.contains('open') ? 'true' : 'false');
+    };
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = wrap.classList.contains('open');
+      document.querySelectorAll('.cselect.open').forEach(c => { c.classList.remove('open'); c.querySelector('.cselect-btn')?.setAttribute('aria-expanded','false'); });
+      if (!open) { wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+    });
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
+    select.addEventListener('change', sync);
+    new MutationObserver(sync).observe(select, { childList: true, subtree: true, attributes: true });
+    sync();
+  }
+  function enhanceSelects(root = document) {
+    root.querySelectorAll('select.theme-select, select.input').forEach(enhanceSelect);
+  }
+
   function initNav() {
     const nav = document.querySelector('header nav');
     const headerRight = document.querySelector('.header-right');
@@ -248,7 +295,8 @@
       langSelect.addEventListener('change', (e) => applyLanguage(e.target.value, true));
     }
     applyLanguage(currentLang(), false);
+    enhanceSelects(document);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects };
 })();
