@@ -178,6 +178,7 @@
       const groups = [
         { label: 'Special', items: trends.filter(t => t.type === 'none') },
         { label: 'Dish Types', items: trends.filter(t => t.type === 'tag') },
+        { label: 'Categories (Fruits)', items: trends.filter(t => t.type === 'category' && t.name === 'Fruits') },
         { label: 'Ingredients', items: trends.filter(t => t.type === 'ingredient') },
       ].filter(g => g.items.length);
       sel.innerHTML = groups.map(g => `<optgroup label="${esc(g.label)}">${g.items.map(t => `<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')}</optgroup>`).join('');
