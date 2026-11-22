@@ -324,15 +324,15 @@ static void get_optimizer_settings(webui_event_t *e) {
   size_t off = 0;
   char trend_name[128];
   json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name, sizeof(trend_name));
-  off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"cafesOwned\":%d,\"trends\":[",
-                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false", cafe_settings.cafes_owned);
-  for (size_t i = 0; i < opts.count && off + 160 < cap; i++) {
+  off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"cafesOwned\":%d,\"trendBonus\":%.2f,\"trends\":[",
+                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false", cafe_settings.cafes_owned, cafe_settings.trend_bonus);
+  for (size_t i = 0; i < opts.count && off + 180 < cap; i++) {
     char n[128]; json_escape(opts.trends[i].name ? opts.trends[i].name : "", n, sizeof(n));
     const char *tt = "none";
     if (opts.trends[i].type == TREND_TAG) tt = "tag";
     else if (opts.trends[i].type == TREND_CATEGORY) tt = "category";
     else if (opts.trends[i].type == TREND_INGREDIENT) tt = "ingredient";
-    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"type\":\"%s\"}", i?",":"", n, tt);
+    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"type\":\"%s\",\"bonus\":%.2f}", i?",":"", n, tt, get_trend_bonus(opts.trends[i].type));
   }
   if (off + 8 < cap) off += snprintf(buf+off, cap-off, "]}");
   webui_return_string(e, buf);
