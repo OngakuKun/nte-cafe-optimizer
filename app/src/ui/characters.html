@@ -12,7 +12,7 @@
     .save-state { font-size: 13px; color: var(--muted); }
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:14px; }
     .char-card {
-      position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: visible;
       box-shadow: 0 1px 2px var(--shadow); transition: border-color .15s ease, transform .15s ease;
       min-height: 260px;
     }
@@ -21,6 +21,7 @@
     .avatar-wrap {
       position: absolute; top: 0; right: 0; bottom: 0; left: 42%;
       background: transparent;
+      border-radius: 0 14px 14px 0; overflow: hidden;
       -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
       mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
     }
@@ -30,7 +31,7 @@
       font-size: 52px; font-weight: 700; color: var(--accent); background: linear-gradient(160deg, var(--ctp-surface1), var(--ctp-mantle));
     }
     .overlay {
-      position:absolute; inset:0;
+      position:absolute; inset:0; border-radius: 14px;
       background: linear-gradient(90deg,
         color-mix(in srgb, var(--ctp-base) 98%, transparent) 0%,
         color-mix(in srgb, var(--ctp-base) 96%, transparent) 35%,
