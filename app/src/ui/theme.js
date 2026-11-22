@@ -168,14 +168,12 @@
     wrap.appendChild(btn); wrap.appendChild(menu);
     select.insertAdjacentElement('afterend', wrap);
 
-    const resetScroll = () => { menu.scrollTop = 0; };
+    const resetScroll = () => { menu.scrollTop = 0; menu.scrollTo?.(0, 0); };
     const close = () => {
       if (!wrap.classList.contains('open')) return;
-      resetScroll();
       wrap.classList.remove('open');
       btn.setAttribute('aria-expanded', 'false');
-      requestAnimationFrame(resetScroll);
-      setTimeout(resetScroll, 0);
+      resetScroll();
     };
     wrap._closeCselect = close;
     const sync = () => {
@@ -210,13 +208,12 @@
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const open = wrap.classList.contains('open');
-      document.querySelectorAll('.cselect.open').forEach(c => { const m = c.querySelector('.cselect-menu'); if (m) m.scrollTop = 0; c.classList.remove('open'); c.querySelector('.cselect-btn')?.setAttribute('aria-expanded','false'); });
+      document.querySelectorAll('.cselect.open').forEach(c => c._closeCselect ? c._closeCselect() : c.classList.remove('open'));
       if (!open) {
         wrap.classList.add('open');
         btn.setAttribute('aria-expanded', 'true');
         resetScroll();
-        requestAnimationFrame(() => { resetScroll(); requestAnimationFrame(resetScroll); });
-        setTimeout(resetScroll, 0);
+        requestAnimationFrame(() => { resetScroll(); setTimeout(resetScroll, 0); });
       }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
