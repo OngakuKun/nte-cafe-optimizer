@@ -2,6 +2,7 @@
 #include "types.h"
 #include "webui.h"
 #include "trend.h"
+#include "optimizer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -361,6 +362,40 @@ static void set_optimizer_settings(webui_event_t *e) {
   webui_return_string(e, "{\"ok\":true}");
 }
 
+static void run_optimization(webui_event_t *e) {
+  ensure_cafe_settings();
+  ensure_dish_state();
+  ensure_character_state();
+  CafeContext ctx = {
+    .dishes = DISHES, .dish_count = DISH_COUNT,
+    .characters = CHARACTERS, .character_count = CHARACTER_COUNT,
+    .dish_state = dish_state, .character_state = character_state,
+    .settings = cafe_settings
+  };
+  OptimizationResult res;
+  if (!optimize_cafe(&ctx, &res)) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"Optimization failed. Check owned dishes/characters and cafe count.\"}");
+    return;
+  }
+  size_t cap = 4096;
+  char *buf = (char*)malloc(cap);
+  if (!buf) { webui_return_string(e, "{\"ok\":false,\"error\":\"Out of memory\"}"); return; }
+  size_t off = 0;
+  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier);
+  for (size_t i = 0; i < res.dish_count && off + 256 < cap; i++) {
+    char n[128]; json_escape(res.dishes[i]->name ? res.dishes[i]->name : "", n, sizeof(n));
+    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\"}", i?",":"", n);
+  }
+  off += snprintf(buf+off, cap-off, "],\"characters\":[");
+  for (size_t i = 0; i < res.character_count && off + 256 < cap; i++) {
+    char n[128]; json_escape(res.characters[i]->name ? res.characters[i]->name : "", n, sizeof(n));
+    off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\"}", i?",":"", n);
+  }
+  off += snprintf(buf+off, cap-off, "]}");
+  webui_return_string(e, buf);
+  free(buf);
+}
+
 static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state) {
   char name[128];
   json_escape(CHARACTERS[i].name ? CHARACTERS[i].name : "", name, sizeof(name));
@@ -458,6 +493,7 @@ int main(int argc, char **argv) {
   webui_bind(win, "getOptimizerSettings", get_optimizer_settings);
   webui_bind(win, "setOptimizerSettings", set_optimizer_settings);
   webui_bind(win, "getOptimizerOverview", get_optimizer_overview);
+  webui_bind(win, "runOptimization", run_optimization);
   webui_bind(win, "getCharacters", get_characters);
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);
