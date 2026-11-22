@@ -71,6 +71,9 @@ body {
   min-height: 100vh;
 }
 header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   padding: 20px 28px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -78,6 +81,9 @@ header {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  background: color-mix(in srgb, var(--ctp-base) 88%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .brand h1 { margin: 0; font-size: 28px; letter-spacing: .2px; }
 .brand h1 span { color: var(--accent); }
