@@ -8,6 +8,7 @@
 
 #define APP_HTML_PATH "/ui/index.html"
 #define STATUS_HTML_PATH "/ui/status.html"
+#define CHARACTERS_HTML_PATH "/ui/characters.html"
 
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
@@ -44,6 +45,19 @@ static char *read_file(const char *path, size_t *out_len) {
 
 static const char *app_root = ".";
 
+static CharacterState character_state[MAX_CHARACTER_POOL];
+static bool character_state_initialized = false;
+
+static void ensure_character_state(void) {
+  if (character_state_initialized)
+    return;
+  for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
+    character_state[i].owned = true;
+    character_state[i].level = 5;
+  }
+  character_state_initialized = true;
+}
+
 static const void *file_handler(const char *filename, int *length) {
   const char *path = filename;
   if (!path || path[0] == '\0' || strcmp(path, "/") == 0 ||
@@ -53,6 +67,9 @@ static const void *file_handler(const char *filename, int *length) {
   else if (strcmp(path, "/status") == 0 || strcmp(path, "/status.html") == 0 ||
            strcmp(path, "/ui/status.html") == 0)
     path = STATUS_HTML_PATH;
+  else if (strcmp(path, "/characters") == 0 || strcmp(path, "/characters.html") == 0 ||
+           strcmp(path, "/ui/characters.html") == 0)
+    path = CHARACTERS_HTML_PATH;
 
   if (path[0] == '/')
     path++;
@@ -182,48 +199,80 @@ static void get_dishes(webui_event_t *e) {
   free(buf);
 }
 
+static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state) {
+  char name[128];
+  json_escape(CHARACTERS[i].name ? CHARACTERS[i].name : "", name, sizeof(name));
+  *off += snprintf(buf + *off, cap - *off, "%s{\"name\":\"%s\",\"skillCount\":%zu",
+                  i ? "," : "", name, CHARACTERS[i].skill_count);
+  if (include_state) {
+    ensure_character_state();
+    *off += snprintf(buf + *off, cap - *off, ",\"owned\":%s,\"level\":%d",
+                    character_state[i].owned ? "true" : "false", character_state[i].level);
+  }
+  *off += snprintf(buf + *off, cap - *off, ",\"skills\":[");
+  for (size_t s = 0; s < CHARACTERS[i].skill_count && *off + 160 < cap; s++) {
+    const Skill *sk = &CHARACTERS[i].skills[s];
+    const char *stype = "unknown";
+    switch (sk->type) {
+    case SKILL_PRICE_FLAT: stype = "price_flat"; break;
+    case SKILL_TRAFFIC_FLAT: stype = "traffic_flat"; break;
+    case SKILL_PRICE_MULTIPLY: stype = "price_mult"; break;
+    case SKILL_TRAFFIC_MULTIPLY: stype = "traffic_mult"; break;
+    }
+    const char *stag = "none";
+    switch (sk->tag) {
+    case TAG_NONE: stag = "none"; break;
+    case TAG_ANY: stag = "any"; break;
+    case TAG_BEVERAGES: stag = "beverages"; break;
+    case TAG_DESSERTS: stag = "desserts"; break;
+    case TAG_MAIN_DISHES: stag = "main_dishes"; break;
+    }
+    *off += snprintf(buf + *off, cap - *off,
+                    "%s{\"level\":%d,\"value\":%.4f,\"req\":%d,\"type\":\"%s\",\"tag\":\"%s\"}",
+                    s ? "," : "", sk->level, sk->value, sk->requirement, stype, stag);
+  }
+  if (*off + 4 < cap) *off += snprintf(buf + *off, cap - *off, "]}");
+}
+
 static void get_characters(webui_event_t *e) {
   size_t cap = 256 + CHARACTER_COUNT * 512;
   char *buf = (char *)malloc(cap);
-  if (!buf) {
-    webui_return_string(e, "[]");
-    return;
-  }
+  if (!buf) { webui_return_string(e, "[]"); return; }
   size_t off = 0;
   off += snprintf(buf + off, cap - off, "[");
-  for (size_t i = 0; i < CHARACTER_COUNT && off + 300 < cap; i++) {
-    char name[128];
-    json_escape(CHARACTERS[i].name ? CHARACTERS[i].name : "", name, sizeof(name));
-    off += snprintf(buf + off, cap - off, "%s{\"name\":\"%s\",\"skillCount\":%zu,\"skills\":[",
-                    i ? "," : "", name, CHARACTERS[i].skill_count);
-    for (size_t s = 0; s < CHARACTERS[i].skill_count && off + 160 < cap; s++) {
-      const Skill *sk = &CHARACTERS[i].skills[s];
-      const char *stype = "unknown";
-      switch (sk->type) {
-      case SKILL_PRICE_FLAT: stype = "price_flat"; break;
-      case SKILL_TRAFFIC_FLAT: stype = "traffic_flat"; break;
-      case SKILL_PRICE_MULTIPLY: stype = "price_mult"; break;
-      case SKILL_TRAFFIC_MULTIPLY: stype = "traffic_mult"; break;
-      }
-      const char *stag = "none";
-      switch (sk->tag) {
-      case TAG_NONE: stag = "none"; break;
-      case TAG_ANY: stag = "any"; break;
-      case TAG_BEVERAGES: stag = "beverages"; break;
-      case TAG_DESSERTS: stag = "desserts"; break;
-      case TAG_MAIN_DISHES: stag = "main_dishes"; break;
-      }
-      off += snprintf(buf + off, cap - off,
-                      "%s{\"level\":%d,\"value\":%.4f,\"req\":%d,\"type\":\"%s\",\"tag\":\"%s\"}",
-                      s ? "," : "", sk->level, sk->value, sk->requirement, stype, stag);
-    }
-    if (off + 4 < cap)
-      off += snprintf(buf + off, cap - off, "]}");
-  }
-  if (off + 2 < cap)
-    off += snprintf(buf + off, cap - off, "]");
+  for (size_t i = 0; i < CHARACTER_COUNT && off + 300 < cap; i++) append_character_json(buf, cap, &off, i, false);
+  if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
   webui_return_string(e, buf);
   free(buf);
+}
+
+static void get_character_states(webui_event_t *e) {
+  ensure_character_state();
+  size_t cap = 256 + CHARACTER_COUNT * 640;
+  char *buf = (char *)malloc(cap);
+  if (!buf) { webui_return_string(e, "[]"); return; }
+  size_t off = 0;
+  off += snprintf(buf + off, cap - off, "[");
+  for (size_t i = 0; i < CHARACTER_COUNT && off + 340 < cap; i++) append_character_json(buf, cap, &off, i, true);
+  if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
+  webui_return_string(e, buf);
+  free(buf);
+}
+
+static void set_character_state(webui_event_t *e) {
+  ensure_character_state();
+  long long idx = webui_get_int_at(e, 0);
+  bool owned = webui_get_bool_at(e, 1);
+  long long level = webui_get_int_at(e, 2);
+  if (idx < 0 || (size_t)idx >= CHARACTER_COUNT) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"invalid index\"}");
+    return;
+  }
+  if (level < 1) level = 1;
+  if (level > 5) level = 5;
+  character_state[idx].owned = owned;
+  character_state[idx].level = (int)level;
+  webui_return_string(e, "{\"ok\":true}");
 }
 
 int main(int argc, char **argv) {
@@ -241,6 +290,8 @@ int main(int argc, char **argv) {
   webui_bind(win, "getAppInfo", get_app_info);
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getCharacters", get_characters);
+  webui_bind(win, "getCharacterStates", get_character_states);
+  webui_bind(win, "setCharacterState", set_character_state);
 
   const size_t port = 18423;
   if (!webui_set_port(win, port)) {

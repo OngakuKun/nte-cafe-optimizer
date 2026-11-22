@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-theme="macchiato">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NTE Cafe - Characters</title>
+  <script src="/webui.js"></script>
+  <link rel="stylesheet" href="/ui/shared.css">
+  <style>
+    .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
+    .toolbar .muted { color: var(--muted); font-size: 13px; }
+    .table-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+    th { color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--panel-alt); }
+    tr:last-child td { border-bottom: 0; }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    select.level { background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font: inherit; }
+    select.level:disabled { opacity: .5; }
+    .save-state { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub">Character ownership and levels</div>
+    </div>
+    <nav aria-label="Primary">
+      <a class="nav-link" href="/">Optimizer</a>
+      <a class="nav-link active" href="/characters">Characters</a>
+      <a class="nav-link" href="/status">Status</a>
+    </nav>
+    <div class="header-right">
+      <div class="pill" id="status">Loading...</div>
+      <div class="settings-wrap">
+        <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings" aria-expanded="false" aria-controls="settingsPanel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg>
+        </button>
+        <div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Settings">
+          <div class="settings-title">Settings</div>
+          <div class="settings-row">
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
+            <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
+            <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <span class="muted">Set ownership and level for each character. Changes are saved automatically.</span>
+      <span id="saveState" class="save-state"></span>
+    </div>
+    <div id="error" class="err"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Owned</th><th>Character</th><th>Level</th><th>Skills</th></tr></thead>
+      <tbody id="charBody"></tbody>
+    </table></div>
+  </main>
+
+  <script src="/ui/theme.js"></script>
+  <script>
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function fmtSkill(s) {
+      const val = s.type.includes('mult') ? (s.value * 100).toFixed(2)+'%' : s.value.toFixed(2);
+      const tag = s.tag && s.tag !== 'none' ? ' ['+s.tag+']' : '';
+      return `L${s.level} ${s.type} ${val}${tag} (req ${s.req})`;
+    }
+    function setSave(msg, err) {
+      const el = document.getElementById('saveState');
+      el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)';
+    }
+    async function saveRow(index, owned, level) {
+      setSave('Saving...');
+      try {
+        const res = await setCharacterState(index, owned, level);
+        const obj = JSON.parse(res);
+        if (!obj.ok) throw new Error(obj.error || 'Save failed');
+        setSave('Saved');
+      } catch (e) { setSave('Save failed', true); document.getElementById('error').textContent = String(e.message || e); }
+    }
+    function render(chars) {
+      const body = document.getElementById('charBody');
+      body.innerHTML = chars.map((c, i) => `
+        <tr>
+          <td><input type="checkbox" data-i="${i}" data-k="owned" ${c.owned ? 'checked' : ''}></td>
+          <td>${esc(c.name)}</td>
+          <td>
+            <select class="level" data-i="${i}" data-k="level" ${c.owned ? '' : 'disabled'}>
+              ${[1,2,3,4,5].map(l => `<option value="${l}" ${Number(c.level)===l?'selected':''}>${l}</option>`).join('')}
+            </select>
+          </td>
+          <td><code>${esc((c.skills||[]).map(fmtSkill).join('; '))}</code></td>
+        </tr>`).join('');
+      body.querySelectorAll('[data-k="owned"]').forEach(el => el.addEventListener('change', async (e) => {
+        const i = Number(e.target.dataset.i); const owned = e.target.checked;
+        const levelSel = body.querySelector(`select[data-i="${i}"]`); levelSel.disabled = !owned;
+        await saveRow(i, owned, Number(levelSel.value));
+      }));
+      body.querySelectorAll('[data-k="level"]').forEach(el => el.addEventListener('change', async (e) => {
+        const i = Number(e.target.dataset.i); const level = Number(e.target.value);
+        const owned = body.querySelector(`input[data-i="${i}"][data-k="owned"]`).checked;
+        await saveRow(i, owned, level);
+      }));
+    }
+    async function load() {
+      const status = document.getElementById('status');
+      try {
+        for (let i=0; i<50 && typeof getCharacterStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getCharacterStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        const chars = JSON.parse(await getCharacterStates());
+        render(chars);
+        status.textContent = 'Connected'; status.classList.remove('error');
+      } catch (e) {
+        status.textContent = 'Error'; status.classList.add('error');
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
+  </script>
+</body>
+</html>
