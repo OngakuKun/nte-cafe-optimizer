@@ -138,7 +138,10 @@
       settingsPanel = wrap.querySelector('#settingsPanel');
     }
 
+    const updateHeaderH = () => { const h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--header-h', h.offsetHeight + 'px'); };
+    updateHeaderH();
     const placeSettings = () => {
+      updateHeaderH();
       if (window.innerWidth <= 900) {
         if (settings.parentElement !== nav) nav.appendChild(settings);
         settingsPanel.classList.remove('open'); settingsBtn.setAttribute('aria-expanded', 'false'); overlay.classList.remove('open');
@@ -159,7 +162,7 @@
     nav.addEventListener('click', (e) => { if (e.target.closest('a')) closeNav(); });
     settingsPanel.addEventListener('click', (e) => e.stopPropagation());
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeNav(); closeSettings(); } });
-    window.addEventListener('resize', () => { if (window.innerWidth > 900) closeNav(); if (window.innerWidth <= 900) closeSettings(); placeSettings(); });
+    window.addEventListener('resize', () => { updateHeaderH(); if (window.innerWidth > 900) closeNav(); if (window.innerWidth <= 900) closeSettings(); placeSettings(); });
   }
 
   function initTheme() {

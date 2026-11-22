@@ -96,7 +96,7 @@ nav { display: flex; gap: 8px; align-items: center; }
 .nav-link:hover { color: var(--text); background: var(--panel-alt); }
 .nav-link.active { color: var(--accent); background: var(--panel-alt); border-color: var(--border); }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.nav-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 35; }
+.nav-overlay { display: none; position: fixed; top: var(--header-h, 73px); right: 0; bottom: 0; left: 0; background: rgba(0,0,0,.35); z-index: 35; }
 .nav-overlay.open { display: block; }
 .icon-btn {
   background: var(--panel); color: var(--text); border: 1px solid var(--border);
@@ -109,10 +109,10 @@ nav { display: flex; gap: 8px; align-items: center; }
 .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
 .settings-wrap { position: relative; }
 .settings-panel {
-  position: fixed; top: 0; right: 0; bottom: 0; width: min(320px, 90vw);
+  position: fixed; top: var(--header-h, 73px); right: 0; bottom: 0; width: min(320px, 90vw);
   background: var(--panel); border-left: 1px solid var(--border);
   box-shadow: -8px 0 24px var(--shadow);
-  padding: 72px 16px 16px; z-index: 40;
+  padding: 16px; z-index: 40;
   transform: translateX(100%); transition: transform .2s ease; overflow-y: auto;
 }
 .settings-panel.open { transform: translateX(0); }
