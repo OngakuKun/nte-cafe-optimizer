@@ -100,16 +100,14 @@ nav { display: flex; gap: 8px; align-items: center; }
 .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
 .icon-btn:focus, .theme-select:focus, .theme-btn:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.settings-wrap { position: relative; }
-.settings-panel {
-  position: absolute; top: calc(100% + 8px); right: 0; min-width: 280px; z-index: 20;
-  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-  padding: 14px; box-shadow: 0 8px 24px var(--shadow); display: none;
-}
-.settings-panel.open { display: block; }
 .settings-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
 .settings-row { display: flex; flex-direction: column; gap: 8px; }
 .settings-row label { font-size: 13px; color: var(--muted); }
+.nav-settings {
+  margin-left: 8px; padding-left: 12px; border-left: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px; min-width: 220px;
+}
+.nav-settings .theme-select, .nav-settings .theme-btn { width: 100%; }
 .theme-select {
   background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
   border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; width: 100%;
@@ -137,15 +135,16 @@ main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
   .brand h1 { font-size: 24px; }
   .menu-btn { display: inline-flex; }
   nav {
-    position: fixed; top: 0; right: 0; bottom: 0; width: min(280px, 82vw);
+    position: fixed; top: 0; right: 0; bottom: 0; width: min(300px, 86vw);
     background: var(--panel); border-left: 1px solid var(--border);
     box-shadow: -8px 0 24px var(--shadow);
     flex-direction: column; align-items: stretch; gap: 4px;
     padding: 72px 16px 16px; z-index: 40;
-    transform: translateX(100%); transition: transform .2s ease;
+    transform: translateX(100%); transition: transform .2s ease; overflow-y: auto;
   }
   nav.open { transform: translateX(0); }
   .nav-link { padding: 12px 14px; font-size: 15px; }
+  .nav-settings { margin-left: 0; padding-left: 0; border-left: 0; border-top: 1px solid var(--border); margin-top: 10px; padding-top: 14px; min-width: 0; }
   .nav-overlay {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 35;
   }

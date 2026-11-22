@@ -95,17 +95,7 @@
     importedThemes = Array.from(map.values());
     saveImportedThemes(); applyImportedThemeCss(); rebuildThemeSelect(); applyTheme(themes[themes.length - 1].id, true);
   }
-  function initSettingsPanel() {
-    const btn = document.getElementById('settingsBtn');
-    const panel = document.getElementById('settingsPanel');
-    if (!btn || !panel) return;
-    const close = () => { panel.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
-    const open = () => { panel.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
-    btn.addEventListener('click', (e) => { e.stopPropagation(); panel.classList.contains('open') ? close() : open(); });
-    panel.addEventListener('click', (e) => e.stopPropagation());
-    document.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-  }
+  function initSettingsPanel() {}
 
   function initNav() {
     const nav = document.querySelector('header nav');
@@ -126,6 +116,22 @@
       overlay.id = 'navOverlay'; overlay.className = 'nav-overlay';
       document.body.appendChild(overlay);
     }
+
+    if (!document.getElementById('navSettings')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'nav-settings';
+      wrap.innerHTML = `
+        <div class="settings-title">Settings</div>
+        <div class="settings-row">
+          <label for="themeSelect">Theme</label>
+          <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
+          <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
+          <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+        </div>`;
+      wrap.id = 'navSettings';
+      nav.appendChild(wrap);
+    }
+
     const close = () => { nav.classList.remove('open'); overlay.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
     const open = () => { nav.classList.add('open'); overlay.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
     btn.addEventListener('click', (e) => { e.stopPropagation(); nav.classList.contains('open') ? close() : open(); });
