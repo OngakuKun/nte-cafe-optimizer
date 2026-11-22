@@ -168,7 +168,7 @@
     wrap.appendChild(btn); wrap.appendChild(menu);
     select.insertAdjacentElement('afterend', wrap);
 
-    const close = () => { wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); menu.scrollTop = 0; };
+    const close = () => { menu.scrollTop = 0; wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); requestAnimationFrame(() => { menu.scrollTop = 0; }); };
     const sync = () => {
       menu.innerHTML = '';
       const addOption = (opt) => {
@@ -202,7 +202,7 @@
       e.stopPropagation();
       const open = wrap.classList.contains('open');
       document.querySelectorAll('.cselect.open').forEach(c => { c.classList.remove('open'); c.querySelector('.cselect-btn')?.setAttribute('aria-expanded','false'); const m = c.querySelector('.cselect-menu'); if (m) m.scrollTop = 0; });
-      if (!open) { menu.scrollTop = 0; wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+      if (!open) { wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); menu.scrollTop = 0; requestAnimationFrame(() => { menu.scrollTop = 0; }); }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
