@@ -178,12 +178,12 @@
       settings.innerHTML = `
         <div class="settings-title">Settings</div>
         <div class="settings-row">
+          <label for="langSelect">Language</label>
+          <select id="langSelect" class="theme-select" aria-label="Language"></select>
           <label for="themeSelect">Theme</label>
           <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
           <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
-          <label for="langSelect">Language</label>
-          <select id="langSelect" class="theme-select" aria-label="Language"></select>
         </div>`;
     }
 
