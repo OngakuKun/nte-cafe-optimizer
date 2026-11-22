@@ -202,7 +202,7 @@
       e.stopPropagation();
       const open = wrap.classList.contains('open');
       document.querySelectorAll('.cselect.open').forEach(c => { c.classList.remove('open'); c.querySelector('.cselect-btn')?.setAttribute('aria-expanded','false'); const m = c.querySelector('.cselect-menu'); if (m) m.scrollTop = 0; });
-      if (!open) { wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+      if (!open) { menu.scrollTop = 0; wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
