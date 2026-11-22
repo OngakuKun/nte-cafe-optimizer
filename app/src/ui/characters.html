@@ -14,7 +14,7 @@
     .char-card {
       position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: visible;
       box-shadow: 0 1px 2px var(--shadow); transition: border-color .15s ease, transform .15s ease;
-      min-height: 220px;
+      min-height: 260px;
     }
     .char-card:hover { border-color: var(--ctp-surface2); }
     .char-card:not(.owned) .avatar-wrap { filter: grayscale(.35) brightness(.75); }
@@ -44,7 +44,7 @@
       background: color-mix(in srgb, var(--good) 20%, var(--panel)); color: var(--good); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
     }
     .char-card:not(.owned) .owned-badge { background: color-mix(in srgb, var(--muted) 18%, var(--panel)); color: var(--muted); border-color: transparent; }
-    .body { position:relative; z-index:1; padding: 16px; max-width: 62%; min-height: 220px; display:flex; flex-direction:column; justify-content:space-between; }
+    .body { position:relative; z-index:1; padding: 16px; max-width: 62%; min-height: 260px; display:flex; flex-direction:column; justify-content:space-between; }
     @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .body { max-width: 72%; } }
     .name { font-size: 20px; font-weight: 700; margin: 0; }
     .char-card { cursor: pointer; }
