@@ -1,5 +1,12 @@
 --- a/src/webui.c
 +++ b/src/webui.c
+@@ -6523,7 +6523,7 @@
+     #endif
+-    size_t len = 256 + _webui_strlen((const char*)webui_javascript_bridge);
++    size_t len = 1024 + _webui_strlen((const char*)webui_javascript_bridge);
+     char* js = (char*)_webui_malloc(len);
+     #ifdef WEBUI_TLS
+     const char* TLS = "true";
 @@ -6539,8 +6539,8 @@
      int c = WEBUI_SN_PRINTF_DYN(
          js, len,
