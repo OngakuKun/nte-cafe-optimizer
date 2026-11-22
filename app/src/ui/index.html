@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="mocha">
+<html lang="en" data-theme="macchiato">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -177,8 +177,16 @@
     const THEMES = ['latte', 'frappe', 'macchiato', 'mocha'];
     const THEME_KEY = 'nte-cafe-theme';
 
+    function preferredTheme() {
+      try {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'latte' : 'macchiato';
+      } catch (_) {
+        return 'macchiato';
+      }
+    }
+
     function applyTheme(theme, persist) {
-      const next = THEMES.includes(theme) ? theme : 'mocha';
+      const next = THEMES.includes(theme) ? theme : preferredTheme();
       document.documentElement.dataset.theme = next;
       const select = document.getElementById('themeSelect');
       if (select) select.value = next;
@@ -188,9 +196,9 @@
     }
 
     function initTheme() {
-      let saved = 'mocha';
-      try { saved = localStorage.getItem(THEME_KEY) || 'mocha'; } catch (_) {}
-      applyTheme(saved, false);
+      let saved = '';
+      try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (_) {}
+      applyTheme(THEMES.includes(saved) ? saved : preferredTheme(), false);
       document.getElementById('themeSelect').addEventListener('change', (e) => applyTheme(e.target.value, true));
     }
 
