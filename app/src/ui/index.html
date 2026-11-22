@@ -7,10 +7,8 @@
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
-    .overview { display:flex; gap:10px 18px; flex-wrap:wrap; align-items:center; padding:10px 14px; margin-top: 16px; background: var(--panel); border:1px solid var(--border); border-radius:12px; font-size:13px; }
-    .ov-item { display:flex; gap:6px; align-items:baseline; white-space:nowrap; }
-    .ov-label { color: var(--muted); }
-    .ov-value { font-weight:700; color: var(--text); }
+    .overview { padding:10px 14px; margin-top: 16px; background: var(--panel); border:1px solid var(--border); border-radius:12px; font-size:13px; color: var(--muted); line-height: 1.5; }
+    .overview strong { color: var(--text); font-weight: 700; }
     .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 14px; align-items: stretch; }
     .panel h2 { margin:0 0 14px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
     .field { display:flex; flex-direction:column; gap:8px; }
@@ -101,12 +99,7 @@
 
   <main>
     <div id="error" class="err"></div>
-    <div class="overview" id="overview">
-      <div class="ov-item"><span class="ov-label">Characters</span><span class="ov-value" id="ovChars">-</span></div>
-      <div class="ov-item"><span class="ov-label">Dishes</span><span class="ov-value" id="ovDishes">-</span></div>
-      <div class="ov-item"><span class="ov-label">L1 / L2</span><span class="ov-value" id="ovLevels">-</span></div>
-      <div class="ov-item"><span class="ov-label">Combinations</span><span class="ov-value" id="ovCombos">-</span></div>
-    </div>
+    <div class="overview" id="overview">Loading overview...</div>
     <div class="panel-grid">
       <section class="toggle-card cafe-card owned" aria-label="Cafes owned">
         <div class="avatar-wrap">
@@ -208,10 +201,12 @@
       if (typeof getOptimizerOverview !== 'function') return;
       try {
         const o = JSON.parse(await getOptimizerOverview());
-        document.getElementById('ovChars').textContent = fmtNum(o.loadedCharacters);
-        document.getElementById('ovDishes').textContent = fmtNum(o.ownedDishes);
-        document.getElementById('ovLevels').textContent = `${fmtNum(o.ownedDishesL1)} / ${fmtNum(o.ownedDishesL2)}`;
-        document.getElementById('ovCombos').textContent = fmtNum(o.possibleCombinations);
+        document.getElementById('overview').innerHTML =
+          `Dishes: <strong>${fmtNum(o.ownedDishes)} owned</strong> / <strong>${fmtNum(o.dishSlots)} slots</strong> (L1 ${fmtNum(o.ownedDishesL1)}, L2 ${fmtNum(o.ownedDishesL2)}) &nbsp;·&nbsp; ` +
+          `Characters: <strong>${fmtNum(o.loadedCharacters)} owned</strong> / <strong>${fmtNum(o.characterSlots)} slots</strong> &nbsp;·&nbsp; ` +
+          `Dish combos: <strong>${fmtNum(o.dishCombinations)}</strong> &nbsp;·&nbsp; ` +
+          `Char combos: <strong>${fmtNum(o.characterCombinations)}</strong> &nbsp;·&nbsp; ` +
+          `Total: <strong>${fmtNum(o.possibleCombinations)}</strong>`;
       } catch (_) {}
     }
 

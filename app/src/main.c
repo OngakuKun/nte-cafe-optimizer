@@ -308,10 +308,10 @@ static void get_optimizer_overview(webui_event_t *e) {
   else if (char_combos > 0 && dish_combos > (18446744073709551615ULL / char_combos)) combos = 18446744073709551615ULL;
   else combos = dish_combos * char_combos;
 
-  char buf[512];
+  char buf[640];
   snprintf(buf, sizeof(buf),
-           "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"possibleCombinations\":\"%llu\"}",
-           owned_chars, owned_dishes, owned_dishes_l1, owned_dishes_l2, dish_slots, char_slots, combos);
+           "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"dishCombinations\":\"%llu\",\"characterCombinations\":\"%llu\",\"possibleCombinations\":\"%llu\"}",
+           owned_chars, owned_dishes, owned_dishes_l1, owned_dishes_l2, dish_slots, char_slots, dish_combos, char_combos, combos);
   webui_return_string(e, buf);
 }
 
