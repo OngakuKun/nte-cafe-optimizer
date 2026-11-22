@@ -142,6 +142,7 @@
   }
 
   function initTheme() {
+    initNav();
     applyImportedThemeCss(); rebuildThemeSelect();
     let saved = ''; try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (_) {}
     applyTheme(themeIds().includes(saved) ? saved : preferredTheme(), false);
@@ -158,7 +159,6 @@
       });
     }
     initSettingsPanel();
-    initNav();
   }
   window.NteTheme = { initTheme, applyTheme };
 })();
