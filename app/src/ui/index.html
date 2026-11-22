@@ -119,6 +119,10 @@
           <div class="muted" style="font-size:13px;color:var(--muted);">Trend bonus: <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
         </div>
         <div class="save-state" id="saveState"></div>
+        <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+          <button id="calcBtn" class="theme-btn" type="button" style="width:auto; padding:10px 14px; font-weight:700;">Calculate</button>
+          <span id="calcState" class="save-state" style="margin:0;"></span>
+        </div>
       </section>
 
       <section id="decorCard" class="toggle-card owned" role="button" tabindex="0" aria-pressed="true" aria-label="Toggle Hotori's Cat Decor">
@@ -139,9 +143,9 @@
       </section>
     </div>
 
-    <section class="placeholder">
-      <h2>Optimizer results coming next</h2>
-      <p>Configure trend and decor here, then run optimization once the results UI is wired up.</p>
+    <section id="resultCard" class="card" style="margin-top:14px; display:none;">
+      <h2 style="margin:0 0 12px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Result</h2>
+      <div id="resultContent" style="font-size:14px; line-height:1.6;"></div>
     </section>
   </main>
 
@@ -211,6 +215,30 @@
       } catch (_) {}
     }
 
+    async function runCalc() {
+      const btn = document.getElementById('calcBtn');
+      const state = document.getElementById('calcState');
+      btn.disabled = true; state.textContent = 'Calculating...'; state.style.color = 'var(--muted)';
+      document.getElementById('error').textContent = '';
+      try {
+        for (let i=0; i<50 && typeof runOptimization !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof runOptimization !== 'function') throw new Error('Optimization binding unavailable. Restart nte-cafe-app.');
+        const res = JSON.parse(await runOptimization());
+        if (!res.ok) throw new Error(res.error || 'Optimization failed');
+        const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
+        const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
+        document.getElementById('resultContent').innerHTML =
+          `<div><span style="color:var(--muted)">Income:</span> <strong>${Number(res.income).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Traffic:</span> <strong>${Number(res.traffic).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Price buff:</span> <strong>${Number(res.priceBuff).toFixed(2)}</strong></div>` +
+          `<div style="margin-top:8px"><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
+          `<div style="margin-top:4px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
+        document.getElementById('resultCard').style.display = 'block';
+        state.textContent = 'Done'; state.style.color = 'var(--good)';
+      } catch (e) {
+        state.textContent = 'Failed'; state.style.color = 'var(--error)';
+        document.getElementById('error').textContent = String(e.message || e);
+      } finally { btn.disabled = false; }
+    }
+
     async function load() {
       const status = document.getElementById('status');
       try {
@@ -235,6 +263,7 @@
         const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); await loadOverview(); };
         card.addEventListener('click', toggle);
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+        document.getElementById('calcBtn').addEventListener('click', runCalc);
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');
         document.getElementById('error').textContent = String(e.message || e);
