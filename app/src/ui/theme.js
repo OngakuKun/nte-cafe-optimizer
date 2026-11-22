@@ -15,11 +15,13 @@
     },
     ja: {
       'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.status':'ステータス',
-      'settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語'
+      'settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
+      'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報'
     },
     'zh-CN': {
       'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.status':'状态',
-      'settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言'
+      'settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
+      'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息'
     }
   };
   const BUILTIN_THEMES = [
@@ -143,6 +145,13 @@
     const tl = document.querySelector('label[for="themeSelect"]'); if (tl) tl.textContent = dict['settings.theme'] || 'Theme';
     const ib = document.getElementById('importThemeBtn'); if (ib) ib.textContent = dict['settings.import'] || 'Import Theme';
     const ll = document.querySelector('label[for="langSelect"]'); if (ll) ll.textContent = dict['settings.language'] || 'Language';
+    const sub = document.querySelector('.sub');
+    if (sub) {
+      if (!sub.dataset.defaultText) sub.dataset.defaultText = sub.textContent;
+      const path = location.pathname.replace(/\/+$/, '') || '/';
+      const sk = map[path] ? map[path].replace('nav.', 'sub.') : null;
+      sub.textContent = (sk && dict[sk]) ? dict[sk] : sub.dataset.defaultText;
+    }
   }
   function initSettingsPanel() {}
 
