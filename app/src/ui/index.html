@@ -119,10 +119,6 @@
           <div class="muted" style="font-size:13px;color:var(--muted);">Trend bonus: <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
         </div>
         <div class="save-state" id="saveState"></div>
-        <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
-          <button id="calcBtn" class="theme-btn" type="button" style="width:auto; padding:10px 14px; font-weight:700;">Calculate</button>
-          <span id="calcState" class="save-state" style="margin:0;"></span>
-        </div>
       </section>
 
       <section id="decorCard" class="toggle-card owned" role="button" tabindex="0" aria-pressed="true" aria-label="Toggle Hotori's Cat Decor">
@@ -141,6 +137,11 @@
           </div>
         </div>
       </section>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button id="calcBtn" class="theme-btn" type="button" style="width:100%; padding:12px 14px; font-weight:700;">Run Optimizer</button>
+      <div id="calcState" class="save-state" style="margin-top:8px;"></div>
     </div>
 
     <section id="resultCard" class="card" style="margin-top:14px; display:none;">
