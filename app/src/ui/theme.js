@@ -168,7 +168,13 @@
     wrap.appendChild(btn); wrap.appendChild(menu);
     select.insertAdjacentElement('afterend', wrap);
 
-    const close = () => { menu.scrollTop = 0; wrap.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+    const close = () => {
+      if (!wrap.classList.contains('open')) return;
+      menu.scrollTop = 0;
+      wrap.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      setTimeout(() => { menu.scrollTop = 0; }, 0);
+    };
     const sync = () => {
       menu.innerHTML = '';
       const addOption = (opt) => {
@@ -202,7 +208,13 @@
       e.stopPropagation();
       const open = wrap.classList.contains('open');
       document.querySelectorAll('.cselect.open').forEach(c => { const m = c.querySelector('.cselect-menu'); if (m) m.scrollTop = 0; c.classList.remove('open'); c.querySelector('.cselect-btn')?.setAttribute('aria-expanded','false'); });
-      if (!open) { wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); menu.scrollTop = 0; requestAnimationFrame(() => { menu.scrollTop = 0; requestAnimationFrame(() => { menu.scrollTop = 0; }); }); }
+      if (!open) {
+        wrap.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        menu.scrollTop = 0;
+        requestAnimationFrame(() => { menu.scrollTop = 0; });
+        setTimeout(() => { menu.scrollTop = 0; }, 50);
+      }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
