@@ -27,8 +27,11 @@
     .result-stat .value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.2; }
     .result-stat.primary .value { color: var(--accent); font-size: 28px; }
     .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
-    .result-dish { padding: 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; }
-    .result-dish .name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .result-dish { position: relative; aspect-ratio: 1 / 1; padding: 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+    .result-dish .bg { position: absolute; inset: 0; background-size: 78%; background-position: center 35%; background-repeat: no-repeat; opacity: .95; }
+    .result-dish .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-alt) 10%, transparent) 20%, color-mix(in srgb, var(--panel-alt) 72%, transparent) 60%, color-mix(in srgb, var(--panel-alt) 96%, transparent) 100%); }
+    .result-dish .content { position: relative; z-index: 1; }
+    .result-dish .name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .result-dish .fph { font-size: 13px; color: var(--muted); }
     .result-dish .fph strong { color: var(--text); }
     @media (max-width: 1100px) { .result-dishes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -165,6 +168,26 @@
 
   <script src="/ui/theme.js"></script>
   <script>
+    const DISH_IMAGES = {
+      'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
+      'Ice Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
+      'Apple Pie': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/dc/Item_Apple_Pie.png/revision/latest?cb=20261111041147',
+      'Tomato & Fried Egg': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
+      'Tuna Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/da/Item_Tuna_Sandwich.png/revision/latest?cb=20261111041511',
+      'Amber Glamor': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/5e/Item_Amber_Glamor.png/revision/latest?cb=20261111041238',
+      'Matacha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
+      'Snowy Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/55/Item_Snowy_Latte.png/revision/latest?cb=20261111041255',
+      'Thick-Cut Fresh Beef Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/c/ca/Item_Thick-Cut_Fresh_Beef_Sandwich.png/revision/latest?cb=20261111041334',
+      'Red Bean & Butter Crossiant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
+      'Strawberry Box Cake': 'https://static.wikia.nocookie.net/neverness-to-everness/images/3/30/Item_Strawberry_Box_Cake.png/revision/latest?cb=20261111041346',
+      'Orange Hot Coffee': 'https://static.wikia.nocookie.net/neverness-to-everness/images/b/be/Item_Orange_Hot_Coffee.png/revision/latest?cb=20261111041352',
+      'Pork Cutlet': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
+      'Coconut Macchiato': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f1/Item_Coconut_Macchiato.png/revision/latest?cb=20261111041949',
+      'Matcha Latte with Milk Cap': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/25/Item_Matcha_Latte_with_Milk_Cap.png/revision/latest?cb=20261111041943',
+      'Tiramisu': 'https://static.wikia.nocookie.net/neverness-to-everness/images/1/12/Item_Tiramisu_%28Origen%29.png/revision/latest?cb=20261111041930',
+      'Ham & Cheese': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
+      'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
+    };
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
 
@@ -243,11 +266,18 @@
         if (!res.ok) throw new Error(res.error || 'Optimization failed');
         const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
         const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
-        const dishCards = (res.dishes || []).map(d => `
+        const dishCards = (res.dishes || []).map(d => {
+          const img = DISH_IMAGES[d.name] || '';
+          const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
+          return `
             <div class="result-dish">
-              <div class="name" title="${esc(d.name)}">${esc(d.name)}</div>
-              <div class="fph"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong> fons/h</div>
-            </div>`).join('');
+              <div class="bg" ${bg}></div>
+              <div class="content">
+                <div class="name" title="${esc(d.name)}">${esc(d.name)}</div>
+                <div class="fph"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong> fons/h</div>
+              </div>
+            </div>`;
+        }).join('');
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
           `<div class="result-stats">` +
