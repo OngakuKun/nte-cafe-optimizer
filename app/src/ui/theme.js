@@ -176,6 +176,7 @@
       resetScroll();
     };
     wrap._closeCselect = close;
+    new MutationObserver(() => { menu.scrollTop = 0; }).observe(wrap, { attributes: true, attributeFilter: ['class'] });
     const sync = () => {
       menu.innerHTML = '';
       const addOption = (opt) => {
