@@ -381,7 +381,8 @@ static void run_optimization(webui_event_t *e) {
   char *buf = (char*)malloc(cap);
   if (!buf) { webui_return_string(e, "{\"ok\":false,\"error\":\"Out of memory\"}"); return; }
   size_t off = 0;
-  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier);
+  char trend_name_esc[128]; json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name_esc, sizeof(trend_name_esc));
+  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"trend\":\"%s\",\"trendBonus\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier, trend_name_esc, cafe_settings.trend_bonus);
   for (size_t i = 0; i < res.dish_count && off + 360 < cap; i++) {
     char n[128]; json_escape(res.dishes[i]->name ? res.dishes[i]->name : "", n, sizeof(n));
     int level = 1;

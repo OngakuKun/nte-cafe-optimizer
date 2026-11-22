@@ -220,12 +220,12 @@
       }
     }
 
-    function updateResultTrend() {
-      const trend = document.getElementById('trendSelect')?.value || 'None';
-      const bonus = document.getElementById('trendBonus')?.textContent || '+0.00';
+    function updateResultTrend(trend, bonus) {
       const fonsIcon = 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/81/Item_Fons.png/revision/latest?cb=20260629185442';
       const el = document.getElementById('resultTrend');
-      if (el) el.innerHTML = `🔥 Trend: <strong style="color:var(--text)">${esc(trend)}</strong> <span style="color:var(--muted)">(${esc(bonus)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
+      if (!el) return;
+      const b = Number(bonus || 0);
+      el.innerHTML = `🔥 Trend: <strong style="color:var(--text)">${esc(trend || 'None')}</strong> <span style="color:var(--muted)">(+${b.toFixed(2)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
     }
 
     function render(settings) {
@@ -249,7 +249,6 @@
       document.getElementById('cafesOwned').value = String(cafesOwned);
       document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
       renderDecor();
-      updateResultTrend();
     }
 
     function fmtNum(n) { const x = Number(n); return Number.isFinite(x) ? x.toLocaleString() : String(n); }
@@ -304,6 +303,7 @@
           `</div>` +
           `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>` +
           `<div style="margin-top:16px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
+        updateResultTrend(res.trend, res.trendBonus);
         requestAnimationFrame(() => {
           resultContent.querySelectorAll('.result-dish .name').forEach(name => {
             const inner = name.querySelector('.name-inner');
@@ -335,7 +335,6 @@
           const opt = Array.from(sel.options).find(o => o.value === sel.value);
           const bonus = opt?.dataset?.bonus;
           if (bonus != null) document.getElementById('trendBonus').textContent = `+${Number(bonus).toFixed(2)}`;
-          updateResultTrend();
           await saveSettings(); await loadOverview();
         });
         document.getElementById('cafesOwned').addEventListener('change', async (e) => {
