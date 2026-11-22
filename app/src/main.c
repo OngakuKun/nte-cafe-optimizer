@@ -48,6 +48,8 @@ static const char *app_root = ".";
 
 static CharacterState character_state[MAX_CHARACTER_POOL];
 static bool character_state_initialized = false;
+static DishState dish_state[MAX_DISH_POOL];
+static bool dish_state_initialized = false;
 
 static void ensure_character_state(void) {
   if (character_state_initialized)
@@ -57,6 +59,16 @@ static void ensure_character_state(void) {
     character_state[i].level = 5;
   }
   character_state_initialized = true;
+}
+
+static void ensure_dish_state(void) {
+  if (dish_state_initialized)
+    return;
+  for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
+    dish_state[i].owned = true;
+    dish_state[i].level = 2;
+  }
+  dish_state_initialized = true;
 }
 
 static const void *file_handler(const char *filename, int *length) {
@@ -179,20 +191,15 @@ static void get_app_info(webui_event_t *e) {
 static void get_dishes(webui_event_t *e) {
   size_t cap = 512 + DISH_COUNT * 512;
   char *buf = (char *)malloc(cap);
-  if (!buf) {
-    webui_return_string(e, "[]");
-    return;
-  }
+  if (!buf) { webui_return_string(e, "[]"); return; }
   size_t off = 0;
   off += snprintf(buf + off, cap - off, "[");
   for (size_t i = 0; i < DISH_COUNT && off + 300 < cap; i++) {
-    char name[128];
-    char type[128];
+    char name[128], type[128];
     json_escape(DISHES[i].name ? DISHES[i].name : "", name, sizeof(name));
     json_escape(DISHES[i].type ? DISHES[i].type : "", type, sizeof(type));
     off += snprintf(buf + off, cap - off,
-                    "%s{\"name\":\"%s\",\"type\":\"%s\",\"priceL1\":%.2f,"
-                    "\"priceL2\":%.2f,\"ingredients\":[",
+                    "%s{\"name\":\"%s\",\"type\":\"%s\",\"priceL1\":%.2f,\"priceL2\":%.2f,\"ingredients\":[",
                     i ? "," : "", name, type, DISHES[i].price_l1, DISHES[i].price_l2);
     for (size_t j = 0; j < DISHES[i].ingredient_count && off + 80 < cap; j++) {
       int idx = DISHES[i].ingredients[j];
@@ -206,6 +213,51 @@ static void get_dishes(webui_event_t *e) {
   if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
   webui_return_string(e, buf);
   free(buf);
+}
+
+static void get_dish_states(webui_event_t *e) {
+  ensure_dish_state();
+  size_t cap = 512 + DISH_COUNT * 640;
+  char *buf = (char *)malloc(cap);
+  if (!buf) { webui_return_string(e, "[]"); return; }
+  size_t off = 0;
+  off += snprintf(buf + off, cap - off, "[");
+  for (size_t i = 0; i < DISH_COUNT && off + 340 < cap; i++) {
+    char name[128], type[128];
+    json_escape(DISHES[i].name ? DISHES[i].name : "", name, sizeof(name));
+    json_escape(DISHES[i].type ? DISHES[i].type : "", type, sizeof(type));
+    off += snprintf(buf + off, cap - off,
+                    "%s{\"name\":\"%s\",\"type\":\"%s\",\"priceL1\":%.2f,\"priceL2\":%.2f,\"owned\":%s,\"level\":%d,\"ingredients\":[",
+                    i ? "," : "", name, type, DISHES[i].price_l1, DISHES[i].price_l2,
+                    dish_state[i].owned ? "true" : "false", dish_state[i].level);
+    for (size_t j = 0; j < DISHES[i].ingredient_count && off + 80 < cap; j++) {
+      int idx = DISHES[i].ingredients[j];
+      const char *iname = (idx >= 0 && (size_t)idx < INGREDIENT_COUNT && INGREDIENTS[idx].name) ? INGREDIENTS[idx].name : "?";
+      char ing[128];
+      json_escape(iname, ing, sizeof(ing));
+      off += snprintf(buf + off, cap - off, "%s\"%s\"", j ? "," : "", ing);
+    }
+    if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]}");
+  }
+  if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
+  webui_return_string(e, buf);
+  free(buf);
+}
+
+static void set_dish_state(webui_event_t *e) {
+  ensure_dish_state();
+  long long idx = webui_get_int_at(e, 0);
+  bool owned = webui_get_bool_at(e, 1);
+  long long level = webui_get_int_at(e, 2);
+  if (idx < 0 || (size_t)idx >= DISH_COUNT) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"invalid index\"}");
+    return;
+  }
+  if (level < 1) level = 1;
+  if (level > 2) level = 2;
+  dish_state[idx].owned = owned;
+  dish_state[idx].level = (int)level;
+  webui_return_string(e, "{\"ok\":true}");
 }
 
 static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state) {
@@ -298,6 +350,8 @@ int main(int argc, char **argv) {
   webui_set_file_handler(win, file_handler);
   webui_bind(win, "getAppInfo", get_app_info);
   webui_bind(win, "getDishes", get_dishes);
+  webui_bind(win, "getDishStates", get_dish_states);
+  webui_bind(win, "setDishState", set_dish_state);
   webui_bind(win, "getCharacters", get_characters);
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);

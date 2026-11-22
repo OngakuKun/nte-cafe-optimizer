@@ -9,16 +9,24 @@
   <style>
     .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
     .toolbar .muted { color: var(--muted); font-size: 13px; }
+    .save-state { font-size: 13px; color: var(--muted); }
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
     .dish-card {
-      background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
-      box-shadow: 0 1px 2px var(--shadow); display:flex; flex-direction:column;
+      position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: visible;
+      box-shadow: 0 1px 2px var(--shadow); display:flex; flex-direction:column; cursor:pointer;
     }
     .dish-card:hover { border-color: var(--ctp-surface2); }
-    .img-wrap { background: linear-gradient(180deg, var(--ctp-surface0), var(--panel-alt)); aspect-ratio: 1/1; display:flex; align-items:center; justify-content:center; padding: 16px; }
+    .dish-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .dish-card:not(.owned) .img-wrap { filter: grayscale(.35) brightness(.75); }
+    .img-wrap { background: linear-gradient(180deg, var(--ctp-surface0), var(--panel-alt)); aspect-ratio: 1/1; display:flex; align-items:center; justify-content:center; padding: 16px; border-radius: 14px 14px 0 0; overflow:hidden; }
     .img-wrap img { width:100%; height:100%; object-fit: contain; display:block; }
     .fallback { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size: 40px; font-weight:700; color: var(--accent); }
-    .body { padding: 14px; display:flex; flex-direction:column; gap:10px; flex:1; }
+    .owned-badge {
+      position:absolute; top:12px; right:12px; font-size:11px; font-weight:700; padding:4px 8px; border-radius:999px; z-index:2;
+      background: color-mix(in srgb, var(--good) 20%, var(--panel)); color: var(--good); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
+    }
+    .dish-card:not(.owned) .owned-badge { background: color-mix(in srgb, var(--muted) 18%, var(--panel)); color: var(--muted); border-color: transparent; }
+    .body { padding: 14px; display:flex; flex-direction:column; gap:10px; flex:1; padding-bottom: 56px; }
     .name { margin:0; font-size: 18px; font-weight: 700; }
     .meta { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .badge { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: var(--ctp-surface0); color: var(--muted); }
@@ -28,13 +36,24 @@
     .prices { font-size: 13px; color: var(--muted); }
     .ingredients { display:flex; flex-wrap:wrap; gap:6px; }
     .ing { font-size: 11px; padding: 4px 7px; border-radius: 999px; background: var(--ctp-surface0); color: var(--subtext1, var(--ctp-subtext1)); }
+    .controls { position:absolute; right:14px; bottom:14px; z-index:3; display:flex; gap:8px; align-items:center; }
+    .level-label { font-size: 13px; color: var(--muted); }
+    .level-picker { position: relative; }
+    .level-btn { background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font: inherit; cursor: pointer; min-width: 64px; }
+    .level-btn:hover:not(:disabled) { border-color: var(--accent); }
+    .level-btn:disabled { opacity: .5; cursor: default; }
+    .level-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .level-menu { display:none; position:absolute; bottom: calc(100% + 6px); right:0; min-width: 100%; background: var(--panel); border:1px solid var(--border); border-radius:8px; padding:4px; box-shadow: 0 8px 24px var(--shadow); z-index: 10; }
+    .level-menu.open { display:block; }
+    .level-option { display:block; width:100%; text-align:left; background:none; color:var(--text); border:0; border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; white-space:nowrap; }
+    .level-option:hover, .level-option.selected { background: var(--ctp-surface0); color: var(--accent); }
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
       <h1><span>NTE Cafe</span> Optimizer</h1>
-      <div class="sub">Dish menu and recipes</div>
+      <div class="sub">Dish ownership and levels</div>
     </div>
     <nav aria-label="Primary">
       <a class="nav-link" href="/">Optimizer</a>
@@ -63,7 +82,8 @@
 
   <main>
     <div class="toolbar">
-      <span class="muted">Cafe dishes loaded from backend data.</span>
+      <span class="muted">Set ownership and level for each dish. Changes are saved automatically.</span>
+      <span id="saveState" class="save-state"></span>
     </div>
     <div id="error" class="err"></div>
     <div id="grid" class="grid"></div>
@@ -95,35 +115,98 @@
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join(''); }
     function typeClass(t) { return 'type-' + String(t).replace(/\s+/g,''); }
+    function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
+    async function saveRow(index, owned, level) {
+      setSave('Saving...');
+      try {
+        const obj = JSON.parse(await setDishState(index, owned, level));
+        if (!obj.ok) throw new Error(obj.error || 'Save failed');
+        setSave('Saved');
+      } catch (e) { setSave('Save failed', true); document.getElementById('error').textContent = String(e.message || e); }
+    }
 
     function render(dishes) {
-      document.getElementById('grid').innerHTML = dishes.map(d => {
+      document.getElementById('grid').innerHTML = dishes.map((d, i) => {
         const url = DISH_IMAGES[d.name] || '';
         const img = url
           ? `<img src="${esc(url)}" alt="${esc(d.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'fallback\\'>${esc(initials(d.name))}</div>'">`
           : `<div class="fallback">${esc(initials(d.name))}</div>`;
         const ings = Array.isArray(d.ingredients) ? d.ingredients : [];
         return `
-          <article class="dish-card">
+          <article class="dish-card ${d.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${d.owned ? 'true' : 'false'}" aria-label="Toggle ${esc(d.name)} owned">
             <div class="img-wrap">${img}</div>
+            <div class="owned-badge">${d.owned ? 'Owned' : 'Not owned'}</div>
             <div class="body">
               <h2 class="name">${esc(d.name)}</h2>
               <div class="meta">
                 <span class="badge ${typeClass(d.type)}">${esc(d.type)}</span>
                 <span class="prices">L1 ${Number(d.priceL1).toFixed(2)} · L2 ${Number(d.priceL2).toFixed(2)}</span>
               </div>
-              <div class="ingredients">${ings.map(i => `<span class="ing">${esc(i)}</span>`).join('')}</div>
+              <div class="ingredients">${ings.map(x => `<span class="ing">${esc(x)}</span>`).join('')}</div>
+            </div>
+            <div class="controls">
+              <span class="level-label">Level</span>
+              <div class="level-picker" data-i="${i}">
+                <button type="button" class="level-btn" data-i="${i}" ${d.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">Lv ${Number(d.level)||1}</button>
+                <div class="level-menu" role="listbox" aria-label="Level for ${esc(d.name)}">
+                  ${[1,2].map(l => `<button type="button" class="level-option ${Number(d.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">Lv ${l}</button>`).join('')}
+                </div>
+              </div>
             </div>
           </article>`;
       }).join('');
+
+      const closeMenus = () => document.querySelectorAll('.level-menu.open').forEach(m => { m.classList.remove('open'); m.previousElementSibling?.setAttribute('aria-expanded','false'); });
+      document.addEventListener('click', closeMenus, { once: true });
+      document.addEventListener('click', closeMenus);
+
+      document.querySelectorAll('[data-card]').forEach(card => {
+        const toggle = async () => {
+          const i = Number(card.dataset.i);
+          const owned = !card.classList.contains('owned');
+          card.classList.toggle('owned', owned);
+          card.setAttribute('aria-pressed', owned ? 'true' : 'false');
+          card.querySelector('.owned-badge').textContent = owned ? 'Owned' : 'Not owned';
+          const levelBtn = card.querySelector('.level-btn');
+          levelBtn.disabled = !owned;
+          await saveRow(i, owned, Number(levelBtn.textContent.replace(/\D/g,'')) || 1);
+        };
+        card.addEventListener('click', (e) => { if (e.target.closest('.controls')) return; toggle(); });
+        card.addEventListener('keydown', (e) => {
+          if (e.target.closest('.controls')) return;
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+      });
+
+      document.querySelectorAll('.level-picker').forEach(picker => {
+        const btn = picker.querySelector('.level-btn');
+        const menu = picker.querySelector('.level-menu');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (btn.disabled) return;
+          const open = menu.classList.contains('open');
+          closeMenus();
+          if (!open) { menu.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+        });
+        picker.querySelectorAll('.level-option').forEach(opt => opt.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const i = Number(opt.dataset.i);
+          const level = Number(opt.dataset.level);
+          const card = document.querySelector(`[data-card="${i}"]`);
+          btn.textContent = `Lv ${level}`;
+          picker.querySelectorAll('.level-option').forEach(o => o.classList.toggle('selected', o === opt));
+          closeMenus();
+          await saveRow(i, card.classList.contains('owned'), level);
+        }));
+      });
     }
 
     async function load() {
       const status = document.getElementById('status');
       try {
-        for (let i=0; i<50 && typeof getDishes !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
-        if (typeof getDishes !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
-        render(JSON.parse(await getDishes()));
+        for (let i=0; i<50 && typeof getDishStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getDishStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        render(JSON.parse(await getDishStates()));
         status.textContent = 'Connected'; status.classList.remove('error');
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');
