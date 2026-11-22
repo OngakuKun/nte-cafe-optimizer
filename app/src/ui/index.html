@@ -26,7 +26,13 @@
     .result-stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
     .result-stat .value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.2; }
     .result-stat.primary .value { color: var(--accent); font-size: 28px; }
-    @media (max-width: 720px) { .result-stats { grid-template-columns: 1fr; } }
+    .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .result-dish { padding: 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; }
+    .result-dish .name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .result-dish .fph { font-size: 13px; color: var(--muted); }
+    .result-dish .fph strong { color: var(--text); }
+    @media (max-width: 1100px) { .result-dishes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .result-dishes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-stats { grid-template-columns: 1fr; } }
 
     .toggle-card {
       position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
@@ -237,6 +243,11 @@
         if (!res.ok) throw new Error(res.error || 'Optimization failed');
         const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
         const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
+        const dishCards = (res.dishes || []).map(d => `
+            <div class="result-dish">
+              <div class="name" title="${esc(d.name)}">${esc(d.name)}</div>
+              <div class="fph"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong> fons/h</div>
+            </div>`).join('');
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
           `<div class="result-stats">` +
@@ -244,8 +255,8 @@
             `<div class="result-stat primary"><div class="label">Income</div><div class="value">${Number(res.income).toFixed(2)}</div></div>` +
             `<div class="result-stat"><div class="label">Price Buff</div><div class="value">${Number(res.priceBuff).toFixed(2)}</div></div>` +
           `</div>` +
-          `<div><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
-          `<div style="margin-top:4px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
+          `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>` +
+          `<div style="margin-top:16px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
       } catch (e) {
         resultContent.style.color = 'var(--error)';
         resultContent.textContent = 'Failed: ' + String(e.message || e);
