@@ -140,8 +140,7 @@ main { padding: 24px 28px 40px; max-width: 1400px; margin: 0 auto; }
   header { padding: 14px 16px; gap: 12px; }
   main { padding: 16px; }
   .brand h1 { font-size: 24px; }
-  .icon-btn.menu-btn { display: inline-flex; order: 1; }
-  #status { order: 2; }
+  .icon-btn.menu-btn { display: inline-flex; }
   .settings-wrap { display: none !important; }
   nav {
     position: fixed; top: 0; right: 0; bottom: 0; width: min(300px, 86vw);
