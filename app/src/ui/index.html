@@ -266,7 +266,7 @@
         const o = JSON.parse(await getOptimizerOverview());
         document.getElementById('overview').innerHTML = [
           `<span><span class="kw">Characters:</span> <strong>${fmtNum(o.loadedCharacters)} owned</strong> / <strong>${fmtNum(o.characterSlots)} slots</strong></span>`,
-          `<span><span class="kw">Dishes:</span> <strong>${fmtNum(o.ownedDishes)} owned</strong> / <strong>${fmtNum(o.dishSlots)} slots</strong> (L1 ${fmtNum(o.ownedDishesL1)}, L2 ${fmtNum(o.ownedDishesL2)})</span>`,
+          `<span><span class="kw">Dishes:</span> <strong>${fmtNum(o.ownedDishes)} owned</strong> / <strong>${fmtNum(o.dishSlots)} slots</strong></span>`,
           `<span><span class="kw">Char combos:</span> <strong>${fmtNum(o.characterCombinations)}</strong></span>`,
           `<span><span class="kw">Dish combos:</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
           `<span><span class="kw">Total:</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
