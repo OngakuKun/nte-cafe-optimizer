@@ -111,7 +111,7 @@
         </div>
       </section>
 
-      <section class="card panel">
+      <section class="card panel" style="display:flex; flex-direction:column;">
         <h2>Trend</h2>
         <div class="field">
           <label for="trendSelect">Current trend</label>
@@ -119,6 +119,8 @@
           <div class="muted" style="font-size:13px;color:var(--muted);">Trend bonus: <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
         </div>
         <div class="save-state" id="saveState"></div>
+        <button id="calcBtn" class="theme-btn" type="button" style="width:100%; margin-top:auto; min-height:72px; padding:14px; font-weight:700;">Run Optimizer</button>
+        <div id="calcState" class="save-state" style="margin-top:8px;"></div>
       </section>
 
       <section id="decorCard" class="toggle-card owned" role="button" tabindex="0" aria-pressed="true" aria-label="Toggle Hotori's Cat Decor">
@@ -137,11 +139,6 @@
           </div>
         </div>
       </section>
-    </div>
-
-    <div style="margin-top:14px;">
-      <button id="calcBtn" class="theme-btn" type="button" style="width:100%; min-height:120px; padding:20px 14px; font-size:18px; font-weight:700;">Run Optimizer</button>
-      <div id="calcState" class="save-state" style="margin-top:8px;"></div>
     </div>
 
     <section id="resultCard" class="card" style="margin-top:14px; display:none;">
