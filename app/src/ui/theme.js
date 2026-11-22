@@ -194,6 +194,7 @@
       if (!open) { wrap.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
     });
     document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
     select.addEventListener('change', sync);
     new MutationObserver(sync).observe(select, { childList: true, subtree: true, attributes: true });
     sync();
