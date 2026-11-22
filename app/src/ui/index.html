@@ -119,8 +119,14 @@
           <div class="muted" style="font-size:13px;color:var(--muted);">Trend bonus: <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
         </div>
         <div class="save-state" id="saveState"></div>
-        <button id="calcBtn" class="theme-btn" type="button" style="width:100%; margin-top:auto; min-height:72px; padding:14px; font-weight:700;">Run Optimizer</button>
-        <div id="calcState" class="save-state" style="margin-top:8px;"></div>
+        <div style="margin-top:auto; padding-top:14px;">
+          <button id="calcBtn" class="theme-btn" type="button" style="width:100%; min-height:72px; padding:14px; font-weight:700;">Run Optimizer</button>
+          <div id="calcState" class="save-state" style="margin-top:8px;"></div>
+          <div id="resultCard" style="margin-top:12px; padding:12px; border:1px dashed var(--border); border-radius:10px; background:var(--panel-alt);">
+            <div style="font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;">Result</div>
+            <div id="resultContent" style="font-size:14px; color:var(--muted); line-height:1.5;">Run optimizer to see results.</div>
+          </div>
+        </div>
       </section>
 
       <section id="decorCard" class="toggle-card owned" role="button" tabindex="0" aria-pressed="true" aria-label="Toggle Hotori's Cat Decor">
@@ -141,10 +147,7 @@
       </section>
     </div>
 
-    <section id="resultCard" class="card" style="margin-top:14px; display:none;">
-      <h2 style="margin:0 0 12px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;">Result</h2>
-      <div id="resultContent" style="font-size:14px; line-height:1.6;"></div>
-    </section>
+
   </main>
 
   <script src="/ui/theme.js"></script>
@@ -225,11 +228,11 @@
         if (!res.ok) throw new Error(res.error || 'Optimization failed');
         const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
         const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
+        document.getElementById('resultContent').style.color = 'var(--text)';
         document.getElementById('resultContent').innerHTML =
           `<div><span style="color:var(--muted)">Income:</span> <strong>${Number(res.income).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Traffic:</span> <strong>${Number(res.traffic).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Price buff:</span> <strong>${Number(res.priceBuff).toFixed(2)}</strong></div>` +
           `<div style="margin-top:8px"><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
           `<div style="margin-top:4px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
-        document.getElementById('resultCard').style.display = 'block';
         state.textContent = 'Done'; state.style.color = 'var(--good)';
       } catch (e) {
         state.textContent = 'Failed'; state.style.color = 'var(--error)';
