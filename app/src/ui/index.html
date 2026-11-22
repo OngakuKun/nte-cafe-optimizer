@@ -7,7 +7,11 @@
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
-    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 20px; align-items: stretch; }
+    .overview { display:flex; gap:10px 18px; flex-wrap:wrap; align-items:center; padding:10px 14px; margin-top: 16px; background: var(--panel); border:1px solid var(--border); border-radius:12px; font-size:13px; }
+    .ov-item { display:flex; gap:6px; align-items:baseline; white-space:nowrap; }
+    .ov-label { color: var(--muted); }
+    .ov-value { font-weight:700; color: var(--text); }
+    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 14px; align-items: stretch; }
     .panel h2 { margin:0 0 14px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
     .field { display:flex; flex-direction:column; gap:8px; }
     .field label { font-size:13px; color:var(--muted); }
@@ -97,6 +101,12 @@
 
   <main>
     <div id="error" class="err"></div>
+    <div class="overview" id="overview">
+      <div class="ov-item"><span class="ov-label">Characters</span><span class="ov-value" id="ovChars">-</span></div>
+      <div class="ov-item"><span class="ov-label">Dishes</span><span class="ov-value" id="ovDishes">-</span></div>
+      <div class="ov-item"><span class="ov-label">L1 / L2</span><span class="ov-value" id="ovLevels">-</span></div>
+      <div class="ov-item"><span class="ov-label">Combinations</span><span class="ov-value" id="ovCombos">-</span></div>
+    </div>
     <div class="panel-grid">
       <section class="toggle-card cafe-card owned" aria-label="Cafes owned">
         <div class="avatar-wrap">
@@ -193,21 +203,34 @@
       renderDecor();
     }
 
+    function fmtNum(n) { const x = Number(n); return Number.isFinite(x) ? x.toLocaleString() : String(n); }
+    async function loadOverview() {
+      if (typeof getOptimizerOverview !== 'function') return;
+      try {
+        const o = JSON.parse(await getOptimizerOverview());
+        document.getElementById('ovChars').textContent = fmtNum(o.loadedCharacters);
+        document.getElementById('ovDishes').textContent = fmtNum(o.ownedDishes);
+        document.getElementById('ovLevels').textContent = `${fmtNum(o.ownedDishesL1)} / ${fmtNum(o.ownedDishesL2)}`;
+        document.getElementById('ovCombos').textContent = fmtNum(o.possibleCombinations);
+      } catch (_) {}
+    }
+
     async function load() {
       const status = document.getElementById('status');
       try {
         for (let i=0; i<50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
         if (typeof getOptimizerSettings !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
         render(JSON.parse(await getOptimizerSettings()));
+        await loadOverview();
         status.textContent = 'Connected'; status.classList.remove('error');
-        document.getElementById('trendSelect').addEventListener('change', saveSettings);
+        document.getElementById('trendSelect').addEventListener('change', async () => { await saveSettings(); await loadOverview(); });
         document.getElementById('cafesOwned').addEventListener('change', async (e) => {
           cafesOwned = Math.min(5, Math.max(1, Number(e.target.value) || 1));
           document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
-          await saveSettings();
+          await saveSettings(); await loadOverview();
         });
         const card = document.getElementById('decorCard');
-        const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); };
+        const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); await loadOverview(); };
         card.addEventListener('click', toggle);
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       } catch (e) {

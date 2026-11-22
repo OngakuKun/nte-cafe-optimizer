@@ -275,6 +275,46 @@ static void set_dish_state(webui_event_t *e) {
   webui_return_string(e, "{\"ok\":true}");
 }
 
+static unsigned long long nck_u64(size_t n, size_t k) {
+  if (k > n) return 0;
+  if (k > n - k) k = n - k;
+  unsigned long long r = 1;
+  for (size_t i = 1; i <= k; i++) {
+    r = (r * (unsigned long long)(n - k + i)) / (unsigned long long)i;
+  }
+  return r;
+}
+
+static void get_optimizer_overview(webui_event_t *e) {
+  ensure_cafe_settings();
+  ensure_dish_state();
+  ensure_character_state();
+  size_t owned_chars = 0;
+  for (size_t i = 0; i < CHARACTER_COUNT; i++) if (character_state[i].owned) owned_chars++;
+  size_t owned_dishes_l1 = 0, owned_dishes_l2 = 0, owned_dishes = 0;
+  for (size_t i = 0; i < DISH_COUNT; i++) {
+    if (!dish_state[i].owned) continue;
+    owned_dishes++;
+    if (dish_state[i].level <= 1) owned_dishes_l1++; else owned_dishes_l2++;
+  }
+  size_t dish_slots = (size_t)cafe_settings.cafes_owned;
+  size_t char_slots = (size_t)cafe_settings.cafes_owned * 2;
+  if (dish_slots > MAX_DISH_SLOTS) dish_slots = MAX_DISH_SLOTS;
+  if (char_slots > MAX_CHARACTER_SLOTS) char_slots = MAX_CHARACTER_SLOTS;
+  unsigned long long dish_combos = nck_u64(owned_dishes, dish_slots);
+  unsigned long long char_combos = nck_u64(owned_chars, char_slots);
+  unsigned long long combos = 0;
+  if (dish_combos == 0 || char_combos == 0) combos = 0;
+  else if (char_combos > 0 && dish_combos > (18446744073709551615ULL / char_combos)) combos = 18446744073709551615ULL;
+  else combos = dish_combos * char_combos;
+
+  char buf[512];
+  snprintf(buf, sizeof(buf),
+           "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"possibleCombinations\":\"%llu\"}",
+           owned_chars, owned_dishes, owned_dishes_l1, owned_dishes_l2, dish_slots, char_slots, combos);
+  webui_return_string(e, buf);
+}
+
 static void get_optimizer_settings(webui_event_t *e) {
   ensure_cafe_settings();
   TrendOptions opts = get_trend_options();
@@ -415,6 +455,7 @@ int main(int argc, char **argv) {
   webui_bind(win, "setDishState", set_dish_state);
   webui_bind(win, "getOptimizerSettings", get_optimizer_settings);
   webui_bind(win, "setOptimizerSettings", set_optimizer_settings);
+  webui_bind(win, "getOptimizerOverview", get_optimizer_overview);
   webui_bind(win, "getCharacters", get_characters);
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);
