@@ -121,7 +121,6 @@
         <div class="save-state" id="saveState"></div>
         <div style="margin-top:auto; padding-top:14px;">
           <button id="calcBtn" class="theme-btn" type="button" style="width:100%; min-height:72px; padding:14px; font-weight:700;">Run Optimizer</button>
-          <div id="calcState" class="save-state" style="margin-top:8px;"></div>
         </div>
       </section>
 
@@ -219,8 +218,10 @@
 
     async function runCalc() {
       const btn = document.getElementById('calcBtn');
-      const state = document.getElementById('calcState');
-      btn.disabled = true; state.textContent = 'Calculating...'; state.style.color = 'var(--muted)';
+      const resultContent = document.getElementById('resultContent');
+      btn.disabled = true;
+      resultContent.style.color = 'var(--muted)';
+      resultContent.textContent = 'Calculating...';
       document.getElementById('error').textContent = '';
       try {
         for (let i=0; i<50 && typeof runOptimization !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
@@ -229,14 +230,14 @@
         if (!res.ok) throw new Error(res.error || 'Optimization failed');
         const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
         const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
-        document.getElementById('resultContent').style.color = 'var(--text)';
-        document.getElementById('resultContent').innerHTML =
+        resultContent.style.color = 'var(--text)';
+        resultContent.innerHTML =
           `<div><span style="color:var(--muted)">Income:</span> <strong>${Number(res.income).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Traffic:</span> <strong>${Number(res.traffic).toFixed(2)}</strong> &nbsp;·&nbsp; <span style="color:var(--muted)">Price buff:</span> <strong>${Number(res.priceBuff).toFixed(2)}</strong></div>` +
           `<div style="margin-top:8px"><span style="color:var(--muted)">Dishes:</span> ${dishes || '-'}</div>` +
           `<div style="margin-top:4px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
-        state.textContent = 'Done'; state.style.color = 'var(--good)';
       } catch (e) {
-        state.textContent = 'Failed'; state.style.color = 'var(--error)';
+        resultContent.style.color = 'var(--error)';
+        resultContent.textContent = 'Failed: ' + String(e.message || e);
         document.getElementById('error').textContent = String(e.message || e);
       } finally { btn.disabled = false; }
     }
