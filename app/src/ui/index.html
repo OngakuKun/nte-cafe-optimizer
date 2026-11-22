@@ -34,6 +34,22 @@
     }
     .placeholder h2 { margin: 0 0 10px; font-size: 20px; }
     .placeholder p { margin: 0; color: var(--muted); }
+    body {
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--ctp-base) 82%, transparent), color-mix(in srgb, var(--ctp-base) 94%, transparent)),
+        url('/ui/assets/decor/exclusive-customer-service.png') right -40px bottom -40px / min(520px, 55vw) auto no-repeat,
+        var(--ctp-base);
+      background-attachment: fixed, fixed, fixed;
+    }
+    @media (max-width: 700px) {
+      body {
+        background:
+          linear-gradient(180deg, color-mix(in srgb, var(--ctp-base) 86%, transparent), color-mix(in srgb, var(--ctp-base) 96%, transparent)),
+          url('/ui/assets/decor/exclusive-customer-service.png') right -20px bottom -20px / 72vw auto no-repeat,
+          var(--ctp-base);
+        background-attachment: scroll, scroll, scroll;
+      }
+    }
   </style>
 </head>
 <body>
