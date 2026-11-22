@@ -46,9 +46,10 @@
     .body { position:relative; z-index:1; padding: 16px; max-width: 60%; min-height: 260px; display:flex; flex-direction:column; justify-content:flex-end; }
     @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .body { max-width: 72%; } }
     .name { font-size: 18px; font-weight: 700; margin: 0 0 10px; }
+    .char-card { cursor: pointer; }
+    .char-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .controls { display:flex; gap:10px; align-items:center; margin-bottom: 12px; flex-wrap:wrap; }
-    .toggle { display:inline-flex; gap:8px; align-items:center; font-size: 13px; color: var(--muted); }
-    .toggle input { width:18px; height:18px; accent-color: var(--accent); }
+    .level-label { font-size: 13px; color: var(--muted); }
     .level { background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font: inherit; }
     .level:disabled { opacity: .5; }
     .skills { display:flex; flex-wrap:wrap; gap:6px; }
@@ -147,14 +148,14 @@
           ? `<img src="${esc(url)}" alt="${esc(c.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(c.name))}</div>'">`
           : `<div class="avatar-fallback">${esc(initials(c.name))}</div>`;
         return `
-          <article class="char-card ${c.owned ? 'owned' : ''}" data-card="${i}">
+          <article class="char-card ${c.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${c.owned ? 'true' : 'false'}" aria-label="Toggle ${esc(c.name)} owned">
             <div class="avatar-wrap">${img}</div>
             <div class="overlay"></div>
             <div class="owned-badge">${c.owned ? 'Owned' : 'Not owned'}</div>
             <div class="body">
               <h2 class="name">${esc(c.name)}</h2>
               <div class="controls">
-                <label class="toggle"><input type="checkbox" data-i="${i}" data-k="owned" ${c.owned?'checked':''}> Owned</label>
+                <span class="level-label">Level</span>
                 <select class="level" data-i="${i}" data-k="level" ${c.owned?'':'disabled'} aria-label="Level for ${esc(c.name)}">
                   ${[1,2,3,4,5].map(l => `<option value="${l}" ${Number(c.level)===l?'selected':''}>Lv ${l}</option>`).join('')}
                 </select>
@@ -164,19 +165,33 @@
           </article>`;
       }).join('');
 
-      document.querySelectorAll('[data-k="owned"]').forEach(el => el.addEventListener('change', async (e) => {
-        const i = Number(e.target.dataset.i); const owned = e.target.checked;
-        const card = document.querySelector(`[data-card="${i}"]`);
-        card.classList.toggle('owned', owned);
-        card.querySelector('.owned-badge').textContent = owned ? 'Owned' : 'Not owned';
-        const levelSel = card.querySelector('select[data-k="level"]'); levelSel.disabled = !owned;
-        await saveRow(i, owned, Number(levelSel.value));
-      }));
-      document.querySelectorAll('[data-k="level"]').forEach(el => el.addEventListener('change', async (e) => {
-        const i = Number(e.target.dataset.i);
-        const owned = document.querySelector(`input[data-i="${i}"][data-k="owned"]`).checked;
-        await saveRow(i, owned, Number(e.target.value));
-      }));
+      document.querySelectorAll('[data-card]').forEach(card => {
+        const toggle = async () => {
+          const i = Number(card.dataset.i);
+          const owned = !card.classList.contains('owned');
+          card.classList.toggle('owned', owned);
+          card.setAttribute('aria-pressed', owned ? 'true' : 'false');
+          card.querySelector('.owned-badge').textContent = owned ? 'Owned' : 'Not owned';
+          const levelSel = card.querySelector('select[data-k="level"]');
+          levelSel.disabled = !owned;
+          await saveRow(i, owned, Number(levelSel.value));
+        };
+        card.addEventListener('click', (e) => { if (e.target.closest('select')) return; toggle(); });
+        card.addEventListener('keydown', (e) => {
+          if (e.target.closest('select')) return;
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+      });
+      document.querySelectorAll('[data-k="level"]').forEach(el => {
+        el.addEventListener('click', (e) => e.stopPropagation());
+        el.addEventListener('change', async (e) => {
+          e.stopPropagation();
+          const i = Number(e.target.dataset.i);
+          const card = document.querySelector(`[data-card="${i}"]`);
+          const owned = card.classList.contains('owned');
+          await saveRow(i, owned, Number(e.target.value));
+        });
+      });
     }
     async function load() {
       const status = document.getElementById('status');
