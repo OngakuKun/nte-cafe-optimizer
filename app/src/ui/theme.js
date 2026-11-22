@@ -160,7 +160,7 @@
     select.dataset.enhanced = '1';
     select.classList.add('enhanced-select');
     const wrap = document.createElement('div');
-    wrap.className = 'cselect' + (select.classList.contains('compact-select') ? ' compact' : '');
+    wrap.className = 'cselect' + (select.classList.contains('compact-select') ? ' compact' : '') + (select.classList.contains('dropup-select') ? ' dropup' : '');
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'cselect-btn'; btn.setAttribute('aria-haspopup', 'listbox');
     const menu = document.createElement('div');
