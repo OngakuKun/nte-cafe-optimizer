@@ -19,8 +19,10 @@
     .char-card:hover { border-color: var(--ctp-surface2); }
     .char-card:not(.owned) .avatar-wrap { filter: grayscale(.35) brightness(.75); }
     .avatar-wrap {
-      position: absolute; top: 0; right: 0; bottom: 0; left: 45%;
+      position: absolute; top: 0; right: 0; bottom: 0; left: 42%;
       background: transparent;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
     }
     .avatar-wrap img { width:100%; height:100%; object-fit: cover; object-position: center top; display:block; }
     .avatar-fallback {
@@ -31,10 +33,10 @@
       position:absolute; inset:0;
       background: linear-gradient(90deg,
         color-mix(in srgb, var(--ctp-base) 98%, transparent) 0%,
-        color-mix(in srgb, var(--ctp-base) 95%, transparent) 32%,
-        color-mix(in srgb, var(--ctp-base) 72%, transparent) 48%,
-        color-mix(in srgb, var(--ctp-base) 28%, transparent) 72%,
-        color-mix(in srgb, var(--ctp-base) 10%, transparent) 100%);
+        color-mix(in srgb, var(--ctp-base) 96%, transparent) 35%,
+        color-mix(in srgb, var(--ctp-base) 74%, transparent) 52%,
+        color-mix(in srgb, var(--ctp-base) 30%, transparent) 72%,
+        color-mix(in srgb, var(--ctp-base) 8%, transparent) 100%);
     }
     .owned-badge {
       position:absolute; top:12px; right:12px; font-size:11px; font-weight:700; padding:4px 8px; border-radius:999px; z-index:2;
