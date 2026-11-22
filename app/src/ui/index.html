@@ -48,8 +48,14 @@
     .result-dish .fph { font-size: 14px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; }
     .result-dish .fph img { width: 16px; height: 16px; object-fit: contain; flex: 0 0 auto; }
     .result-dish .fph strong { color: var(--text); }
-    @media (max-width: 1100px) { .result-dishes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 720px) { .result-dishes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-stats { grid-template-columns: 1fr; } }
+    .result-chars { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .result-char { position: relative; aspect-ratio: 4 / 5; padding: 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+    .result-char .bg { position: absolute; inset: 0; background-size: cover; background-position: center top; background-repeat: no-repeat; opacity: .95; }
+    .result-char .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-alt) 6%, transparent) 25%, color-mix(in srgb, var(--panel-alt) 55%, transparent) 58%, color-mix(in srgb, var(--panel-alt) 96%, transparent) 100%); }
+    .result-char .content { position: relative; z-index: 1; margin-top: auto; }
+    .result-char .name { font-size: 15px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.25; }
+    @media (max-width: 1100px) { .result-dishes, .result-chars { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .result-dishes, .result-chars { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-stats { grid-template-columns: 1fr; } }
 
     .toggle-card {
       position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
@@ -115,7 +121,6 @@
   </header>
 
   <main>
-    <div id="error" class="err"></div>
     <div class="overview" id="overview">Loading overview...</div>
     <div class="panel-grid">
       <section class="toggle-card cafe-card owned" aria-label="Cafes owned">
@@ -202,6 +207,24 @@
       'Ham & Cheese': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
       'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
     };
+    const CHAR_IMAGES = {
+      'Nanally':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/8b/Nanally_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174651',
+      'Sakiri':   'https://static.wikia.nocookie.net/neverness-to-everness/images/6/61/Sakiri_Portrait.png/revision/latest/scale-to-width-down/411?cb=20260701202236',
+      'Skia':     'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0d/Skia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174906',
+      'Baicang':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/83/Baicang_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173726',
+      'Mint':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/41/Mint_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174611',
+      'Haniel':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a5/Haniel_Portrait.png/revision/latest/scale-to-width-down/419?cb=20260701202324',
+      'Adler':    'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0c/Adler_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173120',
+      'Dafodil':  'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f0/Daffodill_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173935',
+      'Edgar':    'https://static.wikia.nocookie.net/neverness-to-everness/images/b/b4/Edgar_Portrait.png/revision/latest/scale-to-width-down/415?cb=20260701201907',
+      'Aurelia':  'https://static.wikia.nocookie.net/neverness-to-everness/images/2/22/Aurelia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174756',
+      'Chiz':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/42/Chiz_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173843',
+      'Lacrimosa':'https://static.wikia.nocookie.net/neverness-to-everness/images/c/c1/Lacrimosa_Portrait.png/revision/latest/scale-to-width-down/403?cb=20260701202053',
+      'Shinku':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a8/Shinku_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260708083848',
+      'Iroi':     'https://static.wikia.nocookie.net/neverness-to-everness/images/8/85/Iroi_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260723021205',
+      'Linko':    'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ef/Linko_Portrait.png/revision/latest/scale-to-width-down/342?cb=20260817144327',
+      'Akane Rin':'https://static.wikia.nocookie.net/neverness-to-everness/images/4/4f/Akane_Rin_Portrait.png/revision/latest/scale-to-width-down/317?cb=20260824145412'
+    };
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function setSave(msg, err) { const el = document.getElementById('saveState'); if (!el) return; el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
 
@@ -224,7 +247,7 @@
         setSave('Saved');
       } catch (e) {
         setSave('Save failed', true);
-        document.getElementById('error').textContent = String(e.message || e);
+        console.error(e);
       }
     }
 
@@ -280,7 +303,7 @@
       btn.disabled = true;
       resultContent.style.color = 'var(--muted)';
       resultContent.textContent = 'Calculating...';
-      document.getElementById('error').textContent = '';
+      /* no top error */
       try {
         for (let i=0; i<50 && typeof runOptimization !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
         if (typeof runOptimization !== 'function') throw new Error('Optimization binding unavailable. Restart nte-cafe-app.');
@@ -302,6 +325,17 @@
               </div>
             </div>`;
         }).join('');
+        const charCards = (res.characters || []).map(c => {
+          const img = CHAR_IMAGES[c.name] || '';
+          const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
+          return `
+            <div class="result-char">
+              <div class="bg" ${bg}></div>
+              <div class="content">
+                <div class="name" title="${esc(c.name)}">${esc(c.name)}</div>
+              </div>
+            </div>`;
+        }).join('');
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
           `<div class="result-stats">` +
@@ -309,8 +343,8 @@
             `<div class="result-stat primary"><div class="label">Income</div><div class="value">${Number(res.income).toFixed(2)}</div></div>` +
             `<div class="result-stat"><div class="label">Price Buff</div><div class="value">${Number(res.priceBuff).toFixed(2)}</div></div>` +
           `</div>` +
-          `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>` +
-          `<div style="margin-top:16px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
+          `<div class="result-chars">${charCards || '<div style="color:var(--muted)">No characters selected.</div>'}</div>` +
+          `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>`;
         updateResultTrend(res.trend, res.trendBonus);
         requestAnimationFrame(() => {
           resultContent.querySelectorAll('.result-dish .name').forEach(name => {
@@ -326,7 +360,7 @@
       } catch (e) {
         resultContent.style.color = 'var(--error)';
         resultContent.textContent = 'Failed: ' + String(e.message || e);
-        document.getElementById('error').textContent = String(e.message || e);
+        console.error(e);
       } finally { btn.disabled = false; }
     }
 
@@ -357,7 +391,7 @@
         document.getElementById('calcBtn').addEventListener('click', runCalc);
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');
-        document.getElementById('error').textContent = String(e.message || e);
+        console.error(e);
       }
     }
 
