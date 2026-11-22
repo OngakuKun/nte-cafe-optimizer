@@ -1,7 +1,9 @@
 --- a/src/webui.c
 +++ b/src/webui.c
 @@ -6523,7 +6523,7 @@
+         #define CUSTOM_WEBUI_WINDOW_DRAG "false"
      #endif
+ 
 -    size_t len = 256 + _webui_strlen((const char*)webui_javascript_bridge);
 +    size_t len = 1024 + _webui_strlen((const char*)webui_javascript_bridge);
      char* js = (char*)_webui_malloc(len);
