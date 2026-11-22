@@ -107,6 +107,34 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   }
 
+  function initNav() {
+    const nav = document.querySelector('header nav');
+    const headerRight = document.querySelector('.header-right');
+    if (!nav || !headerRight) return;
+    let btn = document.getElementById('menuBtn');
+    let overlay = document.getElementById('navOverlay');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'menuBtn'; btn.className = 'icon-btn menu-btn'; btn.type = 'button';
+      btn.setAttribute('aria-label', 'Menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', nav.id || 'siteNav');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>';
+      headerRight.insertBefore(btn, headerRight.firstChild);
+    }
+    if (!nav.id) nav.id = 'siteNav';
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'navOverlay'; overlay.className = 'nav-overlay';
+      document.body.appendChild(overlay);
+    }
+    const close = () => { nav.classList.remove('open'); overlay.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
+    const open = () => { nav.classList.add('open'); overlay.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); nav.classList.contains('open') ? close() : open(); });
+    overlay.addEventListener('click', close);
+    nav.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    window.addEventListener('resize', () => { if (window.innerWidth > 900) close(); });
+  }
+
   function initTheme() {
     applyImportedThemeCss(); rebuildThemeSelect();
     let saved = ''; try { saved = localStorage.getItem(THEME_KEY) || ''; } catch (_) {}
@@ -124,6 +152,7 @@
       });
     }
     initSettingsPanel();
+    initNav();
   }
   window.NteTheme = { initTheme, applyTheme };
 })();
