@@ -155,6 +155,18 @@ const Character CHARACTERS[] = {
      {{1, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
       {3, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
       {5, 27.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE}},
+     3},
+
+    {"Linko",
+     {{1, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
+      {3, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
+      {5, 27.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE}},
+     3},
+
+    {"Akane Rin",
+     {{1, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
+      {3, 18.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE},
+      {5, 27.0, 0, SKILL_TRAFFIC_FLAT, TAG_NONE}},
      3}};
 
 const size_t CHARACTER_COUNT = sizeof(CHARACTERS) / sizeof(CHARACTERS[0]);
