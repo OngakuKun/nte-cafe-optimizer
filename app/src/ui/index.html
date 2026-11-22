@@ -32,9 +32,12 @@
     .result-dish .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-alt) 10%, transparent) 20%, color-mix(in srgb, var(--panel-alt) 72%, transparent) 60%, color-mix(in srgb, var(--panel-alt) 96%, transparent) 100%); }
     .result-dish .trend-flame { position: absolute; top: 10px; left: 10px; z-index: 2; font-size: 22px; line-height: 1; padding: 4px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
     .result-dish .content { position: relative; z-index: 1; margin-top: auto; }
-    .result-dish .name { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .result-dish .fph { font-size: 13px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 4px; text-align: center; }
-    .result-dish .fph img { width: 14px; height: 14px; object-fit: contain; flex: 0 0 auto; }
+    .result-dish .name { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.25; text-align: center; overflow: hidden; max-height: 2.5em; }
+    .result-dish .name-inner { display: block; }
+    .result-dish .name.overflow .name-inner { animation: result-name-scroll 8s ease-in-out infinite alternate; }
+    @keyframes result-name-scroll { 0%, 20% { transform: translateY(0); } 80%, 100% { transform: translateY(var(--scroll-y)); } }
+    .result-dish .fph { font-size: 14px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; }
+    .result-dish .fph img { width: 16px; height: 16px; object-fit: contain; flex: 0 0 auto; }
     .result-dish .fph strong { color: var(--text); }
     @media (max-width: 1100px) { .result-dishes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     @media (max-width: 720px) { .result-dishes { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-stats { grid-template-columns: 1fr; } }
@@ -278,7 +281,7 @@
               ${d.inTrend ? '<div class="trend-flame" title="In trend">🔥</div>' : ''}
               <div class="content">
                 <div class="fph"><img src="${fonsIcon}" alt="Fons" loading="lazy"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong><span>/h</span></div>
-                <div class="name" title="${esc(d.name)}">${esc(d.name)}</div>
+                <div class="name" title="${esc(d.name)}"><span class="name-inner">${esc(d.name)}</span></div>
               </div>
             </div>`;
         }).join('');
@@ -291,6 +294,17 @@
           `</div>` +
           `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>` +
           `<div style="margin-top:16px"><span style="color:var(--muted)">Characters:</span> ${chars || '-'}</div>`;
+        requestAnimationFrame(() => {
+          resultContent.querySelectorAll('.result-dish .name').forEach(name => {
+            const inner = name.querySelector('.name-inner');
+            if (!inner) return;
+            const overflow = inner.scrollHeight - name.clientHeight;
+            if (overflow > 1) {
+              name.classList.add('overflow');
+              name.style.setProperty('--scroll-y', `-${overflow}px`);
+            }
+          });
+        });
       } catch (e) {
         resultContent.style.color = 'var(--error)';
         resultContent.textContent = 'Failed: ' + String(e.message || e);
