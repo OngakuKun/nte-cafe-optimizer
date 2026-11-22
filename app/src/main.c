@@ -447,6 +447,7 @@ int main(int argc, char **argv) {
     app_root = root_buf;
   }
 
+  webui_set_config(multi_client, true);
   size_t win = webui_new_window();
   webui_set_file_handler(win, file_handler);
   webui_set_public(win, true);
