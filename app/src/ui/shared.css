@@ -102,7 +102,7 @@ nav { display: flex; gap: 8px; align-items: center; }
 .nav-overlay.open { display: block; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 80; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.open { display: flex; }
-.modal { width: min(560px, 100%); background: linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 20px 60px var(--shadow); padding: 22px; }
+.modal { width: min(560px, 100%); background: linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border: 1px solid var(--border); border-radius: 14px; box-shadow: none; padding: 22px; }
 .modal h2 { margin: 0 0 8px; font-size: 22px; }
 .modal p { margin: 0 0 14px; color: var(--muted); line-height: 1.5; font-size: 14px; }
 .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
