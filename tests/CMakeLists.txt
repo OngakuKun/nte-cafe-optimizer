@@ -34,6 +34,18 @@ target_link_libraries(test_full_dataset
 add_test(NAME full_dataset COMMAND test_full_dataset)
 
 
+add_executable(test_optimizer_current
+    test_optimizer_current.c
+)
+
+target_link_libraries(test_optimizer_current
+    PRIVATE
+        nte_cafe
+)
+
+add_test(NAME optimizer_current COMMAND test_optimizer_current)
+
+
 add_executable(benchmark_optimizer
     benchmark_optimizer.c
 )
