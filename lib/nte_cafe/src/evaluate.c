@@ -15,6 +15,51 @@ static void log_add(BuffLog *log, const char *text, double value) {
   ++log->count;
 }
 
+/* Hot path: compute income without allocating/filling OptimizationResult or logs. */
+double evaluate_income_fast(const MenuStats *menu,
+                            const CandidateCharacter *characters,
+                            size_t character_count,
+                            const CafeSettings *settings) {
+  double traffic = 2400.0;
+  double price_buff = 0.0;
+
+  for (size_t c = 0; c < character_count; ++c) {
+    const CandidateCharacter *ch = &characters[c];
+    for (size_t s = 0; s < ch->active_skill_count; ++s) {
+      const Skill *skill = &ch->active_skills[s];
+      if (!skill_activates(skill, menu))
+        continue;
+      if (skill->type == SKILL_TRAFFIC_FLAT)
+        traffic += skill->value;
+      else if (skill->type == SKILL_PRICE_FLAT)
+        price_buff += skill->value;
+    }
+  }
+
+  const double base_traffic = traffic;
+  double multiplier_bonus = 0.0;
+  double price_multiplier = 1.0;
+  for (size_t c = 0; c < character_count; ++c) {
+    const CandidateCharacter *ch = &characters[c];
+    for (size_t s = 0; s < ch->active_skill_count; ++s) {
+      const Skill *skill = &ch->active_skills[s];
+      if (!skill_activates(skill, menu))
+        continue;
+      if (skill->type == SKILL_TRAFFIC_MULTIPLY)
+        multiplier_bonus += base_traffic * skill->value;
+      else if (skill->type == SKILL_PRICE_MULTIPLY)
+        price_multiplier += skill->value;
+    }
+  }
+  if (settings && settings->hotori_cat_decor)
+    multiplier_bonus += base_traffic * 0.01;
+  traffic = base_traffic + multiplier_bonus;
+
+  double adjusted_price_sum =
+      menu->base_price_sum + ((double)menu->dish_count * price_buff);
+  return adjusted_price_sum * price_multiplier * (traffic / 100.0);
+}
+
 static void apply_flat_skills(const CandidateCharacter *characters,
                               size_t character_count, const MenuStats *menu,
                               double *traffic, double *price_buff,

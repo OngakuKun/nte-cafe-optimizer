@@ -22,36 +22,38 @@ typedef struct {
 
   /* The dish combination currently being evaluated. */
   CandidateDish selected_dishes[MAX_DISH_SLOTS];
-
+  size_t selected_dish_pool_indices[MAX_DISH_SLOTS];
   MenuStats selected_menu;
-  size_t character_combinations_evaluated;
 
-  OptimizationResult *best;
+  /* Best found during fast scan. */
+  double best_income;
+  size_t best_dish_pool_indices[MAX_DISH_SLOTS];
+  size_t best_char_pool_indices[MAX_CHARACTER_SLOTS];
   bool found;
 } SearchState;
 
 /*
- * Evaluate every character combination for the currently selected
- * dish combination.
+ * Hot-path: evaluate every character combination for current dish menu.
+ * Only tracks best income and indices; full result built once at end.
  */
 static bool evaluate_chars(const size_t *char_indices, size_t char_count,
                            void *userdata) {
   SearchState *s = userdata;
+  (void)char_count;
 
   CandidateCharacter selected_chars[MAX_CHARACTER_SLOTS];
-
-  for (size_t i = 0; i < char_count; ++i) {
+  for (size_t i = 0; i < s->char_slots; ++i)
     selected_chars[i] = s->char_pool[char_indices[i]];
-  }
 
-  OptimizationResult candidate =
-      evaluate_candidate(s->selected_dishes, s->dish_slots, s->selected_menu,
-                         selected_chars, char_count, &s->ctx->settings);
+  double income = evaluate_income_fast(&s->selected_menu, selected_chars,
+                                       s->char_slots, &s->ctx->settings);
 
-  s->character_combinations_evaluated++;
-
-  if (!s->found || candidate.income > s->best->income) {
-    *s->best = candidate;
+  if (!s->found || income > s->best_income) {
+    s->best_income = income;
+    for (size_t i = 0; i < s->dish_slots; ++i)
+      s->best_dish_pool_indices[i] = s->selected_dish_pool_indices[i];
+    for (size_t i = 0; i < s->char_slots; ++i)
+      s->best_char_pool_indices[i] = char_indices[i];
     s->found = true;
   }
 
@@ -65,19 +67,15 @@ static bool evaluate_chars(const size_t *char_indices, size_t char_count,
 static bool evaluate_dishes(const size_t *dish_indices, size_t dish_count,
                             void *userdata) {
   SearchState *s = userdata;
+  (void)dish_count;
 
-  /*
-   * Copy the current dish combination into the search state.
-   */
-  for (size_t i = 0; i < dish_count; ++i) {
+  for (size_t i = 0; i < s->dish_slots; ++i) {
+    s->selected_dish_pool_indices[i] = dish_indices[i];
     s->selected_dishes[i] = s->dish_pool[dish_indices[i]];
   }
 
   calculate_menu_stats(s->selected_dishes, s->dish_slots, &s->selected_menu);
 
-  /*
-   * For this menu, try every possible character team.
-   */
   return enumerate_combinations(s->char_pool_count, s->char_slots,
                                 evaluate_chars, s);
 }
@@ -176,30 +174,40 @@ bool optimize_cafe(const CafeContext *ctx, OptimizationResult *result) {
   /*
    * Initialize the search state.
    */
-  SearchState state = {.ctx = ctx,
-
-                       .dish_pool = dish_pool,
-                       .dish_pool_count = dish_pool_count,
-
-                       .char_pool = char_pool,
-                       .char_pool_count = char_pool_count,
-
-                       .dish_slots = dish_slots,
-                       .char_slots = char_slots,
-
-                       .best = result,
-                       .found = false};
+  SearchState state = {0};
+  state.ctx = ctx;
+  state.dish_pool = dish_pool;
+  state.dish_pool_count = dish_pool_count;
+  state.char_pool = char_pool;
+  state.char_pool_count = char_pool_count;
+  state.dish_slots = dish_slots;
+  state.char_slots = char_slots;
+  state.found = false;
+  state.best_income = -1.0;
 
   memset(result, 0, sizeof(*result));
 
   /*
-   * Main exhaustive search:
-   *
-   *   every possible menu
-   *       ×
-   *   every possible character team
+   * Main exhaustive search: every menu x every character team.
+   * Fast path tracks only best income+indices; full result is built once.
    */
   enumerate_combinations(dish_pool_count, dish_slots, evaluate_dishes, &state);
 
-  return state.found;
+  if (!state.found)
+    return false;
+
+  /* Rebuild full result once for the winning combination. */
+  CandidateDish best_dishes[MAX_DISH_SLOTS];
+  MenuStats best_menu;
+  for (size_t i = 0; i < dish_slots; ++i)
+    best_dishes[i] = dish_pool[state.best_dish_pool_indices[i]];
+  calculate_menu_stats(best_dishes, dish_slots, &best_menu);
+
+  CandidateCharacter best_chars[MAX_CHARACTER_SLOTS];
+  for (size_t i = 0; i < char_slots; ++i)
+    best_chars[i] = char_pool[state.best_char_pool_indices[i]];
+
+  *result = evaluate_candidate(best_dishes, dish_slots, best_menu, best_chars,
+                               char_slots, &ctx->settings);
+  return true;
 }

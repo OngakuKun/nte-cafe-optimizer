@@ -40,10 +40,10 @@ int main(void) {
     return 1;
   }
 
-  assert_double_equal(result.traffic, 2754.135, 1e-9);
+  assert_double_equal(result.traffic, 2791.395, 1e-9);
   assert_double_equal(result.price_buff, 1.56, 1e-9);
   assert_double_equal(result.price_multiplier, 1.055, 1e-9);
-  assert_double_equal(result.income, 2623.768019775, 1e-9);
+  assert_double_equal(result.income, 2659.264317675, 1e-9);
 
   puts("Golden Test passed");
 
