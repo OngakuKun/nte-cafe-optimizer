@@ -48,43 +48,65 @@ static char *read_file(const char *path, size_t *out_len) {
 
 static const char *app_root = ".";
 
-static CharacterState character_state[MAX_CHARACTER_POOL];
-static bool character_state_initialized = false;
-static DishState dish_state[MAX_DISH_POOL];
-static bool dish_state_initialized = false;
-static CafeSettings cafe_settings = {5, TAG_NONE, "None", 0.0, 0.0, false};
-static bool cafe_settings_initialized = false;
+/* Per-WebUI-client state. Keeps users/sessions isolated in memory while the
+ * server runs; persistence across restarts is handled separately later. */
+typedef struct {
+  size_t client_id;
+  bool used;
+  bool character_state_initialized;
+  bool dish_state_initialized;
+  bool cafe_settings_initialized;
+  CharacterState character_state[MAX_CHARACTER_POOL];
+  DishState dish_state[MAX_DISH_POOL];
+  CafeSettings cafe_settings;
+} ClientState;
 
-static void ensure_cafe_settings(void) {
-  if (cafe_settings_initialized) return;
-  cafe_settings.cafes_owned = 5;
-  cafe_settings.trend_tag = TAG_NONE;
-  cafe_settings.trend_name = "None";
-  cafe_settings.hotori_cat_decor = false;
-  cafe_settings.popularity_bonus = 0.0;
+#define MAX_CLIENT_STATES 256
+static ClientState client_states[MAX_CLIENT_STATES];
+
+static void init_default_cafe_settings(CafeSettings *cs) {
+  cs->cafes_owned = 5;
+  cs->trend_tag = TAG_NONE;
+  cs->trend_name = "None";
+  cs->hotori_cat_decor = false;
+  cs->popularity_bonus = 0.0;
   Trend t = {TREND_NONE, "None"};
-  cafe_settings.trend_bonus = get_trend_bonus(t.type);
-  cafe_settings_initialized = true;
+  cs->trend_bonus = get_trend_bonus(t.type);
 }
 
-static void ensure_character_state(void) {
-  if (character_state_initialized)
-    return;
+static void init_default_character_state(ClientState *cs) {
   for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
-    character_state[i].owned = true;
-    character_state[i].level = 5;
+    cs->character_state[i].owned = true;
+    cs->character_state[i].level = 5;
   }
-  character_state_initialized = true;
+  cs->character_state_initialized = true;
 }
 
-static void ensure_dish_state(void) {
-  if (dish_state_initialized)
-    return;
+static void init_default_dish_state(ClientState *cs) {
   for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
-    dish_state[i].owned = true;
-    dish_state[i].level = 2;
+    cs->dish_state[i].owned = true;
+    cs->dish_state[i].level = 2;
   }
-  dish_state_initialized = true;
+  cs->dish_state_initialized = true;
+}
+
+/* Look up or create state for a WebUI client. If the fixed table is full,
+ * reuse the first slot (oldest simple eviction) to avoid unbounded memory. */
+static ClientState *get_client_state(size_t client_id) {
+  ClientState *free_slot = NULL;
+  for (size_t i = 0; i < MAX_CLIENT_STATES; i++) {
+    if (client_states[i].used && client_states[i].client_id == client_id) return &client_states[i];
+    if (!client_states[i].used && !free_slot) free_slot = &client_states[i];
+  }
+  ClientState *cs = free_slot ? free_slot : &client_states[0];
+  memset(cs, 0, sizeof(*cs));
+  cs->used = true;
+  cs->client_id = client_id;
+  init_default_cafe_settings(&cs->cafe_settings);
+  cs->cafe_settings_initialized = true;
+  init_default_character_state(cs);
+  init_default_dish_state(cs);
+  return cs;
 }
 
 static const void *file_handler(const char *filename, int *length) {
@@ -232,7 +254,7 @@ static void get_dishes(webui_event_t *e) {
 }
 
 static void get_dish_states(webui_event_t *e) {
-  ensure_dish_state();
+  ClientState *cs = get_client_state(e->client_id);
   size_t cap = 512 + DISH_COUNT * 640;
   char *buf = (char *)malloc(cap);
   if (!buf) { webui_return_string(e, "[]"); return; }
@@ -245,7 +267,7 @@ static void get_dish_states(webui_event_t *e) {
     off += snprintf(buf + off, cap - off,
                     "%s{\"name\":\"%s\",\"type\":\"%s\",\"priceL1\":%.2f,\"priceL2\":%.2f,\"owned\":%s,\"level\":%d,\"ingredients\":[",
                     i ? "," : "", name, type, DISHES[i].price_l1, DISHES[i].price_l2,
-                    dish_state[i].owned ? "true" : "false", dish_state[i].level);
+                    cs->dish_state[i].owned ? "true" : "false", cs->dish_state[i].level);
     for (size_t j = 0; j < DISHES[i].ingredient_count && off + 80 < cap; j++) {
       int idx = DISHES[i].ingredients[j];
       const char *iname = (idx >= 0 && (size_t)idx < INGREDIENT_COUNT && INGREDIENTS[idx].name) ? INGREDIENTS[idx].name : "?";
@@ -261,7 +283,7 @@ static void get_dish_states(webui_event_t *e) {
 }
 
 static void set_dish_state(webui_event_t *e) {
-  ensure_dish_state();
+  ClientState *cs = get_client_state(e->client_id);
   long long idx = webui_get_int_at(e, 0);
   bool owned = webui_get_bool_at(e, 1);
   long long level = webui_get_int_at(e, 2);
@@ -271,8 +293,8 @@ static void set_dish_state(webui_event_t *e) {
   }
   if (level < 1) level = 1;
   if (level > 2) level = 2;
-  dish_state[idx].owned = owned;
-  dish_state[idx].level = (int)level;
+  cs->dish_state[idx].owned = owned;
+  cs->dish_state[idx].level = (int)level;
   webui_return_string(e, "{\"ok\":true}");
 }
 
@@ -287,19 +309,17 @@ static unsigned long long nck_u64(size_t n, size_t k) {
 }
 
 static void get_optimizer_overview(webui_event_t *e) {
-  ensure_cafe_settings();
-  ensure_dish_state();
-  ensure_character_state();
+  ClientState *cs = get_client_state(e->client_id);
   size_t owned_chars = 0;
-  for (size_t i = 0; i < CHARACTER_COUNT; i++) if (character_state[i].owned) owned_chars++;
+  for (size_t i = 0; i < CHARACTER_COUNT; i++) if (cs->character_state[i].owned) owned_chars++;
   size_t owned_dishes_l1 = 0, owned_dishes_l2 = 0, owned_dishes = 0;
   for (size_t i = 0; i < DISH_COUNT; i++) {
-    if (!dish_state[i].owned) continue;
+    if (!cs->dish_state[i].owned) continue;
     owned_dishes++;
-    if (dish_state[i].level <= 1) owned_dishes_l1++; else owned_dishes_l2++;
+    if (cs->dish_state[i].level <= 1) owned_dishes_l1++; else owned_dishes_l2++;
   }
-  size_t dish_slots = (size_t)cafe_settings.cafes_owned;
-  size_t char_slots = (size_t)cafe_settings.cafes_owned * 2;
+  size_t dish_slots = (size_t)cs->cafe_settings.cafes_owned;
+  size_t char_slots = (size_t)cs->cafe_settings.cafes_owned * 2;
   if (dish_slots > MAX_DISH_SLOTS) dish_slots = MAX_DISH_SLOTS;
   if (char_slots > MAX_CHARACTER_SLOTS) char_slots = MAX_CHARACTER_SLOTS;
   unsigned long long dish_combos = nck_u64(owned_dishes, dish_slots);
@@ -317,16 +337,16 @@ static void get_optimizer_overview(webui_event_t *e) {
 }
 
 static void get_optimizer_settings(webui_event_t *e) {
-  ensure_cafe_settings();
+  ClientState *cs = get_client_state(e->client_id);
   TrendOptions opts = get_trend_options();
   size_t cap = 2048 + opts.count * 128;
   char *buf = (char*)malloc(cap);
   if (!buf) { webui_return_string(e, "{}"); return; }
   size_t off = 0;
   char trend_name[128];
-  json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name, sizeof(trend_name));
+  json_escape(cs->cafe_settings.trend_name ? cs->cafe_settings.trend_name : "None", trend_name, sizeof(trend_name));
   off += snprintf(buf+off, cap-off, "{\"trend\":\"%s\",\"hotoriCatDecor\":%s,\"cafesOwned\":%d,\"trendBonus\":%.2f,\"trends\":[",
-                  trend_name, cafe_settings.hotori_cat_decor ? "true":"false", cafe_settings.cafes_owned, cafe_settings.trend_bonus);
+                  trend_name, cs->cafe_settings.hotori_cat_decor ? "true":"false", cs->cafe_settings.cafes_owned, cs->cafe_settings.trend_bonus);
   for (size_t i = 0; i < opts.count && off + 180 < cap; i++) {
     char n[128]; json_escape(opts.trends[i].name ? opts.trends[i].name : "", n, sizeof(n));
     const char *tt = "none";
@@ -341,7 +361,7 @@ static void get_optimizer_settings(webui_event_t *e) {
 }
 
 static void set_optimizer_settings(webui_event_t *e) {
-  ensure_cafe_settings();
+  ClientState *cs = get_client_state(e->client_id);
   const char *trend_name = webui_get_string_at(e, 0);
   bool hotori = webui_get_bool_at(e, 1);
   long long cafes = webui_get_int_at(e, 2);
@@ -354,23 +374,21 @@ static void set_optimizer_settings(webui_event_t *e) {
   }
   if (cafes < 1) cafes = 1;
   if (cafes > 5) cafes = 5;
-  cafe_settings.cafes_owned = (int)cafes;
-  cafe_settings.trend_name = selected.name;
-  cafe_settings.trend_tag = get_trend_tag(selected);
-  cafe_settings.trend_bonus = get_trend_bonus(selected.type);
-  cafe_settings.hotori_cat_decor = hotori;
+  cs->cafe_settings.cafes_owned = (int)cafes;
+  cs->cafe_settings.trend_name = selected.name;
+  cs->cafe_settings.trend_tag = get_trend_tag(selected);
+  cs->cafe_settings.trend_bonus = get_trend_bonus(selected.type);
+  cs->cafe_settings.hotori_cat_decor = hotori;
   webui_return_string(e, "{\"ok\":true}");
 }
 
 static void run_optimization(webui_event_t *e) {
-  ensure_cafe_settings();
-  ensure_dish_state();
-  ensure_character_state();
+  ClientState *cs = get_client_state(e->client_id);
   CafeContext ctx = {
     .dishes = DISHES, .dish_count = DISH_COUNT,
     .characters = CHARACTERS, .character_count = CHARACTER_COUNT,
-    .dish_state = dish_state, .character_state = character_state,
-    .settings = cafe_settings
+    .dish_state = cs->dish_state, .character_state = cs->character_state,
+    .settings = cs->cafe_settings
   };
   OptimizationResult res;
   if (!optimize_cafe(&ctx, &res)) {
@@ -381,22 +399,21 @@ static void run_optimization(webui_event_t *e) {
   char *buf = (char*)malloc(cap);
   if (!buf) { webui_return_string(e, "{\"ok\":false,\"error\":\"Out of memory\"}"); return; }
   size_t off = 0;
-  char trend_name_esc[128]; json_escape(cafe_settings.trend_name ? cafe_settings.trend_name : "None", trend_name_esc, sizeof(trend_name_esc));
-  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"trend\":\"%s\",\"trendBonus\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier, trend_name_esc, cafe_settings.trend_bonus);
+  char trend_name_esc[128]; json_escape(cs->cafe_settings.trend_name ? cs->cafe_settings.trend_name : "None", trend_name_esc, sizeof(trend_name_esc));
+  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"trend\":\"%s\",\"trendBonus\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier, trend_name_esc, cs->cafe_settings.trend_bonus);
   for (size_t i = 0; i < res.dish_count && off + 360 < cap; i++) {
     char n[128]; json_escape(res.dishes[i]->name ? res.dishes[i]->name : "", n, sizeof(n));
     int level = 1;
     double base_price = 0.0;
     for (size_t d = 0; d < DISH_COUNT; d++) {
       if (&DISHES[d] == res.dishes[i]) {
-        ensure_dish_state();
-        level = dish_state[d].level;
-        base_price = dish_base_price(res.dishes[i], level, &cafe_settings);
+        level = cs->dish_state[d].level;
+        base_price = dish_base_price(res.dishes[i], level, &cs->cafe_settings);
         break;
       }
     }
     double fph = (base_price + res.price_buff) * res.price_multiplier * (res.traffic / 100.0);
-    bool in_trend = dish_matches_trend(res.dishes[i], &cafe_settings);
+    bool in_trend = dish_matches_trend(res.dishes[i], &cs->cafe_settings);
     off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"level\":%d,\"fonsPerHour\":%.2f,\"inTrend\":%s}", i?",":"", n, level, fph, in_trend ? "true" : "false");
   }
   off += snprintf(buf+off, cap-off, "],\"characters\":[");
@@ -409,15 +426,14 @@ static void run_optimization(webui_event_t *e) {
   free(buf);
 }
 
-static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state) {
+static void append_character_json(char *buf, size_t cap, size_t *off, size_t i, bool include_state, ClientState *cs) {
   char name[128];
   json_escape(CHARACTERS[i].name ? CHARACTERS[i].name : "", name, sizeof(name));
   *off += snprintf(buf + *off, cap - *off, "%s{\"name\":\"%s\",\"skillCount\":%zu",
                   i ? "," : "", name, CHARACTERS[i].skill_count);
   if (include_state) {
-    ensure_character_state();
     *off += snprintf(buf + *off, cap - *off, ",\"owned\":%s,\"level\":%d",
-                    character_state[i].owned ? "true" : "false", character_state[i].level);
+                    cs->character_state[i].owned ? "true" : "false", cs->character_state[i].level);
   }
   *off += snprintf(buf + *off, cap - *off, ",\"skills\":[");
   for (size_t s = 0; s < CHARACTERS[i].skill_count && *off + 160 < cap; s++) {
@@ -450,27 +466,27 @@ static void get_characters(webui_event_t *e) {
   if (!buf) { webui_return_string(e, "[]"); return; }
   size_t off = 0;
   off += snprintf(buf + off, cap - off, "[");
-  for (size_t i = 0; i < CHARACTER_COUNT && off + 300 < cap; i++) append_character_json(buf, cap, &off, i, false);
+  for (size_t i = 0; i < CHARACTER_COUNT && off + 300 < cap; i++) append_character_json(buf, cap, &off, i, false, NULL);
   if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
   webui_return_string(e, buf);
   free(buf);
 }
 
 static void get_character_states(webui_event_t *e) {
-  ensure_character_state();
+  ClientState *cs = get_client_state(e->client_id);
   size_t cap = 256 + CHARACTER_COUNT * 640;
   char *buf = (char *)malloc(cap);
   if (!buf) { webui_return_string(e, "[]"); return; }
   size_t off = 0;
   off += snprintf(buf + off, cap - off, "[");
-  for (size_t i = 0; i < CHARACTER_COUNT && off + 340 < cap; i++) append_character_json(buf, cap, &off, i, true);
+  for (size_t i = 0; i < CHARACTER_COUNT && off + 340 < cap; i++) append_character_json(buf, cap, &off, i, true, cs);
   if (off + 2 < cap) off += snprintf(buf + off, cap - off, "]");
   webui_return_string(e, buf);
   free(buf);
 }
 
 static void set_character_state(webui_event_t *e) {
-  ensure_character_state();
+  ClientState *cs = get_client_state(e->client_id);
   long long idx = webui_get_int_at(e, 0);
   bool owned = webui_get_bool_at(e, 1);
   long long level = webui_get_int_at(e, 2);
@@ -480,8 +496,8 @@ static void set_character_state(webui_event_t *e) {
   }
   if (level < 1) level = 1;
   if (level > 5) level = 5;
-  character_state[idx].owned = owned;
-  character_state[idx].level = (int)level;
+  cs->character_state[idx].owned = owned;
+  cs->character_state[idx].level = (int)level;
   webui_return_string(e, "{\"ok\":true}");
 }
 
