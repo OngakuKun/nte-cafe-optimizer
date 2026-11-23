@@ -65,7 +65,7 @@ typedef struct {
 static ClientState client_states[MAX_CLIENT_STATES];
 
 static void init_default_cafe_settings(CafeSettings *cs) {
-  cs->cafes_owned = 5;
+  cs->cafes_owned = 1;
   cs->trend_tag = TAG_NONE;
   cs->trend_name = "None";
   cs->hotori_cat_decor = false;
@@ -74,9 +74,10 @@ static void init_default_cafe_settings(CafeSettings *cs) {
   cs->trend_bonus = get_trend_bonus(t.type);
 }
 
+/* Defaults are intentionally empty: user must configure owned chars/dishes. */
 static void init_default_character_state(ClientState *cs) {
   for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
-    cs->character_state[i].owned = true;
+    cs->character_state[i].owned = false;
     cs->character_state[i].level = 5;
   }
   cs->character_state_initialized = true;
@@ -84,7 +85,7 @@ static void init_default_character_state(ClientState *cs) {
 
 static void init_default_dish_state(ClientState *cs) {
   for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
-    cs->dish_state[i].owned = true;
+    cs->dish_state[i].owned = false;
     cs->dish_state[i].level = 2;
   }
   cs->dish_state_initialized = true;
@@ -329,10 +330,14 @@ static void get_optimizer_overview(webui_event_t *e) {
   else if (char_combos > 0 && dish_combos > (18446744073709551615ULL / char_combos)) combos = 18446744073709551615ULL;
   else combos = dish_combos * char_combos;
 
-  char buf[640];
+  bool is_default = (owned_chars == 0 && owned_dishes == 0 &&
+                     cs->cafe_settings.cafes_owned == 1 &&
+                     !cs->cafe_settings.hotori_cat_decor &&
+                     cs->cafe_settings.trend_tag == TAG_NONE);
+  char buf[720];
   snprintf(buf, sizeof(buf),
-           "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"dishCombinations\":\"%llu\",\"characterCombinations\":\"%llu\",\"possibleCombinations\":\"%llu\"}",
-           owned_chars, owned_dishes, owned_dishes_l1, owned_dishes_l2, dish_slots, char_slots, dish_combos, char_combos, combos);
+           "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"dishCombinations\":\"%llu\",\"characterCombinations\":\"%llu\",\"possibleCombinations\":\"%llu\",\"isDefault\":%s}",
+           owned_chars, owned_dishes, owned_dishes_l1, owned_dishes_l2, dish_slots, char_slots, dish_combos, char_combos, combos, is_default ? "true" : "false");
   webui_return_string(e, buf);
 }
 

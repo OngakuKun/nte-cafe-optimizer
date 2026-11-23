@@ -96,6 +96,18 @@
     <div id="grid" class="grid"></div>
   </main>
 
+
+  <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="setupModalTitle">
+    <div class="modal">
+      <h2 id="setupModalTitle">Welcome to NTE Cafe</h2>
+      <p>Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.</p>
+      <div class="modal-actions">
+        <a class="modal-btn primary" href="/characters">Configure Characters</a>
+        <a class="modal-btn" href="/dishes">Configure Dishes</a>
+        <button type="button" class="modal-btn" id="setupModalLater">Later</button>
+      </div>
+    </div>
+  </div>
   <script src="/ui/theme.js"></script>
   <script>
     const AVATAR_URLS = {
@@ -219,7 +231,23 @@
         document.getElementById('error').textContent = String(e.message || e);
       }
     }
-    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
+    window.addEventListener('DOMContentLoaded', async () => {
+      NteTheme.initTheme();
+      load();
+      try {
+        for (let i=0;i<50 && typeof getOptimizerOverview!=='function';i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getOptimizerOverview==='function') {
+          const o = JSON.parse(await getOptimizerOverview());
+          if (o && o.isDefault && sessionStorage.getItem('nte-cafe-setup-dismissed') !== '1') {
+            const m=document.getElementById('setupModal');
+            const d=()=>{sessionStorage.setItem('nte-cafe-setup-dismissed','1'); m?.classList.remove('open');};
+            document.getElementById('setupModalLater')?.addEventListener('click', d);
+            m?.addEventListener('click',e=>{if(e.target===m)d();});
+            m?.classList.add('open');
+          }
+        }
+      } catch(_) {}
+    });
   </script>
 </body>
 </html>

@@ -158,12 +158,12 @@
         </div>
       </section>
 
-      <section id="decorCard" class="toggle-card owned" role="button" tabindex="0" aria-pressed="true" aria-label="Toggle Hotori's Cat Decor">
+      <section id="decorCard" class="toggle-card" role="button" tabindex="0" aria-pressed="false" aria-label="Toggle Hotori's Cat Decor">
         <div class="avatar-wrap">
           <img src="/ui/assets/decor/exclusive-customer-service.png" alt="Exclusive Customer Service decor" loading="lazy">
         </div>
         <div class="overlay"></div>
-        <div id="decorBadge" class="owned-badge">Enabled</div>
+        <div id="decorBadge" class="owned-badge">Disabled</div>
         <div class="toggle-body">
           <div>
             <h2 class="toggle-name">Hotori's Cat Decor</h2>
@@ -184,6 +184,18 @@
 
 
   </main>
+
+  <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="setupModalTitle">
+    <div class="modal">
+      <h2 id="setupModalTitle">Welcome to NTE Cafe</h2>
+      <p>Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.</p>
+      <div class="modal-actions">
+        <a class="modal-btn primary" href="/characters">Configure Characters</a>
+        <a class="modal-btn" href="/dishes">Configure Dishes</a>
+        <button type="button" class="modal-btn" id="setupModalLater">Later</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/ui/theme.js"></script>
   <script>
@@ -229,7 +241,7 @@
     function setSave(msg, err) { const el = document.getElementById('saveState'); if (!el) return; el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
 
     let hotoriCatDecor = false;
-    let cafesOwned = 5;
+    let cafesOwned = 1;
 
     function renderDecor() {
       const card = document.getElementById('decorCard');
@@ -283,8 +295,14 @@
     }
 
     function fmtNum(n) { const x = Number(n); return Number.isFinite(x) ? x.toLocaleString() : String(n); }
+    function maybeShowSetupModal(overview) {
+      if (!overview || !overview.isDefault) return;
+      if (sessionStorage.getItem('nte-cafe-setup-dismissed') === '1') return;
+      document.getElementById('setupModal')?.classList.add('open');
+    }
+
     async function loadOverview() {
-      if (typeof getOptimizerOverview !== 'function') return;
+      if (typeof getOptimizerOverview !== 'function') return null;
       try {
         const o = JSON.parse(await getOptimizerOverview());
         document.getElementById('overview').innerHTML = [
@@ -294,7 +312,10 @@
           `<span><span class="kw">Dish combos:</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
           `<span><span class="kw">Total:</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
         ].join('');
+        maybeShowSetupModal(o);
+        return o;
       } catch (_) {}
+      return null;
     }
 
     async function runCalc() {
@@ -389,6 +410,10 @@
         card.addEventListener('click', toggle);
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
         document.getElementById('calcBtn').addEventListener('click', runCalc);
+        const setupModal = document.getElementById('setupModal');
+        const dismiss = () => { sessionStorage.setItem('nte-cafe-setup-dismissed', '1'); setupModal?.classList.remove('open'); };
+        document.getElementById('setupModalLater')?.addEventListener('click', dismiss);
+        setupModal?.addEventListener('click', (e) => { if (e.target === setupModal) dismiss(); });
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');
         console.error(e);
