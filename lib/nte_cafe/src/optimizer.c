@@ -5,7 +5,7 @@
 #include "trend.h"
 
 #include <stddef.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 typedef struct {
@@ -188,10 +188,63 @@ bool optimize_cafe(const CafeContext *ctx, OptimizationResult *result) {
   memset(result, 0, sizeof(*result));
 
   /*
-   * Main exhaustive search: every menu x every character team.
-   * Fast path tracks only best income+indices; full result is built once.
+   * Skills depend on dish type counts. For each type-count distribution,
+   * the best menu is the top-priced dishes of those types. This collapses the
+   * dish space dramatically vs brute-forcing all dish combinations.
    */
-  enumerate_combinations(dish_pool_count, dish_slots, evaluate_dishes, &state);
+  typedef struct { int count; } TypePick;
+  /* Group dish pool indices by dish type (3 known types). */
+  size_t type_groups[4][MAX_DISH_POOL];
+  size_t type_group_counts[4] = {0,0,0,0};
+  for (size_t i = 0; i < dish_pool_count; ++i) {
+    int t = 3;
+    const char *dt = dish_pool[i].dish->type;
+    if (dt && strcmp(dt, "Beverages") == 0) t = 0;
+    else if (dt && strcmp(dt, "Desserts") == 0) t = 1;
+    else if (dt && strcmp(dt, "Main Dishes") == 0) t = 2;
+    type_groups[t][type_group_counts[t]++] = i;
+  }
+  /* Sort each group by base_price desc. */
+  for (int t = 0; t < 4; ++t) {
+    for (size_t a = 0; a < type_group_counts[t]; ++a) {
+      for (size_t b = a + 1; b < type_group_counts[t]; ++b) {
+        size_t ia = type_groups[t][a], ib = type_groups[t][b];
+        if (dish_pool[ib].base_price > dish_pool[ia].base_price) {
+          type_groups[t][a] = ib; type_groups[t][b] = ia;
+        }
+      }
+    }
+  }
+
+  /* Enumerate type-count distributions summing to dish_slots. */
+  size_t c0min = 0, c0max = dish_slots < type_group_counts[0] ? dish_slots : type_group_counts[0];
+  for (size_t c0 = 0; c0 <= c0max; ++c0) {
+    size_t rem1 = dish_slots - c0;
+    size_t cap1 = rem1 < type_group_counts[1] ? rem1 : type_group_counts[1];
+    size_t min1 = rem1 > (type_group_counts[2]+type_group_counts[3]) ? rem1 - (type_group_counts[2]+type_group_counts[3]) : 0;
+    for (size_t c1 = min1; c1 <= cap1; ++c1) {
+      size_t rem2 = rem1 - c1;
+      size_t cap2 = rem2 < type_group_counts[2] ? rem2 : type_group_counts[2];
+      size_t min2 = rem2 > type_group_counts[3] ? rem2 - type_group_counts[3] : 0;
+      for (size_t c2 = min2; c2 <= cap2; ++c2) {
+        size_t c3 = rem2 - c2;
+        if (c3 > type_group_counts[3]) continue;
+        /* build dish combination from top items of each type */
+        size_t idxs[MAX_DISH_SLOTS];
+        size_t nidx = 0;
+        size_t pick[4] = {c0,c1,c2,c3};
+        for (int t = 0; t < 4; ++t)
+          for (size_t k = 0; k < pick[t]; ++k)
+            idxs[nidx++] = type_groups[t][k];
+        if (nidx != dish_slots) continue;
+        /* Preserve original dish-pool order for stable output. */
+        for (size_t a = 0; a < nidx; ++a)
+          for (size_t b = a + 1; b < nidx; ++b)
+            if (idxs[b] < idxs[a]) { size_t tmp = idxs[a]; idxs[a] = idxs[b]; idxs[b] = tmp; }
+        evaluate_dishes(idxs, dish_slots, &state);
+      }
+    }
+  }
 
   if (!state.found)
     return false;
