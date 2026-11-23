@@ -139,7 +139,9 @@
     const dict = I18N[next] || {};
     const map = { '/':'nav.optimizer','/characters':'nav.characters','/dishes':'nav.dishes','/status':'nav.status' };
     document.querySelectorAll('nav a.nav-link').forEach(a => {
-      const k = map[a.getAttribute('href')]; if (k && dict[k]) a.textContent = dict[k];
+      if (!a.dataset.defaultText) a.dataset.defaultText = a.textContent;
+      const k = map[a.getAttribute('href')];
+      a.textContent = (k && dict[k]) ? dict[k] : a.dataset.defaultText;
     });
     const st = document.querySelector('#navSettings .settings-title'); if (st) st.textContent = dict['settings.title'] || 'Settings';
     const tl = document.querySelector('label[for="themeSelect"]'); if (tl) tl.textContent = dict['settings.theme'] || 'Theme';
