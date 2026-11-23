@@ -185,18 +185,6 @@
 
   </main>
 
-  <div id="setupModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="setupModalTitle">
-    <div class="modal">
-      <h2 id="setupModalTitle">Welcome to NTE Cafe Optimizer</h2>
-      <p>Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.</p>
-      <div class="modal-actions">
-        <a class="modal-btn primary" href="/characters">Configure Characters</a>
-        <a class="modal-btn" href="/dishes">Configure Dishes</a>
-        <button type="button" class="modal-btn" id="setupModalLater">Later</button>
-      </div>
-    </div>
-  </div>
-
   <script src="/ui/theme.js"></script>
   <script>
     const DISH_IMAGES = {
@@ -295,10 +283,21 @@
     }
 
     function fmtNum(n) { const x = Number(n); return Number.isFinite(x) ? x.toLocaleString() : String(n); }
-    function maybeShowSetupModal(overview) {
-      if (!overview || !overview.isDefault) return;
-      if (sessionStorage.getItem('nte-cafe-setup-dismissed') === '1') return;
-      document.getElementById('setupModal')?.classList.add('open');
+    function renderDefaultSetup() {
+      const resultContent = document.getElementById('resultContent');
+      const resultTrend = document.getElementById('resultTrend');
+      if (resultTrend) resultTrend.textContent = '';
+      if (!resultContent) return;
+      resultContent.style.color = 'var(--text)';
+      resultContent.innerHTML = `
+        <div style="max-width:560px;margin:0 auto;text-align:center;padding:8px 0 4px;">
+          <div style="font-size:20px;font-weight:700;margin-bottom:8px;">Welcome to NTE Cafe Optimizer</div>
+          <p style="margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px;">Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.</p>
+          <div class="modal-actions" style="justify-content:center;">
+            <a class="modal-btn primary" href="/characters">Configure Characters</a>
+            <a class="modal-btn" href="/dishes">Configure Dishes</a>
+          </div>
+        </div>`;
     }
 
     async function loadOverview() {
@@ -312,7 +311,7 @@
           `<span><span class="kw">Dish combos:</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
           `<span><span class="kw">Total:</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
         ].join('');
-        maybeShowSetupModal(o);
+        if (o.isDefault) renderDefaultSetup();
         return o;
       } catch (_) {}
       return null;
@@ -410,10 +409,6 @@
         card.addEventListener('click', toggle);
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
         document.getElementById('calcBtn').addEventListener('click', runCalc);
-        const setupModal = document.getElementById('setupModal');
-        const dismiss = () => { sessionStorage.setItem('nte-cafe-setup-dismissed', '1'); setupModal?.classList.remove('open'); };
-        document.getElementById('setupModalLater')?.addEventListener('click', dismiss);
-        setupModal?.addEventListener('click', (e) => { if (e.target === setupModal) dismiss(); });
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');
         console.error(e);

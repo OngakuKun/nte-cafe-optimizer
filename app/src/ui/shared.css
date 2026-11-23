@@ -100,11 +100,6 @@ nav { display: flex; gap: 8px; align-items: center; }
 .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .nav-overlay { display: none; position: fixed; top: var(--header-h, 73px); right: 0; height: calc(100dvh - var(--header-h, 73px)); left: 0; background: rgba(0,0,0,.35); z-index: 35; }
 .nav-overlay.open { display: block; }
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 80; align-items: center; justify-content: center; padding: 20px; }
-.modal-overlay.open { display: flex; }
-.modal { width: min(560px, 100%); background: linear-gradient(180deg, var(--panel) 0%, var(--panel-alt) 100%); border: 1px solid var(--border); border-radius: 14px; box-shadow: none; padding: 22px; }
-.modal h2 { margin: 0 0 8px; font-size: 22px; }
-.modal p { margin: 0 0 14px; color: var(--muted); line-height: 1.5; font-size: 14px; }
 .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .modal-btn { appearance: none; border: 1px solid var(--border); background: var(--panel-alt); color: var(--text); padding: 10px 14px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
 .modal-btn:hover { border-color: var(--accent); color: var(--accent); }
