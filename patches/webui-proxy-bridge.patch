@@ -1,15 +1,21 @@
 --- a/src/webui.c
 +++ b/src/webui.c
-@@ -6523,7 +6523,7 @@
-         #define CUSTOM_WEBUI_WINDOW_DRAG "false"
+@@ -6513,13 +6513,8 @@
+     #else
+     const char* log = "false";
      #endif
- 
 -    size_t len = 256 + _webui_strlen((const char*)webui_javascript_bridge);
 +    size_t len = 1024 + _webui_strlen((const char*)webui_javascript_bridge);
      char* js = (char*)_webui_malloc(len);
-     #ifdef WEBUI_TLS
-     const char* TLS = "true";
-@@ -6539,8 +6539,8 @@
+-    #ifdef WEBUI_TLS
+-    const char* TLS = "true";
+-    #else
+-    const char* TLS = "false";
+-    #endif
+ 
+     #ifdef _WIN32
+         // WebView2 provides its own window dragging via `webkit-app-region`,
+@@ -6539,8 +6534,8 @@
      int c = WEBUI_SN_PRINTF_DYN(
          js, len,
          "%s\n document.addEventListener(\"DOMContentLoaded\",function(){ globalThis.webui = "
