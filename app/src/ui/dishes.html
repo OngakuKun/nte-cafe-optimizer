@@ -97,12 +97,12 @@
 
   <main>
     <div class="toolbar">
+      <span id="saveState" class="save-state"></span>
       <div class="bulk-actions">
         <button type="button" id="levelSwitch" class="bulk-btn">All to Max Level</button>
         <button type="button" id="ownedSwitch" class="bulk-btn">All to Owned</button>
+        <button type="button" id="resetDefaults" class="bulk-btn warning">Reset to Defaults</button>
       </div>
-      <span class="muted">Set ownership and level for each dish. Changes are saved automatically.</span>
-      <span id="saveState" class="save-state"></span>
     </div>
     <div id="error" class="err"></div>
     <div id="grid" class="grid"></div>
@@ -220,30 +220,24 @@
       });
     }
 
+    const RESET_WARNING = 'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.';
     const LEVEL_STEPS = [
       { mode: 1, label: 'All to Max Level' },
-      { mode: 2, label: 'All to Min Level' },
-      { mode: 5, label: 'All to Default', warning: true }
+      { mode: 2, label: 'All to Min Level' }
     ];
     const OWNED_STEPS = [
       { mode: 3, label: 'All to Owned' },
-      { mode: 4, label: 'All to Unowned' },
-      { mode: 5, label: 'All to Default', warning: true }
+      { mode: 4, label: 'All to Unowned' }
     ];
     let levelStep = 0;
     let ownedStep = 0;
 
-    function setupBulkButton(id, steps, getStep, setStep, warningText) {
+    function setupBulkButton(id, steps, getStep, setStep) {
       const btn = document.getElementById(id);
-      const paint = () => {
-        const step = steps[getStep()];
-        btn.textContent = step.label;
-        btn.classList.toggle('warning', !!step.warning);
-      };
+      const paint = () => { btn.textContent = steps[getStep()].label; };
       btn.addEventListener('click', async () => {
         const idx = getStep() % steps.length;
         const step = steps[idx];
-        if (step.warning && !window.confirm(warningText)) return;
         setSave('Saving...');
         try {
           const obj = JSON.parse(await setAllDishStates(step.mode));
@@ -260,10 +254,26 @@
       paint();
     }
 
-    setupBulkButton('levelSwitch', LEVEL_STEPS, () => levelStep, v => { levelStep = v; },
-      'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.');
-    setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; },
-      'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.');
+    setupBulkButton('levelSwitch', LEVEL_STEPS, () => levelStep, v => { levelStep = v; });
+    setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
+
+    document.getElementById('resetDefaults').addEventListener('click', async () => {
+      if (!window.confirm(RESET_WARNING)) return;
+      setSave('Saving...');
+      try {
+        const obj = JSON.parse(await setAllDishStates(5));
+        if (!obj.ok) throw new Error(obj.error || 'Save failed');
+        levelStep = 0;
+        ownedStep = 0;
+        document.getElementById('levelSwitch').textContent = LEVEL_STEPS[0].label;
+        document.getElementById('ownedSwitch').textContent = OWNED_STEPS[0].label;
+        await load();
+        setSave('Saved');
+      } catch (e) {
+        setSave('Save failed', true);
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    });
 
     async function load() {
       const status = document.getElementById('status');
