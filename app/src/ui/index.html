@@ -353,9 +353,10 @@
         ].join('');
         if (o.isDefault) renderDefaultSetup();
         else {
+          const minChars = 3, minDishes = 2;
           const missing = [];
-          if (!o.loadedCharacters) missing.push('characters');
-          if (!o.ownedDishes) missing.push('dishes');
+          if (o.loadedCharacters < minChars) missing.push('characters');
+          if (o.ownedDishes < minDishes) missing.push('dishes');
           if (missing.length) renderSetupNotice(missing);
         }
         return o;
