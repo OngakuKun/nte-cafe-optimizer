@@ -68,13 +68,14 @@
   <script>
     const T = (k, v) => NteTheme.t(k, v);
     const DN = n => NteTheme.displayName(n);
+    const TN = n => NteTheme.trendName(n);
     function esc(s) {
       return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     }
     function typeLabel(t) { return ['Beverages','Desserts','Main Dishes'].includes(t) ? T('type.' + t) : t; }
     function fmtSkill(s) {
       const val = s.type.includes('mult') ? (s.value * 100).toFixed(2) + '%' : s.value.toFixed(2);
-      const tag = s.tag && s.tag !== 'none' ? ' [' + s.tag + ']' : '';
+      const tag = s.tag && s.tag !== 'none' ? ' [' + TN(s.tag) + ']' : '';
       const kind = s.type.includes('price') ? T('skill.price') : s.type.includes('traffic') ? T('skill.traffic') : s.type;
       return `L${s.level} ${kind} ${val}${tag} (${T('skill.req')} ${s.req})`;
     }
@@ -96,7 +97,7 @@
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
         status.textContent = T('status.connected'); status.classList.remove('error');
-        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(DN(d.name))}</td><td>${esc(typeLabel(d.type))}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${Array.isArray(d.ingredients)?d.ingredients.map(esc).join(', '):d.ingredients}</td></tr>`).join('');
+        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(DN(d.name))}</td><td>${esc(typeLabel(d.type))}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${Array.isArray(d.ingredients)?d.ingredients.map(x => esc(TN(x))).join(', '):d.ingredients}</td></tr>`).join('');
         document.getElementById('charBody').innerHTML = chars.map((c, i) => `<tr><td>${i+1}</td><td>${esc(DN(c.name))}</td><td>${c.skillCount}</td><td><code>${esc((c.skills||[]).map(fmtSkill).join('; '))}</code></td></tr>`).join('');
       } catch (e) {
         status.textContent = T('status.error'); status.classList.add('error');

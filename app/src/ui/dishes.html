@@ -119,6 +119,7 @@
     const T = (k, v) => NteTheme.t(k, v);
     const DN = n => NteTheme.displayName(n);
     const CN = n => NteTheme.canonicalName(n);
+    const TN = n => NteTheme.trendName(n);
     const DISH_IMAGES = {
       'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
       'Iced Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
@@ -162,7 +163,7 @@
           ? `<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(name))}</div>'">`
           : `<div class="avatar-fallback">${esc(initials(name))}</div>`;
         const ings = Array.isArray(d.ingredients) ? d.ingredients : [];
-        const tags = [`<span class="tag ${typeClass(d.type)}">${esc(typeLabel(d.type))}</span>`, ...ings.map(x => `<span class="tag">${esc(x)}</span>`)].join('');
+        const tags = [`<span class="tag ${typeClass(d.type)}">${esc(typeLabel(d.type))}</span>`, ...ings.map(x => `<span class="tag">${esc(TN(x))}</span>`)].join('');
         return `
           <article class="dish-card ${d.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${d.owned ? 'true' : 'false'}" aria-label="${T('card.toggleOwned', { name: esc(name) })}">
             <div class="avatar-wrap">${img}</div>
