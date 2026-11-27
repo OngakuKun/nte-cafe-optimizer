@@ -172,7 +172,7 @@ Use `--no-build` to sync files without rebuilding/restarting containers.
 
 ## Notes / Current Behavior
 
-- **Per-client UI state is in memory; the shared config is on disk.** New clients are seeded from `config.json`, which is loaded at startup and can be exported/imported from Settings > Data. With no config file, defaults are the dataset minimums (empty roster, 1 cafe).
+- **Per-client UI state is in memory; the shared config is on disk.** New clients are seeded from `config.json`, which is loaded at startup and can be exported/imported from Settings > Data. With no config file, defaults are the dataset minimums (empty roster, 1 cafe). The selected trend is session-only: configs always store `"trend": "None"` and every client starts at No Trend.
 - **Game data comes from `data/gamedata.json`** for both server and CLI; the embedded copy is only a fallback.
 - **Reverse proxy deployment**: the WebUI bridge patch is required for proper operation behind Nginx Proxy Manager/TLS proxy setups.
 - **No secrets should be committed.** If adding accounts/OAuth later, use environment variables or secret files outside git.

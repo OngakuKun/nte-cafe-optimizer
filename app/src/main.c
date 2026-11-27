@@ -697,8 +697,8 @@ static void client_to_config(const ClientState *cs, CafeConfig *cfg) {
   cfg->cafes_owned = cs->cafe_settings.cafes_owned;
   memcpy(cfg->cafe_popularity, cs->cafe_settings.cafe_popularity,
          sizeof(cfg->cafe_popularity));
-  cfg->trend_name =
-      cs->cafe_settings.trend_name ? cs->cafe_settings.trend_name : "None";
+  /* Trend is session-only; never persist the selected one. */
+  cfg->trend_name = "None";
   cfg->decor = cs->cafe_settings.hotori_cat_decor;
 }
 
@@ -710,7 +710,8 @@ static void config_to_client(const CafeConfig *cfg, ClientState *cs) {
   memcpy(cs->cafe_settings.cafe_popularity, cfg->cafe_popularity,
          sizeof(cs->cafe_settings.cafe_popularity));
   cs->cafe_settings.hotori_cat_decor = cfg->decor;
-  apply_trend(&cs->cafe_settings, cfg->trend_name);
+  /* Configs never carry a trend — every client starts at No Trend. */
+  apply_trend(&cs->cafe_settings, "None");
   cs->cafe_settings.popularity_bonus =
       popularity_total_bonus(&cs->cafe_settings);
   cs->dish_state_initialized = true;

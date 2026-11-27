@@ -112,14 +112,6 @@ static int find_dish(const char *id) {
   return -1;
 }
 
-static const char *find_trend_name(const char *name) {
-  TrendOptions options = get_trend_options();
-  for (size_t i = 0; i < options.count; ++i)
-    if (strcmp(options.trends[i].name, name) == 0)
-      return options.trends[i].name;
-  return NULL;
-}
-
 void config_init_defaults(CafeConfig *cfg) {
   if (!cfg)
     return;
@@ -209,7 +201,9 @@ bool config_to_json(const CafeConfig *cfg, char *buf, size_t len) {
   if (written < 0 || (size_t)written >= (size_t)(end - p))
     return false;
   p += written;
-  write_string(&p, end, cfg->trend_name ? cfg->trend_name : "None");
+  /* Trends are session-only: configs always say "None", whatever the client
+   * currently has selected for its next optimization run. */
+  write_string(&p, end, "None");
 
   written = snprintf(p, (size_t)(end - p),
                      ",\n  \"decor\": %s,\n  \"popularity\": [",
@@ -386,16 +380,8 @@ bool config_from_json(const char *json, size_t len, CafeConfig *cfg,
       tmp.cafes_owned = n;
   }
 
-  int trend = obj_get(buffer, tokens, count, 0, "trend");
-  if (trend >= 0) {
-    const char *name = tok_str(buffer, &tokens[trend]);
-    const char *known = find_trend_name(name);
-    if (known)
-      tmp.trend_name = known;
-    else
-      warnf(warn, warn_len, "unknown trend '%s'; ", name);
-  }
-
+  /* Trend is deliberately not restored: it always starts as "None" (No Trend)
+   * and is only kept in memory for the current optimization run. */
   int decor = obj_get(buffer, tokens, count, 0, "decor");
   if (decor >= 0)
     tmp.decor = tok_bool(buffer, &tokens[decor]);

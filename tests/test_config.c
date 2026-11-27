@@ -66,7 +66,7 @@ int main(void) {
   assert(from_json.dish_state[0].level == cfg.dish_state[0].level);
   assert(from_json.character_state[0].level == cfg.character_state[0].level);
 
-  /* Round-trip real settings, keyed by stable IDs. */
+  /* Round-trip real settings, keyed by stable IDs (trend stays None). */
   int nanally = index_of_character("nanally");
   int latte = index_of_dish("coconut_latte");
   assert(nanally >= 0 && latte >= 0);
@@ -77,8 +77,11 @@ int main(void) {
   cfg.dish_state[latte].level = 2;
   cfg.cafes_owned = 3;
   cfg.cafe_popularity[0] = 2;
-  cfg.trend_name = "Coffee Beans";
+  cfg.trend_name = "Coffee Beans"; /* session-only: must not reach the file */
   cfg.decor = true;
+  assert(config_to_json(&cfg, json, sizeof(json)));
+  assert(strstr(json, "\"trend\": \"None\"") != NULL);
+  assert(strstr(json, "Coffee Beans") == NULL);
   assert(config_save_file(path, &cfg));
 
   memset(&loaded, 0, sizeof(loaded));
@@ -90,7 +93,8 @@ int main(void) {
   assert(loaded.dish_state[latte].level == 2);
   assert(loaded.cafes_owned == 3);
   assert(loaded.cafe_popularity[0] == 2);
-  assert(strcmp(loaded.trend_name, "Coffee Beans") == 0);
+  /* An old config's trend is ignored; it always comes back as No Trend. */
+  assert(strcmp(loaded.trend_name, "None") == 0);
   assert(loaded.decor);
 
   /* Default path always points at a config.json. */

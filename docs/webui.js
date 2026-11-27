@@ -38,7 +38,8 @@
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
-      if (saved && Array.isArray(saved.dish) && Array.isArray(saved.character)) return saved;
+      if (saved && Array.isArray(saved.dish) && Array.isArray(saved.character))
+        return { ...saved, trend: 'None' }; // trend is session-only
     } catch (_) { /* ignore broken local state */ }
     return defaultState(false);
   }
@@ -288,7 +289,7 @@
       format: 'nte-cafe-config',
       version: 1,
       cafes: state.cafes,
-      trend: state.trend,
+      trend: 'None', // session-only, like the C config
       decor: state.decor,
       popularity: state.popularity.slice(0, MAX_CAFES),
       characters: {},
@@ -312,7 +313,7 @@
     });
     state.cafes = clamp(cfg.cafes, 1, MAX_CAFES);
     state.popularity = Array.from({ length: MAX_CAFES }, (_, i) => clamp((cfg.popularity || [])[i], 0, TIERS[i].length));
-    state.trend = cfg.trend || 'None';
+    state.trend = 'None'; // configs never carry a trend
     state.decor = !!cfg.decor;
     persist();
     return warn.join('');
