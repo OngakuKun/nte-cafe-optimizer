@@ -2,6 +2,7 @@
 #include "data.h"
 #include "types.h"
 #include "gamedata_embedded.h"
+#define JSMN_STATIC
 #include "jsmn.h"
 
 #include <stdio.h>

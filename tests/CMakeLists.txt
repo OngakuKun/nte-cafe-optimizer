@@ -1,3 +1,15 @@
+add_executable(test_config
+    test_config.c
+)
+
+target_link_libraries(test_config
+    PRIVATE
+        nte_cafe
+)
+
+add_test(NAME config COMMAND test_config)
+
+
 add_executable(test_gamedata
     test_gamedata.c
 )

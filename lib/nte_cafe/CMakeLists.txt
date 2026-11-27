@@ -1,6 +1,7 @@
 add_library(nte_cafe
     src/data.c
     src/gamedata.c
+    src/config.c
     src/combinations.c
     src/trend.c
     src/popularity.c

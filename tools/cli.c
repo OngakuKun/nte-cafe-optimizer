@@ -1,4 +1,5 @@
 #include "cli_output.h"
+#include "config.h"
 #include "data.h"
 #include "gamedata.h"
 #include "optimizer.h"
@@ -9,16 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-typedef struct {
-  DishState dish_state[MAX_DISH_POOL];
-  CharacterState character_state[MAX_CHARACTER_POOL];
-  int cafes_owned;
-  int cafe_popularity[MAX_CAFES];
-  const char *trend_name;
-  bool decor;
-  const char *data_path;
-} CliOptions;
 
 static const char *prog = "nte-cafe-cli";
 
@@ -45,6 +36,11 @@ static void print_help(void) {
   printf("  --trend <name>        raw trend name, e.g. \"None\" or \"Coffee Beans\"\n");
   printf("  --decor               enable Hotori's Cat Decor\n");
   printf("  --no-decor            disable Hotori's Cat Decor\n\n");
+  printf("Config:\n");
+  printf("  The CLI uses config.json next to the executable. It is created with\n");
+  printf("  minimum values on first run; command-line options override it.\n");
+  printf("  --config <path>       use a different config file\n");
+  printf("  --generate-config     (re)write a default config.json and exit\n\n");
   printf("Data and info:\n");
   printf("  --data <path>         load a JSON dataset instead of the embedded one\n");
   printf("  --list                list every valid ID, level, cafe and trend\n");
@@ -139,7 +135,29 @@ static bool load_data(const char *path) {
   return gamedata_init_embedded();
 }
 
-static int parse_args(int argc, char **argv, CliOptions *opts) {
+static bool file_exists(const char *path) {
+  FILE *f = fopen(path, "rb");
+  if (!f)
+    return false;
+  fclose(f);
+  return true;
+}
+
+static const char *find_arg_value(int argc, char **argv, const char *flag) {
+  for (int i = 1; i < argc; ++i)
+    if (strcmp(argv[i], flag) == 0 && i + 1 < argc)
+      return argv[i + 1];
+  return NULL;
+}
+
+static bool has_arg(int argc, char **argv, const char *flag) {
+  for (int i = 1; i < argc; ++i)
+    if (strcmp(argv[i], flag) == 0)
+      return true;
+  return false;
+}
+
+static int parse_args(int argc, char **argv, CafeConfig *opts) {
   for (int i = 1; i < argc; ++i) {
     const char *arg = argv[i];
 
@@ -156,6 +174,13 @@ static int parse_args(int argc, char **argv, CliOptions *opts) {
         return error_arg(arg, "missing <path>");
       continue;
     }
+    if (strcmp(arg, "--config") == 0) {
+      if (++i >= argc)
+        return error_arg(arg, "missing <path>");
+      continue;
+    }
+    if (strcmp(arg, "--generate-config") == 0)
+      continue;
     if (strcmp(arg, "--char") == 0 || strcmp(arg, "--chars") == 0) {
       bool all = strcmp(arg, "--chars") == 0;
       if (i + 1 >= argc)
@@ -267,13 +292,10 @@ static int parse_args(int argc, char **argv, CliOptions *opts) {
 int main(int argc, char **argv) {
   if (argc > 0 && argv[0] && *argv[0]) {
     const char *slash = strrchr(argv[0], '/');
+    if (!slash)
+      slash = strrchr(argv[0], '\\');
     if (slash)
       prog = slash + 1;
-  }
-
-  if (argc == 1) {
-    print_help();
-    return 0;
   }
 
   const char *data_path = NULL;
@@ -284,17 +306,66 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  CliOptions opts;
-  memset(&opts, 0, sizeof(opts));
-  for (size_t i = 0; i < DISH_COUNT; ++i)
-    opts.dish_state[i].level = gamedata_dish_min_level();
-  for (size_t i = 0; i < CHARACTER_COUNT; ++i)
-    opts.character_state[i].level = gamedata_character_min_level();
-  opts.cafes_owned = 1;
-  opts.trend_name = "None";
-  opts.decor = false;
+  if (has_arg(argc, argv, "-h") || has_arg(argc, argv, "--help")) {
+    print_help();
+    return 0;
+  }
+  if (has_arg(argc, argv, "--list")) {
+    list_ids();
+    return 0;
+  }
+
+  const char *explicit_config = find_arg_value(argc, argv, "--config");
+  char *owned_path = NULL;
+  const char *config_path = explicit_config;
+  if (!config_path) {
+    owned_path = config_default_path(argc > 0 ? argv[0] : NULL);
+    config_path = owned_path;
+  }
+
+  CafeConfig opts;
+  config_init_defaults(&opts);
+
+  if (has_arg(argc, argv, "--generate-config")) {
+    if (!config_save_file(config_path, &opts)) {
+      fprintf(stderr, "Failed to write config: %s\n", config_path);
+      free(owned_path);
+      return 1;
+    }
+    printf("Wrote default config: %s\n", config_path);
+    fflush(stdout);
+    free(owned_path);
+    return 0;
+  }
+
+  bool created = false;
+  if (!file_exists(config_path)) {
+    if (config_save_file(config_path, &opts)) {
+      printf("Created default config: %s\n", config_path);
+      fflush(stdout);
+      created = true;
+    } else {
+      fprintf(stderr, "Warning: could not create config: %s\n", config_path);
+    }
+  }
+
+  char warn[512];
+  if (!config_load_file(config_path, &opts, warn, sizeof(warn))) {
+    fprintf(stderr, "Failed to read config: %s\n", config_path);
+    free(owned_path);
+    return 1;
+  }
+  if (warn[0])
+    fprintf(stderr, "Config warnings: %s\n", warn);
+
+  if (argc == 1 && created) {
+    print_help();
+    free(owned_path);
+    return 0;
+  }
 
   int parsed = parse_args(argc, argv, &opts);
+  free(owned_path);
   if (parsed != 0)
     return parsed == 1 ? 0 : 2;
 
