@@ -230,21 +230,20 @@
       });
     }
 
-    const RESET_WARNING = T('reset.dishes');
     const LEVEL_STEPS = [
-      { mode: 1, label: T('bulk.max') },
-      { mode: 2, label: T('bulk.min') }
+      { mode: 1, label: 'bulk.max' },
+      { mode: 2, label: 'bulk.min' }
     ];
     const OWNED_STEPS = [
-      { mode: 3, label: T('bulk.owned') },
-      { mode: 4, label: T('bulk.unowned') }
+      { mode: 3, label: 'bulk.owned' },
+      { mode: 4, label: 'bulk.unowned' }
     ];
     let levelStep = 0;
     let ownedStep = 0;
 
     function setupBulkButton(id, steps, getStep, setStep) {
       const btn = document.getElementById(id);
-      const paint = () => { btn.textContent = steps[getStep()].label; };
+      const paint = () => { btn.textContent = T(steps[getStep()].label); };
       btn.addEventListener('click', async () => {
         const idx = getStep() % steps.length;
         const step = steps[idx];
@@ -268,15 +267,15 @@
     setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
 
     document.getElementById('resetDefaults').addEventListener('click', async () => {
-      if (!window.confirm(RESET_WARNING)) return;
+      if (!window.confirm(T('reset.dishes'))) return;
       setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setAllDishStates(5));
         if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
         levelStep = 0;
         ownedStep = 0;
-        document.getElementById('levelSwitch').textContent = LEVEL_STEPS[0].label;
-        document.getElementById('ownedSwitch').textContent = OWNED_STEPS[0].label;
+        document.getElementById('levelSwitch').textContent = T(LEVEL_STEPS[0].label);
+        document.getElementById('ownedSwitch').textContent = T(OWNED_STEPS[0].label);
         await load();
         setSave(T('common.saved'));
       } catch (e) {
@@ -299,8 +298,8 @@
         document.getElementById('summary').innerHTML = T('summary.dishes', { a: `<strong>${active.length}</strong>`, n: states.length, b: breakdown });
         levelStep = states.length > 0 && states.every(d => Number(d.level) === 2) ? 1 : 0;
         ownedStep = states.length > 0 && states.every(d => d.owned) ? 1 : 0;
-        document.getElementById('levelSwitch').textContent = LEVEL_STEPS[levelStep].label;
-        document.getElementById('ownedSwitch').textContent = OWNED_STEPS[ownedStep].label;
+        document.getElementById('levelSwitch').textContent = T(LEVEL_STEPS[levelStep].label);
+        document.getElementById('ownedSwitch').textContent = T(OWNED_STEPS[ownedStep].label);
         status.textContent = T('status.connected'); status.classList.remove('error');
       } catch (e) {
         status.textContent = T('status.error'); status.classList.add('error');
