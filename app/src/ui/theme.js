@@ -11,17 +11,20 @@
   const I18N = {
     de: {
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status',
-      'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache'
+      'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache',
+      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren'
     },
     ja: {
       'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.cafes':'カフェ','nav.status':'ステータス',
       'sub.cafes':'カフェの人気度とボーナス','settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
-      'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報'
+      'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報',
+      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む'
     },
     'zh-CN': {
       'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.cafes':'咖啡馆','nav.status':'状态',
       'sub.cafes':'咖啡馆人气与奖励','settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
-      'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息'
+      'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息',
+      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置'
     }
   };
   const BUILTIN_THEMES = [
@@ -146,6 +149,8 @@
     const st = document.querySelector('#navSettings .settings-title'); if (st) st.textContent = dict['settings.title'] || 'Settings';
     const tl = document.querySelector('label[for="themeSelect"]'); if (tl) tl.textContent = dict['settings.theme'] || 'Theme';
     const ib = document.getElementById('importThemeBtn'); if (ib) ib.textContent = dict['settings.import'] || 'Import Theme';
+    const eb = document.getElementById('exportConfigBtn'); if (eb) eb.textContent = dict['settings.exportConfig'] || 'Export Config';
+    const cb = document.getElementById('importConfigBtn'); if (cb) cb.textContent = dict['settings.importConfig'] || 'Import Config';
     const ll = document.querySelector('label[for="langSelect"]'); if (ll) ll.textContent = dict['settings.language'] || 'Language';
     const sub = document.querySelector('.sub');
     if (sub) {
@@ -155,7 +160,95 @@
       sub.textContent = (sk && dict[sk]) ? dict[sk] : sub.dataset.defaultText;
     }
   }
-  function initSettingsPanel() {}
+  async function waitForBindings(names, timeoutMs = 8000) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (names.every(n => typeof window[n] === 'function')) return true;
+      await new Promise(r => setTimeout(r, 100));
+    }
+    return names.every(n => typeof window[n] === 'function');
+  }
+  function configStatus(msg, kind) {
+    const el = document.getElementById('configStatus');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'settings-hint' + (kind ? ' ' + kind : '');
+  }
+  function checkResult(raw) {
+    const obj = JSON.parse(raw);
+    if (obj && obj.ok === false) throw new Error(obj.error || 'Save failed');
+    return obj;
+  }
+  async function exportConfig() {
+    const names = ['getOptimizerSettings', 'getCharacterStates', 'getDishStates'];
+    if (!await waitForBindings(names)) throw new Error('Backend bindings unavailable. Open through the nte-cafe-app server.');
+    const [s, c, d] = await Promise.all(names.map(n => window[n]()));
+    const settings = JSON.parse(s), chars = JSON.parse(c), dishes = JSON.parse(d);
+    const cfg = {
+      format: 'nte-cafe-config',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      settings: {
+        trend: settings.trend || 'None',
+        hotoriCatDecor: !!settings.hotoriCatDecor,
+        cafesOwned: Number(settings.cafesOwned) || 1,
+        cafePopularity: (settings.cafes || []).map(x => Number(x.selected) || 0)
+      },
+      characters: chars.map(x => ({ owned: !!x.owned, level: Number(x.level) || 0 })),
+      dishes: dishes.map(x => ({ owned: !!x.owned, level: Number(x.level) || 1 }))
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nte-cafe-config-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    configStatus(`Exported ${chars.length} characters, ${dishes.length} dishes.`, 'ok');
+  }
+  async function importConfigFile(file) {
+    const cfg = JSON.parse(await file.text());
+    if (!cfg || cfg.format !== 'nte-cafe-config' || cfg.version !== 1)
+      throw new Error('Not an NTE Cafe config (format/version mismatch).');
+    if (!Array.isArray(cfg.characters) || !Array.isArray(cfg.dishes))
+      throw new Error('Config is missing the characters or dishes array.');
+    const names = ['setOptimizerSettings', 'setCafePopularity', 'setCharacterState', 'setDishState'];
+    if (!await waitForBindings(names)) throw new Error('Backend bindings unavailable. Open through the nte-cafe-app server.');
+
+    const s = cfg.settings || {};
+    checkResult(await setOptimizerSettings(String(s.trend || 'None'), !!s.hotoriCatDecor, Number(s.cafesOwned) || 1));
+    const cafes = Array.isArray(s.cafePopularity) ? s.cafePopularity : [];
+    for (let i = 0; i < cafes.length; i++)
+      checkResult(await setCafePopularity(i, Number(cafes[i]) || 0));
+    for (let i = 0; i < cfg.characters.length; i++) {
+      const c = cfg.characters[i] || {};
+      checkResult(await setCharacterState(i, !!c.owned, Number(c.level) || 0));
+    }
+    for (let i = 0; i < cfg.dishes.length; i++) {
+      const d = cfg.dishes[i] || {};
+      checkResult(await setDishState(i, !!d.owned, Number(d.level) || 1));
+    }
+    configStatus(`Imported ${cfg.characters.length} characters, ${cfg.dishes.length} dishes. Reloading…`, 'ok');
+    setTimeout(() => location.reload(), 500);
+  }
+  function initSettingsPanel() {
+    const eb = document.getElementById('exportConfigBtn');
+    const ib = document.getElementById('importConfigBtn');
+    const file = document.getElementById('importConfigFile');
+    if (eb) eb.addEventListener('click', async () => {
+      configStatus('Exporting…');
+      try { await exportConfig(); }
+      catch (e) { configStatus('Export failed: ' + (e && e.message ? e.message : String(e)), 'error'); }
+    });
+    if (ib && file) {
+      ib.addEventListener('click', () => file.click());
+      file.addEventListener('change', async (e) => {
+        const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+        configStatus('Importing…');
+        try { await importConfigFile(f); }
+        catch (ex) { configStatus('Import failed: ' + (ex && ex.message ? ex.message : String(ex)), 'error'); }
+      });
+    }
+  }
 
   function enhanceSelect(select) {
     if (!select || select.dataset.enhanced) return;
@@ -269,6 +362,12 @@
           <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
           <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+          <div class="settings-config-row">
+            <button id="exportConfigBtn" class="theme-btn" type="button">Export Config</button>
+            <button id="importConfigBtn" class="theme-btn" type="button">Import Config</button>
+          </div>
+          <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
+          <div id="configStatus" class="settings-hint"></div>
         </div>`;
     }
 
@@ -336,5 +435,5 @@
     enhanceSelects(document);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile };
 })();
