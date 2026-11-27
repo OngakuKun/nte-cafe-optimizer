@@ -1,0 +1,102 @@
+name: Build desktop releases
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.asset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            asset: nte-cafe-optimizer-windows-x64.zip
+            bin_dir: build/app/Release
+            exe: nte-cafe-desktop.exe
+          - os: ubuntu-24.04
+            asset: nte-cafe-optimizer-linux-x64.zip
+            bin_dir: build/app
+            exe: nte-cafe-desktop
+          - os: ubuntu-24.04-arm
+            asset: nte-cafe-optimizer-linux-arm64.zip
+            bin_dir: build/app
+            exe: nte-cafe-desktop
+          - os: macos-15-intel
+            asset: nte-cafe-optimizer-macos-intel.zip
+            bin_dir: build/app
+            exe: nte-cafe-desktop
+          - os: macos-15
+            asset: nte-cafe-optimizer-macos-arm64.zip
+            bin_dir: build/app
+            exe: nte-cafe-desktop
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Same fix the Docker build uses: the JS bridge must use the browser's
+      # origin instead of the internal WebUI port behind a TLS reverse proxy.
+      - name: Apply WebUI bridge patch
+        shell: bash
+        run: |
+          cd lib/webui
+          git apply -p1 ../../patches/webui-proxy-bridge.patch
+
+      # WebUI loads WebView2Loader.dll at runtime on Windows. Bundle the
+      # official loader so native WebView works out of the box; without it the
+      # app still falls back to the default browser.
+      - name: Bundle WebView2Loader.dll (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.Web.WebView2/" -OutFile "${{ runner.temp }}/webview2.zip"
+          Expand-Archive -Path "${{ runner.temp }}/webview2.zip" -DestinationPath "${{ runner.temp }}/webview2"
+          New-Item -ItemType Directory -Force -Path "${{ matrix.bin_dir }}" | Out-Null
+          Copy-Item "${{ runner.temp }}/webview2/build/native/x64/WebView2Loader.dll" -Destination "${{ matrix.bin_dir }}/WebView2Loader.dll"
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWEBUI_BUILD_EXAMPLES=OFF
+
+      - name: Build desktop app
+        run: cmake --build build --config Release --target nte-cafe-desktop --parallel 2
+
+      - name: Package
+        shell: bash
+        run: |
+          set -eu
+          mkdir -p package
+          cp "${{ matrix.bin_dir }}/${{ matrix.exe }}" package/
+          cp -R "${{ matrix.bin_dir }}/ui" package/ui
+          cp -R data package/data
+          cp README.md package/
+          cd package
+          cmake -E tar cf "../${{ matrix.asset }}" --format=zip -- .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    name: Attach builds to release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*.zip

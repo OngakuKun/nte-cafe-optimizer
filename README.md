@@ -108,6 +108,10 @@ Desktop mode is cross-platform: WebUI supports Windows WebView2, Linux GTK WebVi
 
 Either binary can switch modes at runtime: `--desktop` opens the window, `--server` starts the HTTP server, `--help` lists all options. UI assets and `data/gamedata.json` are copied next to each executable by the build, so a desktop binary can be run from its folder. `NTE_CAFE_CONFIG` and `NTE_CAFE_GAMEDATA` override the default paths (next to the executable). Builds are verified on Linux; Windows/macOS targets use WebUI's own CMake platform handling but were not built here.
 
+## Downloads
+
+Ready-to-run desktop builds are attached to each `v*` tag by `.github/workflows/release.yml`: Windows x64, Linux x64 + ARM64, and macOS Intel + Apple Silicon (all ZIP). The website's Download button points at `releases/latest`, so the links work once the first release tag is pushed. Arch Linux users can build from source with `makepkg` using `packaging/arch/PKGBUILD`.
+
 ## Configuration
 
 Environment variables:

@@ -1,0 +1,45 @@
+# Maintainer: Marcel Lehmkuhl <marcellehmkuhl@outlook.de>
+# Source build for Arch Linux; tracks the v* release tags.
+pkgname=nte-cafe-optimizer
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Desktop optimizer for NTE Cafe rosters, dishes and cafes'
+arch=('x86_64' 'aarch64')
+url='https://ongakukun.github.io/nte-cafe-optimizer/'
+license=('custom')
+depends=('gtk3' 'webkit2gtk-4.1')
+makedepends=('git' 'cmake')
+source=("git+https://github.com/OngakuKun/nte-cafe-optimizer.git#tag=v${pkgver}")
+sha256sums=('SKIP')
+
+prepare() {
+  cd "$srcdir/nte-cafe-optimizer"
+  git submodule update --init --recursive
+  git apply -p1 ../../patches/webui-proxy-bridge.patch
+}
+
+build() {
+  cmake -S "$srcdir/nte-cafe-optimizer" -B "$srcdir/build" \
+    -DCMAKE_BUILD_TYPE=Release -DWEBUI_BUILD_EXAMPLES=OFF
+  cmake --build "$srcdir/build" --target nte-cafe-desktop
+}
+
+package() {
+  install -d "$pkgdir/usr/share/nte-cafe"
+  install -Dm755 "$srcdir/build/app/nte-cafe-desktop" \
+    "$pkgdir/usr/share/nte-cafe/nte-cafe-desktop"
+  cp -r "$srcdir/build/app/ui" "$pkgdir/usr/share/nte-cafe/ui"
+  install -Dm644 "$srcdir/nte-cafe-optimizer/data/gamedata.json" \
+    "$pkgdir/usr/share/nte-cafe/data/gamedata.json"
+
+  # The binary looks for UI/data/config next to itself. Keep it in /usr/share
+  # and use a wrapper so the user's config lands in XDG_CONFIG_HOME instead.
+  cat > "$pkgdir/usr/bin/nte-cafe" <<'EOF'
+#!/bin/sh
+export NTE_CAFE_GAMEDATA=/usr/share/nte-cafe/data/gamedata.json
+export NTE_CAFE_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/nte-cafe/config.json"
+mkdir -p "$(dirname "$NTE_CAFE_CONFIG")"
+exec /usr/share/nte-cafe/nte-cafe-desktop "$@"
+EOF
+  chmod 755 "$pkgdir/usr/bin/nte-cafe"
+}
