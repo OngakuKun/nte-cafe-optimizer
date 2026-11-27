@@ -93,7 +93,8 @@
       'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
       'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
       'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
-      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.reset':'Reset to Defaults','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.reset':'Reset to Defaults','settings.appInfo':'App Info','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'appInfo.title':'App Info','appInfo.ingredients':'Ingredients Loaded','appInfo.contentHash':'Content Hash','appInfo.failed':'Could not load app info: ','dialog.close':'Close',
       'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
       'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
       'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
@@ -129,7 +130,8 @@
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menü',
       'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
       'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
-      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reset':'Auf Standard zurücksetzen','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reset':'Auf Standard zurücksetzen','settings.appInfo':'App Info','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'appInfo.title':'App Info','appInfo.ingredients':'Zutaten geladen','appInfo.contentHash':'Inhalts-Hash','appInfo.failed':'App-Info konnte nicht geladen werden: ','dialog.close':'Schließen',
       'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
       'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
       'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
@@ -404,6 +406,7 @@
     const eb = document.getElementById('exportConfigBtn');
     const ib = document.getElementById('importConfigBtn');
     const rb = document.getElementById('resetDefaultsBtn');
+    const ab = document.getElementById('appInfoBtn');
     const file = document.getElementById('importConfigFile');
     if (eb) eb.addEventListener('click', async () => {
       configStatus(t('export.exporting'));
@@ -420,6 +423,7 @@
       });
     }
     if (rb) rb.addEventListener('click', () => resetDefaultsDialog());
+    if (ab) ab.addEventListener('click', () => appInfoDialog());
   }
 
   function enhanceSelect(select) {
@@ -549,6 +553,9 @@
           </div>
           <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
           <div id="configStatus" class="settings-hint"></div>
+        </div>
+        <div class="settings-config-row">
+          <button id="appInfoBtn" class="theme-btn" type="button" data-i18n="settings.appInfo">App Info</button>
         </div>`;
     }
 
@@ -630,7 +637,22 @@
       buttons.forEach(b => actions.appendChild(b));
       if (buttons.length) buttons[buttons.length - 1].focus();
     };
-    return { backdrop, key, close, button, set };
+    /* Key/value view for read-only dialogs; DOM nodes keep values unescaped-safe. */
+    const setRows = (titleText, rows, buttons) => {
+      title.textContent = titleText;
+      const dl = document.createElement('dl');
+      dl.className = 'nte-dialog-info';
+      rows.forEach(([label, value]) => {
+        const dt = document.createElement('dt'); dt.textContent = label;
+        const dd = document.createElement('dd'); dd.textContent = value == null ? '-' : String(value);
+        dl.append(dt, dd);
+      });
+      text.replaceChildren(dl);
+      actions.textContent = '';
+      buttons.forEach(b => actions.appendChild(b));
+      if (buttons.length) buttons[buttons.length - 1].focus();
+    };
+    return { backdrop, key, close, button, set, setRows };
   }
 
   /* Central in-app confirmation dialog. Replaces window.confirm so the same
@@ -682,6 +704,29 @@
       if (e.key === 'Escape') { e.preventDefault(); d.close(); }
       else if (e.key === 'Enter') { e.preventDefault(); reset.click(); }
     });
+    d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) d.close(); });
+  }
+
+  /* Settings > App Info uses the same backend info as the Status page. */
+  async function appInfoDialog() {
+    const d = createDialogShell();
+    const closeBtn = () => d.button(t('dialog.close'), 'modal-btn primary', () => d.close());
+    try {
+      if (!await waitForBindings(['getAppInfo'])) throw new Error(t('common.noBackend'));
+      const info = JSON.parse(await window.getAppInfo());
+      d.setRows(t('appInfo.title'), [
+        [t('status.gameVersion'), info.gameVersion],
+        [t('status.webuiVersion'), info.webui],
+        [t('status.dishesLoaded'), info.dishCount],
+        [t('status.charsLoaded'), info.characterCount],
+        [t('appInfo.ingredients'), info.ingredientCount],
+        [t('appInfo.contentHash'), info.contentHash]
+      ], [closeBtn()]);
+    } catch (e) {
+      d.set(t('appInfo.title'),
+            t('appInfo.failed') + (e && e.message ? e.message : String(e)), [closeBtn()]);
+    }
+    d.key((e) => { if (e.key === 'Escape') { e.preventDefault(); d.close(); } });
     d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) d.close(); });
   }
 
