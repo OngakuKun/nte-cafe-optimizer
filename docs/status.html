@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="title.status">NTE Cafe - Status</title>
-  <script src="webui.js?v=cdf3386"></script>
-  <link rel="stylesheet" href="shared.css?v=cdf3386">
+  <script src="webui.js?v=d425ed3"></script>
+  <link rel="stylesheet" href="shared.css?v=d425ed3">
   <style>
     .grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 20px; }
     .value { font-size: 18px; font-weight: 700; margin-top: 8px; word-break: break-word; }
@@ -34,7 +34,8 @@
       <a class="nav-link active" href="status.html" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading" hidden></div>
+      <button id="downloadBtn" class="theme-btn download-btn" type="button" aria-haspopup="dialog">Download</button>
     </div>
   </header>
 
@@ -64,7 +65,7 @@
     </section>
   </main>
 
-  <script src="theme.js?v=cdf3386"></script>
+  <script src="theme.js?v=d425ed3"></script>
   <script>
     const T = (k, v) => NteTheme.t(k, v);
     const DN = n => NteTheme.displayName(n);

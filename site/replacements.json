@@ -1,1 +1,32 @@
-{}
+{
+  "index.html": [
+    [
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\">Loading...</div>",
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\" hidden></div>\n      <button id=\"downloadBtn\" class=\"theme-btn download-btn\" type=\"button\" aria-haspopup=\"dialog\">Download</button>"
+    ]
+  ],
+  "characters.html": [
+    [
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\">Loading...</div>",
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\" hidden></div>\n      <button id=\"downloadBtn\" class=\"theme-btn download-btn\" type=\"button\" aria-haspopup=\"dialog\">Download</button>"
+    ]
+  ],
+  "dishes.html": [
+    [
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\">Loading...</div>",
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\" hidden></div>\n      <button id=\"downloadBtn\" class=\"theme-btn download-btn\" type=\"button\" aria-haspopup=\"dialog\">Download</button>"
+    ]
+  ],
+  "cafes.html": [
+    [
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\">Loading...</div>",
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\" hidden></div>\n      <button id=\"downloadBtn\" class=\"theme-btn download-btn\" type=\"button\" aria-haspopup=\"dialog\">Download</button>"
+    ]
+  ],
+  "status.html": [
+    [
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\">Loading...</div>",
+      "      <div class=\"pill\" id=\"status\" data-i18n=\"status.loading\" hidden></div>\n      <button id=\"downloadBtn\" class=\"theme-btn download-btn\" type=\"button\" aria-haspopup=\"dialog\">Download</button>"
+    ]
+  ]
+}
