@@ -130,6 +130,9 @@ bool optimize_cafe(const CafeContext *ctx, OptimizationResult *result) {
     dish_pool[dish_pool_count].base_price = dish_base_price(
         &ctx->dishes[i], ctx->dish_state[i].level, &ctx->settings);
 
+    dish_pool[dish_pool_count].trend_bonus =
+        dish_trend_bonus(&ctx->dishes[i], &ctx->settings);
+
     ++dish_pool_count;
   }
 

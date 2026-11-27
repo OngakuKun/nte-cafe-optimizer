@@ -55,9 +55,10 @@ double evaluate_income_fast(const MenuStats *menu,
     multiplier_bonus += base_traffic * 0.01;
   traffic = base_traffic + multiplier_bonus;
 
-  double adjusted_price_sum =
-      menu->base_price_sum + ((double)menu->dish_count * price_buff);
-  return adjusted_price_sum * price_multiplier * (traffic / 100.0);
+  double adjusted_price_sum = menu->base_price_sum - menu->trend_bonus_sum +
+                              ((double)menu->dish_count * price_buff);
+  return (adjusted_price_sum * price_multiplier + menu->trend_bonus_sum) *
+         (traffic / 100.0);
 }
 
 static void apply_flat_skills(const CandidateCharacter *characters,
@@ -149,13 +150,16 @@ static double apply_price_multipliers(const CandidateCharacter *characters,
 static double calculate_income(const MenuStats *menu, double traffic,
                                double price_buff, double price_multiplier) {
   /*
-   * Equivalent to:
-   *   sum((basePrice + priceBuff) * priceMultiplier * traffic / 100)
+   * The game adds the trend bonus AFTER character price multipliers:
+   *   sum(((basePrice + priceBuff) * priceMultiplier + trendBonus)
+   *       * traffic / 100)
+   * base_price_sum still contains the bonuses, so remove them first.
    */
-  double adjusted_price_sum =
-      menu->base_price_sum + ((double)menu->dish_count * price_buff);
+  double adjusted_price_sum = menu->base_price_sum - menu->trend_bonus_sum +
+                              ((double)menu->dish_count * price_buff);
 
-  return adjusted_price_sum * price_multiplier * (traffic / 100.0);
+  return (adjusted_price_sum * price_multiplier + menu->trend_bonus_sum) *
+         (traffic / 100.0);
 }
 
 OptimizationResult evaluate_candidate(const CandidateDish *dishes,

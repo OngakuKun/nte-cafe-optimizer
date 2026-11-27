@@ -46,6 +46,7 @@ void calculate_menu_stats(const CandidateDish *dishes, size_t dish_count,
   for (size_t i = 0; i < dish_count; ++i) {
     const Dish *dish = dishes[i].dish;
     stats->base_price_sum += dishes[i].base_price;
+    stats->trend_bonus_sum += dishes[i].trend_bonus;
 
     if (!dish->type)
       continue;

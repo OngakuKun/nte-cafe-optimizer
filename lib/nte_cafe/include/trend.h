@@ -4,6 +4,7 @@
 #include "types.h"
 
 bool dish_matches_trend(const Dish *dish, const CafeSettings *settings);
+double dish_trend_bonus(const Dish *dish, const CafeSettings *settings);
 double dish_base_price(const Dish *dish, int level, const CafeSettings *settings);
 
 float get_trend_bonus(TrendType type);

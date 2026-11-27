@@ -40,7 +40,7 @@ int main(void) {
       "Caramel & Cocoa Mille-Feuille",
   };
   static const int EXPECTED_DISH_LEVELS[] = {2, 2, 2, 2, 2};
-  static const double EXPECTED_DISH_FPH[] = {487.68, 517.13, 531.85, 576.03, 605.48};
+  static const double EXPECTED_DISH_FPH[] = {487.68, 517.13, 531.85, 574.49, 603.94};
   static const bool EXPECTED_DISH_TREND[] = {false, false, false, true, true};
   static const char *EXPECTED_CHARS[] = {
       "Sakiri", "Skia", "Haniel", "Edgar", "Aurelia",
@@ -86,7 +86,7 @@ int main(void) {
   OptimizationResult result;
   assert(optimize_cafe(&ctx, &result));
 
-  assert_double_equal(result.income, 2718.16, 0.01);
+  assert_double_equal(result.income, 2715.09, 0.01);
   assert_double_equal(result.traffic, 2791.39, 0.01);
   assert_double_equal(result.price_buff, 1.56, 1e-9);
   assert_double_equal(result.price_multiplier, 1.055, 1e-9);
@@ -101,7 +101,9 @@ int main(void) {
     }
     assert(level == EXPECTED_DISH_LEVELS[i]);
     double base_price = dish_base_price(result.dishes[i], level, &settings);
-    double fph = (base_price + result.price_buff) * result.price_multiplier * (result.traffic / 100.0);
+    double trend_bonus = EXPECTED_DISH_TREND[i] ? settings.trend_bonus : 0.0;
+    double fph = ((base_price - trend_bonus + result.price_buff) * result.price_multiplier +
+                  trend_bonus) * (result.traffic / 100.0);
     assert_double_equal(fph, EXPECTED_DISH_FPH[i], 0.01);
     assert(dish_matches_trend(result.dishes[i], &settings) == EXPECTED_DISH_TREND[i]);
   }

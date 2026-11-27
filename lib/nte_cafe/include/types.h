@@ -95,7 +95,8 @@ typedef struct {
 
 typedef struct {
     const Dish *dish;
-    double base_price;
+    double base_price; /* dish price including the trend bonus */
+    double trend_bonus; /* the part of base_price added by the trend */
 } CandidateDish;
 
 typedef struct {
@@ -109,7 +110,8 @@ typedef struct {
     int type_counts[4];
     int tag_counts[5];
     int max_type_count;
-    double base_price_sum;
+    double base_price_sum; /* includes trend bonuses */
+    double trend_bonus_sum;
     size_t dish_count;
 } MenuStats;
 

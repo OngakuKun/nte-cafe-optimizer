@@ -183,6 +183,12 @@ bool dish_matches_trend(const Dish *dish, const CafeSettings *settings) {
   return false;
 }
 
+double dish_trend_bonus(const Dish *dish, const CafeSettings *settings) {
+  if (!settings || !dish_matches_trend(dish, settings))
+    return 0.0;
+  return settings->trend_bonus;
+}
+
 double dish_base_price(const Dish *dish, int level,
                        const CafeSettings *settings) {
   if (!dish)
@@ -190,9 +196,9 @@ double dish_base_price(const Dish *dish, int level,
 
   double price = (level == 2) ? dish->price_l2 : dish->price_l1;
 
-  if (dish_matches_trend(dish, settings)) {
-    price += settings->trend_bonus;
-  }
+  /* Kept in the displayed base price for ranking; evaluation removes it
+   * again before applying character price multipliers (see evaluate.c). */
+  price += dish_trend_bonus(dish, settings);
 
   return price;
 }

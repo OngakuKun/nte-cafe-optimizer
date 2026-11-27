@@ -417,8 +417,10 @@ static void run_optimization(webui_event_t *e) {
         break;
       }
     }
-    double fph = (base_price + res.price_buff) * res.price_multiplier * (res.traffic / 100.0);
     bool in_trend = dish_matches_trend(res.dishes[i], &cs->cafe_settings);
+    double trend_bonus = in_trend ? cs->cafe_settings.trend_bonus : 0.0;
+    double fph = ((base_price - trend_bonus + res.price_buff) * res.price_multiplier +
+                  trend_bonus) * (res.traffic / 100.0);
     off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"level\":%d,\"fonsPerHour\":%.2f,\"inTrend\":%s}", i?",":"", n, level, fph, in_trend ? "true" : "false");
   }
   off += snprintf(buf+off, cap-off, "],\"characters\":[");
