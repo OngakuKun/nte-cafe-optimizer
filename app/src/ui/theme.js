@@ -253,10 +253,10 @@
   }
   /* Canonical wiki name — stable key for image lookups, independent of UI language. */
   function canonicalName(name) { return NAME_MAP[name] || name; }
-  /* Localised display name. German dish names come from Fuu's translation table. */
+  /* Localised display name. German dish names come from Fuu's translation table; EN stays canonical. */
   function displayName(name) {
     const canonical = canonicalName(name);
-    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : (EN_NAMES[canonical] || canonical);
+    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : canonical;
   }
   function trendName(name) {
     const dict = (document.documentElement.lang || 'en') === 'de' ? TREND_DE : TREND_EN;
