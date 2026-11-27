@@ -93,7 +93,7 @@
       'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
       'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
       'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
-      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.reset':'Reset to Defaults','settings.resetDone':'Setup reset to defaults.','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.reset':'Reset to Defaults','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
       'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
       'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
       'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
@@ -113,7 +113,7 @@
       'summary.characters':'Character active: {a}/{n} ({b})','summary.dishes':'Dishes active: {a}/{n} ({b})',
       'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned',
       'dialog.confirm':'Confirm','dialog.cancel':'Cancel','dialog.reset':'Reset','dialog.resetTitle':'Reset to Defaults',
-      'reset.defaults':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.','reset.reloadHint':'Reload the page to see the changes.',
+      'reset.defaults':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.',
       'card.owned':'Owned','card.notOwned':'Not Owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -129,7 +129,7 @@
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menü',
       'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
       'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
-      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reset':'Auf Standard zurücksetzen','settings.resetDone':'Einstellungen auf Standard zurückgesetzt.','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reset':'Auf Standard zurücksetzen','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
       'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
       'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
       'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
@@ -149,7 +149,7 @@
       'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
       'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen',
       'dialog.confirm':'Bestätigen','dialog.cancel':'Abbrechen','dialog.reset':'Zurücksetzen','dialog.resetTitle':'Auf Standard zurücksetzen',
-      'reset.defaults':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.','reset.reloadHint':'Lade die Seite neu, damit die Änderungen sichtbar werden.',
+      'reset.defaults':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.',
       'card.owned':'In Besitz','card.notOwned':'Nicht in Besitz','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
       'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -660,35 +660,29 @@
     });
   }
 
-  /* Reset stays in one popup: confirm first, then show success with a Reload
-   * button right there. Dismissing after success also reloads, so the UI can
-   * never be left showing stale state. */
+  /* Reset keeps the confirmation popup, then reloads the page itself so the
+   * fresh state is shown without an extra click. */
   function resetDefaultsDialog() {
     const d = createDialogShell();
-    let reloaded = false;
-    const dismiss = () => { if (reloaded) location.reload(); else d.close(); };
     const cancel = d.button(t('dialog.cancel'), 'modal-btn', () => d.close());
     const reset = d.button(t('dialog.reset'), 'modal-btn danger', async () => {
       cancel.disabled = true; reset.disabled = true;
       try {
         if (!await waitForBindings(['resetDefaults'])) throw new Error(t('common.noBackend'));
         checkResult(await window.resetDefaults());
-        reloaded = true;
-        d.set(t('settings.resetDone'), t('reset.reloadHint'), [
-          d.button(t('settings.reload'), 'modal-btn primary', () => location.reload())
-        ]);
+        location.reload();
       } catch (ex) {
-        d.set(t('common.saveFailed'), t('common.saveFailed') + (ex && ex.message ? ' ' + ex.message : String(ex)), [
+        d.set(t('dialog.resetTitle'), t('common.saveFailed') + (ex && ex.message ? ' ' + ex.message : String(ex)), [
           d.button(t('dialog.cancel'), 'modal-btn', () => d.close())
         ]);
       }
     });
     d.set(t('dialog.resetTitle'), t('reset.defaults'), [cancel, reset]);
     d.key((e) => {
-      if (e.key === 'Escape') { e.preventDefault(); dismiss(); }
-      else if (e.key === 'Enter') { e.preventDefault(); if (reloaded) location.reload(); else reset.click(); }
+      if (e.key === 'Escape') { e.preventDefault(); d.close(); }
+      else if (e.key === 'Enter') { e.preventDefault(); reset.click(); }
     });
-    d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) dismiss(); });
+    d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) d.close(); });
   }
 
   function initTheme() {
