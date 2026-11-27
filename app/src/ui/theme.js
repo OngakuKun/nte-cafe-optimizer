@@ -16,7 +16,7 @@
     'Ham & Cheese': 'Ham & Cheese Croissant',
     'Dafodil': 'Daffodill',
   };
-  /* German display names from Fuu's translation table; keys are canonical wiki names. */
+  /* German display names; keys are canonical wiki names. */
   const DE_NAMES = {
     'Coconut Latte': 'Kokos-Latte',
     'Iced Mocha': 'Eis-Mokka',
@@ -37,10 +37,6 @@
     'Ham & Cheese Croissant': 'Schinken-Käse-Croissant',
     'Caramel & Cocoa Mille-Feuille': 'Mille-Feuille mit Karamell und Kakao',
   };
-  /* English display names from Fuu's current translation table; keys are canonical wiki names. */
-  const EN_NAMES = {
-    'Tomato & Fried Eggs Croissant': 'Tonato & Fried Egg Croissant',
-  };
   /* Trend option labels. Keys are the raw backend values — never translate the value itself. */
   const TREND_DE = {
     'None': 'Ohne Trend',
@@ -49,7 +45,7 @@
     'Beverages': 'Getränke',
     'Fruit': 'Obst',
     'Coffee Beans': 'Kaffeebohnen',
-    'Coconut': 'Kokos',
+    'Coconut': 'Kokosnuss',
     'Cocoa Powder': 'Kakaopulver',
     'Flour': 'Mehl',
     'Apple': 'Apfel',
@@ -110,7 +106,6 @@
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Beverages','type.Desserts':'Desserts','type.Main Dishes':'Main Dishes',
       'cafe.popularityLabel':'Total multiplier for all cafes','cafe.cafesOwned':'Cafes Owned','cafe.level':'Level {n} · Popularity {p}','cafe.active':'Active','cafe.locked':'Locked','cafe.noBonus':'No bonus','cafe.currentBonus':'Current bonus:',
-      /* Branch names from Fuu's current translation table. */
       'cafe.name.1':'Bluebeard Road Location','cafe.name.2':'Fiscus Avenue Location','cafe.name.3':'Davidia Avenue Location','cafe.name.4':'Moomin Street Location','cafe.name.5':'Hankaku Street Location','cafe.name':'Cafe {n}',
       'status.gameVersion':'Game Version','status.webuiVersion':'WebUI Version','status.dishesLoaded':'Dishes Loaded','status.charsLoaded':'Characters Loaded',
       'status.section.dishes':'Dishes','status.section.characters':'Characters',
@@ -134,18 +129,17 @@
       'cafe.owned':'Cafés im Besitz','cafe.ownedDesc':'Lege fest, wie viele Cafés optimiert werden.','cafe.badge':'Cafés','cafe.count':'Anzahl','cafe.edit':'Cafés bearbeiten →','cafe.one':'1 Café','cafe.many':'{n} Cafés',
       'trend.title':'Trend','trend.current':'Aktueller Trend','trend.bonus':'Trend-Bonus:','trend.none':'Keiner','trend.group.dishTypes':'Gerichttypen','trend.group.categories':'Kategorien','trend.group.ingredients':'Zutaten',
       'run.optimizer':'Optimierer starten',
-      'decor.title':'Hotoris Katzendeko','decor.desc':'Hotori-Katzendeko-Bonus bei der Optimierung berücksichtigen.','decor.alt':'Exklusive Kundenservice-Deko','decor.bonus':'+1 % Grund-Traffic','decor.enabled':'Aktiviert','decor.disabled':'Deaktiviert',
+      'decor.title':"Hotori's Katzendekor",'decor.desc':'Hotori-Katzendeko-Bonus bei der Optimierung berücksichtigen.','decor.alt':'Exklusive Kundenservice-Deko','decor.bonus':'+1% Aufkommen','decor.enabled':'Aktiviert','decor.disabled':'Deaktiviert',
       'result.title':'Ergebnis','result.empty':'Optimierer starten, um Ergebnisse zu sehen.','result.calculating':'Berechne...','result.traffic':'Traffic','result.income':'Einkommen','result.priceBuff':'Preis-Buff','result.popularityBonus':'Beliebtheitsbonus','result.hours':'in {h} Std.','result.trend':'Trend:','result.inTrend':'Im Trend','result.noChars':'Keine Charaktere ausgewählt.','result.noDishes':'Keine Gerichte ausgewählt.','result.perHour':'/h',
       'default.title':'Willkommen beim NTE Cafe Optimizer','default.desc':'Deine Einstellungen sind noch standardmäßig. Konfiguriere deine Charaktere, Gerichte und Cafés, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','default.configureChars':'Charaktere konfigurieren','default.configureDishes':'Gerichte konfigurieren',
       'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
       'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen','bulk.reset':'Auf Standard zurücksetzen',
       'reset.characters':'ALLE Charaktere auf nicht besitzt und Stufe 0 zurücksetzen? Alle Charaktereinstellungen gehen verloren.','reset.dishes':'ALLE Gerichte auf nicht besitzt und Stufe 1 zurücksetzen? Alle Gerichtseinstellungen gehen verloren.',
       'card.owned':'Besitzt','card.notOwned':'Nicht besitzt','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
-      'skill.price':'Preis','skill.traffic':'Traffic','skill.req':'Benötigt',
+      'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Getränke','type.Desserts':'Desserts','type.Main Dishes':'Hauptgerichte',
       'cafe.popularityLabel':'Gesamtmultiplikator für alle Läden','cafe.cafesOwned':'Cafés im Besitz','cafe.level':'Stufe {n} · Beliebtheit {p}','cafe.active':'Aktiv','cafe.locked':'Gesperrt','cafe.noBonus':'Kein Bonus','cafe.currentBonus':'Aktueller Bonus:',
-      /* Branch names from Fuu's translation table. */
       'cafe.name.1':'Standort Blaubart-Straße','cafe.name.2':'Standort Fiskus-Allee','cafe.name.3':'Standort Davidia-Allee Nord','cafe.name.4':'Standort Mumin-Straße','cafe.name.5':'Standort Hankaku-Straße','cafe.name':'Café {n}',
       'status.gameVersion':'Spielversion','status.webuiVersion':'WebUI-Version','status.dishesLoaded':'Gerichte geladen','status.charsLoaded':'Charaktere geladen',
       'status.section.dishes':'Gerichte','status.section.characters':'Charaktere',
