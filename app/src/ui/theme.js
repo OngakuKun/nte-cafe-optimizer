@@ -93,9 +93,8 @@
       'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
       'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
       'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
-      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.saveConfig':'Save config.json','settings.loadConfig':'Load config.json','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
       'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
-      'config.loading':'Loading config...','config.saved':'Config saved to {p}','config.loaded':'Config loaded','config.failed':'Config action failed: ',
       'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
       'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
       'common.optimizationFailed':'Optimization failed','common.failed':'Failed: ',
@@ -128,9 +127,8 @@
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menü',
       'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
       'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
-      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.saveConfig':'config.json speichern','settings.loadConfig':'config.json laden','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
       'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
-      'config.loading':'Lade Config...','config.saved':'Config gespeichert nach {p}','config.loaded':'Config geladen','config.failed':'Config-Aktion fehlgeschlagen: ',
       'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
       'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
       'common.optimizationFailed':'Optimierung fehlgeschlagen','common.failed':'Fehlgeschlagen: ',
@@ -386,7 +384,7 @@
     const text = await file.text();
     let cfg;
     try { cfg = JSON.parse(text); } catch (_) { throw new Error(t('import.invalid')); }
-    if (!cfg || cfg.format !== 'nte-cafe-cli-config')
+    if (!cfg || cfg.format !== 'nte-cafe-config')
       throw new Error(t('import.invalid'));
     if (!cfg.characters || !cfg.dishes)
       throw new Error(t('import.missing'));
@@ -398,25 +396,10 @@
       d: Object.keys(cfg.dishes).length
     }), 'ok', true);
   }
-  async function saveConfigFile() {
-    if (!await waitForBindings(['saveConfig', 'getConfigPath'])) throw new Error(t('common.noBackend'));
-    checkResult(await window.saveConfig());
-    const info = JSON.parse(await window.getConfigPath());
-    configStatus(t('config.saved', { p: info.path || 'config.json' }), 'ok');
-  }
-  async function loadConfigFile() {
-    if (!await waitForBindings(['loadConfig'])) throw new Error(t('common.noBackend'));
-    configStatus(t('config.loading'));
-    const res = checkResult(await window.loadConfig());
-    if (res.warning) console.warn('Config load:', res.warning);
-    configStatus(t('config.loaded'), 'ok', true);
-  }
   function initSettingsPanel() {
     const eb = document.getElementById('exportConfigBtn');
     const ib = document.getElementById('importConfigBtn');
     const file = document.getElementById('importConfigFile');
-    const sb = document.getElementById('saveConfigBtn');
-    const lb = document.getElementById('loadConfigBtn');
     if (eb) eb.addEventListener('click', async () => {
       configStatus(t('export.exporting'));
       try { await exportConfig(); }
@@ -431,14 +414,6 @@
         catch (ex) { configStatus(t('import.failed') + (ex && ex.message ? ex.message : String(ex)), 'error'); }
       });
     }
-    if (sb) sb.addEventListener('click', async () => {
-      try { await saveConfigFile(); }
-      catch (e) { configStatus(t('config.failed') + (e && e.message ? e.message : String(e)), 'error'); }
-    });
-    if (lb) lb.addEventListener('click', async () => {
-      try { await loadConfigFile(); }
-      catch (e) { configStatus(t('config.failed') + (e && e.message ? e.message : String(e)), 'error'); }
-    });
   }
 
   function enhanceSelect(select) {
@@ -562,8 +537,6 @@
           <div class="settings-config-row">
             <button id="exportConfigBtn" class="theme-btn" type="button" data-i18n="settings.exportConfig">Export Config</button>
             <button id="importConfigBtn" class="theme-btn" type="button" data-i18n="settings.importConfig">Import Config</button>
-            <button id="saveConfigBtn" class="theme-btn" type="button" data-i18n="settings.saveConfig">Save config.json</button>
-            <button id="loadConfigBtn" class="theme-btn" type="button" data-i18n="settings.loadConfig">Load config.json</button>
           </div>
           <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
           <div id="configStatus" class="settings-hint"></div>

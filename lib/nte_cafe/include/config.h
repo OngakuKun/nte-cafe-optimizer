@@ -9,7 +9,7 @@
 /* One format for the CLI and the WebApp. Keyed by stable game-data IDs so
  * game updates never shift a saved state onto a different character/dish. */
 #define CONFIG_FILE_NAME "config.json"
-#define CONFIG_FORMAT "nte-cafe-cli-config"
+#define CONFIG_FORMAT "nte-cafe-config"
 #define CONFIG_VERSION 1
 #define CONFIG_JSON_MAX 16384
 
