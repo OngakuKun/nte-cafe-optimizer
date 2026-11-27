@@ -494,6 +494,10 @@
     const s = document.createElement('style');
     s.id = 'nteDownloadStyles';
     s.textContent = `
+      /* .theme-btn is width:100% for the settings panel — not for these two. */
+      #downloadBtn { width: auto; padding: 6px 10px; font-size: 12px; font-weight: 700; border-radius: 999px; white-space: nowrap; color: var(--good-fg); background: var(--good); border: 1px solid transparent; }
+      #downloadBtn:hover { border-color: var(--accent); filter: brightness(1.05); }
+      .nte-dl-code .theme-btn { width: auto; flex: 0 0 auto; white-space: nowrap; }
       #nteDownloadDialog .nte-dialog { width: min(620px, 100%); max-height: min(86dvh, 760px); overflow-y: auto; }
       #nteDownloadDialog .nte-dialog-title { margin-bottom: 4px; }
       .nte-dl-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin: 12px 0 14px; }
@@ -509,7 +513,7 @@
       .nte-dl-docker-title { font-weight: 700; margin-bottom: 4px; }
       .nte-dl-docker-hint { margin: 0; color: var(--muted); font-size: 13px; }
       .nte-dl-code { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
-      .nte-dl-code code { flex: 1; min-width: 0; overflow: auto; background: var(--ctp-crust); padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+      .nte-dl-code code { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow-x: auto; background: var(--ctp-crust); padding: 10px 12px; border-radius: 8px; font-size: 13px; }
       .nte-dl-source { color: var(--accent); font-size: 13px; }
       .nte-dl-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; }`;
     document.head.appendChild(s);
@@ -644,6 +648,7 @@
   function initDownloadButton() {
     const button = document.getElementById('downloadBtn');
     if (!button) return;
+    downloadStyles();
     button.addEventListener('click', openDownloadDialog);
   }
   if (document.readyState === 'loading')
