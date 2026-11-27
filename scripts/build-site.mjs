@@ -15,13 +15,15 @@
  */
 import { cpSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const uiDir = join(root, 'app', 'src', 'ui');
 const siteDir = join(root, 'site');
-const docsDir = join(root, 'docs');
+/* Default: docs/ for a local preview. CI sets SITE_OUT to a temp directory
+ * before publishing the very same files to the gh-pages branch. */
+const docsDir = process.env.SITE_OUT ? resolve(process.env.SITE_OUT) : join(root, 'docs');
 
 function siteVersion() {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 7);

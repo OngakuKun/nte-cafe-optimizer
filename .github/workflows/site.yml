@@ -1,4 +1,4 @@
-name: Generate website from app
+name: Generate and publish website
 
 on:
   push:
@@ -18,13 +18,11 @@ jobs:
         with:
           node-version: 20
 
+      # Keep docs/ on dev as the generated template/preview.
       - name: Generate docs/ from the current app
         run: node scripts/build-site.mjs
 
-      # GitHub Pages publishes dev:/docs. Committing the generated files back
-      # triggers a new Pages build; pushes made with GITHUB_TOKEN do not
-      # re-trigger this workflow, and [skip ci] is a second safety net.
-      - name: Commit generated site
+      - name: Commit generated docs on dev
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -33,5 +31,25 @@ jobs:
             echo "docs/ already up to date"
             exit 0
           fi
-          git commit -m "chore: regenerate website from app [skip ci]"
+          git commit -m "chore: regenerate website template [skip ci]"
           git push
+
+      # GitHub Pages serves the dedicated gh-pages branch from its root. The
+      # site files are generated from the same source and pushed as a normal
+      # (non-force) commit so the branch keeps a linear history.
+      - name: Publish site to gh-pages
+        env:
+          SITE_OUT: ${{ runner.temp }}/nte-cafe-site
+        run: |
+          node scripts/build-site.mjs
+          git fetch origin gh-pages
+          git checkout -B gh-pages origin/gh-pages
+          git rm -rf --quiet .
+          cp -a "$SITE_OUT"/. .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "gh-pages already up to date"
+            exit 0
+          fi
+          git commit -m "chore: publish generated website [skip ci]"
+          git push origin gh-pages
