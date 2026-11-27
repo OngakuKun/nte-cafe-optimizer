@@ -1,4 +1,5 @@
 #include "data.h"
+#include "gamedata.h"
 #include "types.h"
 #include "webui.h"
 #include "trend.h"
@@ -228,8 +229,10 @@ static void get_app_info(webui_event_t *e) {
   char buf[512];
   snprintf(buf, sizeof(buf),
            "{\"app\":\"NTE Cafe Optimizer\",\"webui\":\"%s\",\"dishCount\":%zu,"
-           "\"characterCount\":%zu,\"ingredientCount\":%zu}",
-           WEBUI_VERSION, DISH_COUNT, CHARACTER_COUNT, INGREDIENT_COUNT);
+           "\"characterCount\":%zu,\"ingredientCount\":%zu,"
+           "\"gameVersion\":\"%s\",\"contentHash\":\"%s\"}",
+           WEBUI_VERSION, DISH_COUNT, CHARACTER_COUNT, INGREDIENT_COUNT,
+           gamedata_game_version(), gamedata_content_hash());
   webui_return_string(e, buf);
 }
 
@@ -596,6 +599,56 @@ static void set_character_state(webui_event_t *e) {
   webui_return_string(e, "{\"ok\":true}");
 }
 
+static void update_gamedata(webui_event_t *e) {
+  const char *json = webui_get_string_at(e, 0);
+  if (!json || !gamedata_init(json, strlen(json))) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"invalid game data\"}");
+    return;
+  }
+
+  char buf[256];
+  snprintf(buf, sizeof(buf),
+           "{\"ok\":true,\"gameVersion\":\"%s\",\"contentHash\":\"%s\"}",
+           gamedata_game_version(), gamedata_content_hash());
+  webui_return_string(e, buf);
+}
+
+static void get_i18n(webui_event_t *e) {
+  const char *lang = webui_get_string_at(e, 0);
+  if (!lang || !*lang)
+    lang = "en";
+
+  const size_t cap = 128 * 1024;
+  char *buf = (char *)malloc(cap);
+  if (!buf) {
+    webui_return_string(e, "{}");
+    return;
+  }
+
+  size_t off = 0;
+  off += (size_t)snprintf(buf, cap, "{");
+  bool first = true;
+  for (size_t i = 0; i < gamedata_i18n_count(); ++i) {
+    const char *entry_lang = NULL, *key = NULL, *value = NULL;
+    if (!gamedata_i18n_at(i, &entry_lang, &key, &value) ||
+        strcmp(entry_lang, lang) != 0)
+      continue;
+
+    char escaped_key[256], escaped_value[1024];
+    json_escape(key, escaped_key, sizeof(escaped_key));
+    json_escape(value, escaped_value, sizeof(escaped_value));
+    int written = snprintf(buf + off, cap - off, "%s\"%s\":\"%s\"",
+                           first ? "" : ",", escaped_key, escaped_value);
+    if (written <= 0 || (size_t)written >= cap - off)
+      break;
+    off += (size_t)written;
+    first = false;
+  }
+  snprintf(buf + off, cap - off, "}");
+  webui_return_string(e, buf);
+  free(buf);
+}
+
 int main(int argc, char **argv) {
   if (argc > 0 && argv[0] && argv[0][0] != '\0') {
     static char root_buf[1024];
@@ -605,6 +658,28 @@ int main(int argc, char **argv) {
       *slash = '\0';
     app_root = root_buf;
   }
+
+  const char *data_env = getenv("NTE_CAFE_GAMEDATA");
+  bool data_loaded = false;
+  if (data_env && *data_env)
+    data_loaded = gamedata_init_file(data_env);
+  if (!data_loaded && app_root) {
+    char data_path[1200];
+    snprintf(data_path, sizeof(data_path), "%s/data/gamedata.json", app_root);
+    data_loaded = gamedata_init_file(data_path);
+  }
+  if (!data_loaded) {
+    data_loaded = gamedata_init_embedded();
+    if (data_loaded)
+      fprintf(stderr, "External game data unavailable; using embedded fallback\n");
+  }
+  if (!data_loaded) {
+    fprintf(stderr, "Failed to load game data\n");
+    return 1;
+  }
+  printf("Game data: version %s, hash %s, %zu dishes, %zu characters\n",
+         gamedata_game_version(), gamedata_content_hash(), DISH_COUNT,
+         CHARACTER_COUNT);
 
   webui_set_config(multi_client, true);
   size_t win = webui_new_window();
@@ -625,6 +700,8 @@ int main(int argc, char **argv) {
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);
   webui_bind(win, "setAllCharacterStates", set_all_character_states);
+  webui_bind(win, "getI18n", get_i18n);
+  webui_bind(win, "updateGamedata", update_gamedata);
 
   const char *port_env = getenv("PORT");
   size_t port = 80;

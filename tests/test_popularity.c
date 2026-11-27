@@ -54,7 +54,7 @@ int main(void) {
   assert_close(popularity_total_bonus(&settings), 0.022, 1e-12);
 
   /* The bonus is applied to the total income, not to a single dish. */
-  static const Dish dish = {"Test", "Beverage", 100.0, 100.0, NULL, 0};
+  static const Dish dish = {"test", "Test", "Test", "Beverage", 100.0, 100.0, NULL, 0};
   CandidateDish dishes[] = {{&dish, 100.0, 0.0}};
   CandidateCharacter team[1];
   memset(team, 0, sizeof(team));

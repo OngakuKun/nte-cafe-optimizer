@@ -13,6 +13,7 @@
 #define MAX_SKILLS_PER_CHARACTER 5
 #define MAX_LOG_ENTRIES 64
 #define MAX_INGREDIENTS_PER_DISH 4
+#define MAX_INGREDIENTS 64
 #define MAX_NAME_LEN 64
 
 typedef enum {
@@ -48,7 +49,9 @@ typedef struct {
 } TrendOptions;
 
 typedef struct {
+    const char *id;
     const char *name;
+    const char *canonical_name;
     const char *category;
 } Ingredient;
 
@@ -61,7 +64,9 @@ typedef struct {
 } Skill;
 
 typedef struct {
+    const char *id;
     const char *name;
+    const char *canonical_name;
     const char *type;
     double price_l1;
     double price_l2;
@@ -70,7 +75,9 @@ typedef struct {
 } Dish;
 
 typedef struct {
+    const char *id;
     const char *name;
+    const char *canonical_name;
     Skill skills[MAX_SKILLS_PER_CHARACTER];
     size_t skill_count;
 } Character;

@@ -27,6 +27,7 @@ WORKDIR /app
 COPY --from=build /build/app/nte-cafe-app /app/nte-cafe-app
 COPY --from=build /build/app/ui /app/ui
 COPY gameversion.txt /app/ui/gameversion.txt
+COPY data/gamedata.json /app/data/gamedata.json
 
 ENV PORT=80
 EXPOSE 80 8080

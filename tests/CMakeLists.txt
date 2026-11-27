@@ -1,3 +1,15 @@
+add_executable(test_gamedata
+    test_gamedata.c
+)
+
+target_link_libraries(test_gamedata
+    PRIVATE
+        nte_cafe
+)
+
+add_test(NAME gamedata COMMAND test_gamedata)
+
+
 add_executable(test_optimizer
     test_optimizer.c
 )

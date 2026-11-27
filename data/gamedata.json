@@ -1,0 +1,944 @@
+{
+  "format": "nte-cafe-gamedata",
+  "schemaVersion": 1,
+  "gameVersion": "1.5",
+  "contentHash": "d52d89738ff56a268b27668187586fc5188fd90effdb709175e7ccc1269d222b",
+  "ingredients": [
+    {
+      "id": "coffee_beans",
+      "name": "Coffee Beans",
+      "canonicalName": "Coffee Beans",
+      "category": ""
+    },
+    {
+      "id": "coconut",
+      "name": "Coconut",
+      "canonicalName": "Coconut",
+      "category": "Fruit"
+    },
+    {
+      "id": "cocoa_powder",
+      "name": "Cocoa Powder",
+      "canonicalName": "Cocoa Powder",
+      "category": ""
+    },
+    {
+      "id": "flour",
+      "name": "Flour",
+      "canonicalName": "Flour",
+      "category": ""
+    },
+    {
+      "id": "apple",
+      "name": "Apple",
+      "canonicalName": "Apple",
+      "category": "Fruit"
+    },
+    {
+      "id": "eggs",
+      "name": "Eggs",
+      "canonicalName": "Eggs",
+      "category": ""
+    },
+    {
+      "id": "lettuce",
+      "name": "Lettuce",
+      "canonicalName": "Lettuce",
+      "category": ""
+    },
+    {
+      "id": "fish",
+      "name": "Fish",
+      "canonicalName": "Fish",
+      "category": ""
+    },
+    {
+      "id": "orange",
+      "name": "Orange",
+      "canonicalName": "Orange",
+      "category": "Fruit"
+    },
+    {
+      "id": "milk",
+      "name": "Milk",
+      "canonicalName": "Milk",
+      "category": ""
+    },
+    {
+      "id": "matcha_powder",
+      "name": "Matcha Powder",
+      "canonicalName": "Matcha Powder",
+      "category": ""
+    },
+    {
+      "id": "whipping_cream",
+      "name": "Whipping Cream",
+      "canonicalName": "Whipping Cream",
+      "category": ""
+    },
+    {
+      "id": "beef",
+      "name": "Beef",
+      "canonicalName": "Beef",
+      "category": ""
+    },
+    {
+      "id": "butter",
+      "name": "Butter",
+      "canonicalName": "Butter",
+      "category": ""
+    },
+    {
+      "id": "red_beans",
+      "name": "Red Beans",
+      "canonicalName": "Red Beans",
+      "category": ""
+    },
+    {
+      "id": "strawberry",
+      "name": "Strawberry",
+      "canonicalName": "Strawberry",
+      "category": "Fruit"
+    },
+    {
+      "id": "onion",
+      "name": "Onion",
+      "canonicalName": "Onion",
+      "category": ""
+    },
+    {
+      "id": "pork",
+      "name": "Pork",
+      "canonicalName": "Pork",
+      "category": ""
+    },
+    {
+      "id": "salt",
+      "name": "Salt",
+      "canonicalName": "Salt",
+      "category": ""
+    },
+    {
+      "id": "cookies",
+      "name": "Cookies",
+      "canonicalName": "Cookies",
+      "category": ""
+    },
+    {
+      "id": "cheese",
+      "name": "Cheese",
+      "canonicalName": "Cheese",
+      "category": ""
+    },
+    {
+      "id": "ham",
+      "name": "Ham",
+      "canonicalName": "Ham",
+      "category": ""
+    },
+    {
+      "id": "sugar",
+      "name": "Sugar",
+      "canonicalName": "Sugar",
+      "category": ""
+    },
+    {
+      "id": "skibbles",
+      "name": "Skibbles",
+      "canonicalName": "Skibbles",
+      "category": ""
+    },
+    {
+      "id": "tomato",
+      "name": "Tomato",
+      "canonicalName": "Tomato",
+      "category": ""
+    }
+  ],
+  "dishes": [
+    {
+      "id": "coconut_latte",
+      "name": "Coconut Latte",
+      "canonicalName": "Coconut Latte",
+      "type": "Beverages",
+      "priceL1": 2.4,
+      "priceL2": 10.2,
+      "ingredients": [
+        "coffee_beans",
+        "coconut"
+      ]
+    },
+    {
+      "id": "ice_mocha",
+      "name": "Ice Mocha",
+      "canonicalName": "Iced Mocha",
+      "type": "Beverages",
+      "priceL1": 3.0,
+      "priceL2": 10.6,
+      "ingredients": [
+        "coffee_beans",
+        "cocoa_powder"
+      ]
+    },
+    {
+      "id": "apple_pie",
+      "name": "Apple Pie",
+      "canonicalName": "Apple Pie",
+      "type": "Desserts",
+      "priceL1": 3.5,
+      "priceL2": 11.0,
+      "ingredients": [
+        "flour",
+        "apple"
+      ]
+    },
+    {
+      "id": "tomato_fried_egg",
+      "name": "Tomato & Fried Egg",
+      "canonicalName": "Tomato & Fried Eggs Croissant",
+      "type": "Main Dishes",
+      "priceL1": 4.0,
+      "priceL2": 11.4,
+      "ingredients": [
+        "flour",
+        "apple",
+        "eggs"
+      ]
+    },
+    {
+      "id": "tuna_sandwich",
+      "name": "Tuna Sandwich",
+      "canonicalName": "Tuna Sandwich",
+      "type": "Main Dishes",
+      "priceL1": 4.6,
+      "priceL2": 11.8,
+      "ingredients": [
+        "flour",
+        "lettuce",
+        "fish"
+      ]
+    },
+    {
+      "id": "amber_glamor",
+      "name": "Amber Glamor",
+      "canonicalName": "Amber Glamor",
+      "type": "Beverages",
+      "priceL1": 5.1,
+      "priceL2": 12.2,
+      "ingredients": [
+        "coffee_beans",
+        "milk",
+        "skibbles",
+        "orange"
+      ]
+    },
+    {
+      "id": "matacha_lava_mousse",
+      "name": "Matacha Lava Mousse",
+      "canonicalName": "Matcha Lava Mousse",
+      "type": "Desserts",
+      "priceL1": 5.5,
+      "priceL2": 12.6,
+      "ingredients": [
+        "flour",
+        "milk",
+        "matcha_powder"
+      ]
+    },
+    {
+      "id": "snowy_latte",
+      "name": "Snowy Latte",
+      "canonicalName": "Snowy Latte",
+      "type": "Beverages",
+      "priceL1": 6.0,
+      "priceL2": 13.0,
+      "ingredients": [
+        "coffee_beans",
+        "milk",
+        "whipping_cream",
+        "cocoa_powder"
+      ]
+    },
+    {
+      "id": "thick_cut_fresh_beef_sandwich",
+      "name": "Thick-Cut Fresh Beef Sandwich",
+      "canonicalName": "Thick-Cut Fresh Beef Sandwich",
+      "type": "Main Dishes",
+      "priceL1": 6.4,
+      "priceL2": 13.5,
+      "ingredients": [
+        "flour",
+        "beef",
+        "lettuce",
+        "butter"
+      ]
+    },
+    {
+      "id": "red_bean_butter_crossiant",
+      "name": "Red Bean & Butter Crossiant",
+      "canonicalName": "Red Bean & Butter Croissant",
+      "type": "Main Dishes",
+      "priceL1": 7.0,
+      "priceL2": 14.0,
+      "ingredients": [
+        "flour",
+        "butter",
+        "red_beans"
+      ]
+    },
+    {
+      "id": "strawberry_box_cake",
+      "name": "Strawberry Box Cake",
+      "canonicalName": "Strawberry Box Cake",
+      "type": "Desserts",
+      "priceL1": 7.4,
+      "priceL2": 14.5,
+      "ingredients": [
+        "flour",
+        "strawberry",
+        "whipping_cream"
+      ]
+    },
+    {
+      "id": "orange_hot_coffee",
+      "name": "Orange Hot Coffee",
+      "canonicalName": "Orange Hot Coffee",
+      "type": "Beverages",
+      "priceL1": 7.8,
+      "priceL2": 15.0,
+      "ingredients": [
+        "coffee_beans",
+        "orange",
+        "apple"
+      ]
+    },
+    {
+      "id": "pork_cutlet",
+      "name": "Pork Cutlet",
+      "canonicalName": "Pork Cutlet Sandwich",
+      "type": "Main Dishes",
+      "priceL1": 8.1,
+      "priceL2": 15.5,
+      "ingredients": [
+        "flour",
+        "onion",
+        "pork",
+        "salt"
+      ]
+    },
+    {
+      "id": "coconut_macchiato",
+      "name": "Coconut Macchiato",
+      "canonicalName": "Coconut Macchiato",
+      "type": "Beverages",
+      "priceL1": 8.6,
+      "priceL2": 16.0,
+      "ingredients": [
+        "coffee_beans",
+        "milk",
+        "cookies",
+        "coconut"
+      ]
+    },
+    {
+      "id": "matcha_latte_with_milk_cap",
+      "name": "Matcha Latte with Milk Cap",
+      "canonicalName": "Matcha Latte with Milk Cap",
+      "type": "Beverages",
+      "priceL1": 9.0,
+      "priceL2": 16.5,
+      "ingredients": [
+        "coffee_beans",
+        "milk",
+        "whipping_cream",
+        "matcha_powder"
+      ]
+    },
+    {
+      "id": "tiramisu",
+      "name": "Tiramisu",
+      "canonicalName": "Tiramisu",
+      "type": "Desserts",
+      "priceL1": 9.3,
+      "priceL2": 17.0,
+      "ingredients": [
+        "flour",
+        "cookies",
+        "cheese",
+        "coffee_beans"
+      ]
+    },
+    {
+      "id": "ham_cheese",
+      "name": "Ham & Cheese",
+      "canonicalName": "Ham & Cheese Croissant",
+      "type": "Main Dishes",
+      "priceL1": 9.7,
+      "priceL2": 17.5,
+      "ingredients": [
+        "flour",
+        "lettuce",
+        "ham",
+        "cheese"
+      ]
+    },
+    {
+      "id": "caramel_cocoa_mille_feuille",
+      "name": "Caramel & Cocoa Mille-Feuille",
+      "canonicalName": "Caramel & Cocoa Mille-Feuille",
+      "type": "Desserts",
+      "priceL1": 10.0,
+      "priceL2": 18.0,
+      "ingredients": [
+        "flour",
+        "whipping_cream",
+        "sugar",
+        "cocoa_powder"
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "id": "nanally",
+      "name": "Nanally",
+      "canonicalName": "Nanally",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.2,
+          "requirement": 1,
+          "type": "price_flat",
+          "tag": "main_dishes"
+        },
+        {
+          "level": 5,
+          "value": 0.3,
+          "requirement": 2,
+          "type": "price_flat",
+          "tag": "main_dishes"
+        }
+      ]
+    },
+    {
+      "id": "sakiri",
+      "name": "Sakiri",
+      "canonicalName": "Sakiri",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 0.3,
+          "requirement": 3,
+          "type": "price_flat",
+          "tag": "any"
+        }
+      ]
+    },
+    {
+      "id": "skia",
+      "name": "Skia",
+      "canonicalName": "Skia",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "baicang",
+      "name": "Baicang",
+      "canonicalName": "Baicang",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "mint",
+      "name": "Mint",
+      "canonicalName": "Mint",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 0.18,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "haniel",
+      "name": "Haniel",
+      "canonicalName": "Haniel",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 3,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 0.18,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "adler",
+      "name": "Adler",
+      "canonicalName": "Adler",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 0.18,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "dafodil",
+      "name": "Dafodil",
+      "canonicalName": "Daffodill",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "edgar",
+      "name": "Edgar",
+      "canonicalName": "Edgar",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 3,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "aurelia",
+      "name": "Aurelia",
+      "canonicalName": "Aurelia",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.12,
+          "requirement": 0,
+          "type": "price_flat",
+          "tag": "none"
+        },
+        {
+          "level": 2,
+          "value": 0.01,
+          "requirement": 2,
+          "type": "traffic_multiply",
+          "tag": "beverages"
+        },
+        {
+          "level": 5,
+          "value": 0.015,
+          "requirement": 2,
+          "type": "traffic_multiply",
+          "tag": "beverages"
+        }
+      ]
+    },
+    {
+      "id": "chiz",
+      "name": "Chiz",
+      "canonicalName": "Chiz",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "lacrimosa",
+      "name": "Lacrimosa",
+      "canonicalName": "Lacrimosa",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.01,
+          "requirement": 1,
+          "type": "price_multiply",
+          "tag": "desserts"
+        },
+        {
+          "level": 5,
+          "value": 0.015,
+          "requirement": 2,
+          "type": "price_multiply",
+          "tag": "desserts"
+        }
+      ]
+    },
+    {
+      "id": "shinku",
+      "name": "Shinku",
+      "canonicalName": "Shinku",
+      "skills": [
+        {
+          "level": 1,
+          "value": 0.3,
+          "requirement": 3,
+          "type": "price_flat",
+          "tag": "beverages"
+        },
+        {
+          "level": 2,
+          "value": 0.3,
+          "requirement": 3,
+          "type": "price_flat",
+          "tag": "beverages"
+        },
+        {
+          "level": 5,
+          "value": 0.03,
+          "requirement": 3,
+          "type": "price_multiply",
+          "tag": "beverages"
+        }
+      ]
+    },
+    {
+      "id": "iroi",
+      "name": "Iroi",
+      "canonicalName": "Iroi",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 3,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "linko",
+      "name": "Linko",
+      "canonicalName": "Linko",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 3,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    },
+    {
+      "id": "akane_rin",
+      "name": "Akane Rin",
+      "canonicalName": "Akane Rin",
+      "skills": [
+        {
+          "level": 1,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 3,
+          "value": 18.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        },
+        {
+          "level": 5,
+          "value": 27.0,
+          "requirement": 0,
+          "type": "traffic_flat",
+          "tag": "none"
+        }
+      ]
+    }
+  ],
+  "i18n": {
+    "de": {
+      "trend.Apple": "Apfel",
+      "trend.Beef": "Rindfleisch",
+      "trend.Beverages": "Getränke",
+      "trend.Butter": "Butter",
+      "trend.Cheese": "Käse",
+      "trend.Cocoa Powder": "Kakaopulver",
+      "trend.Coconut": "Kokosnuss",
+      "trend.Coffee Beans": "Kaffeebohnen",
+      "trend.Cookies": "Kekse",
+      "trend.Desserts": "Dessert",
+      "trend.Eggs": "Eier",
+      "trend.Fish": "Fisch",
+      "trend.Flour": "Mehl",
+      "trend.Fruit": "Obst",
+      "trend.Ham": "Schinken",
+      "trend.Lettuce": "Salat",
+      "trend.Main Dishes": "Hauptgericht",
+      "trend.Matcha Powder": "Matchapulver",
+      "trend.Milk": "Milch",
+      "trend.None": "Ohne Trend",
+      "trend.Onion": "Zwiebel",
+      "trend.Orange": "Orange",
+      "trend.Pork": "Schweinefleisch",
+      "trend.Red Beans": "Rote Bohnen",
+      "trend.Salt": "Salz",
+      "trend.Skibbles": "Skibbles",
+      "trend.Strawberry": "Erdbeere",
+      "trend.Sugar": "Zucker",
+      "trend.Tomato": "Tomate",
+      "trend.Whipping Cream": "Schlagsahne",
+      "dish.Coconut Latte": "Kokos-Latte",
+      "dish.Iced Mocha": "Eis-Mokka",
+      "dish.Apple Pie": "Apfelkuchen",
+      "dish.Tomato & Fried Eggs Croissant": "Croissant mit Tomaten und Spiegelei",
+      "dish.Tuna Sandwich": "Thunfisch-Sandwich",
+      "dish.Amber Glamor": "Goldglanz-Traum",
+      "dish.Matcha Lava Mousse": "Matcha-Lave-Mousse",
+      "dish.Snowy Latte": "Snowy Latte",
+      "dish.Thick-Cut Fresh Beef Sandwich": "Frisches dickes Rindfleisch-Sandwich",
+      "dish.Red Bean & Butter Croissant": "Croissant mit roten Bohnen und Butter",
+      "dish.Strawberry Box Cake": "Erdbeer-Kastenkuchen",
+      "dish.Orange Hot Coffee": "Heißer Orangen-Kaffee",
+      "dish.Pork Cutlet Sandwich": "Schweineschnitzel-Sandwich",
+      "dish.Coconut Macchiato": "Kokos-Macchiato",
+      "dish.Matcha Latte with Milk Cap": "Milchschaum-Matcha-Latte",
+      "dish.Ham & Cheese Croissant": "Schinken-Käse-Croissant",
+      "dish.Caramel & Cocoa Mille-Feuille": "Mille-Feuille mit Karamell und Kakao",
+      "ingredient.Coffee Beans": "Kaffeebohnen",
+      "ingredient.Coconut": "Kokosnuss",
+      "ingredient.Cocoa Powder": "Kakaopulver",
+      "ingredient.Flour": "Mehl",
+      "ingredient.Apple": "Apfel",
+      "ingredient.Eggs": "Eier",
+      "ingredient.Lettuce": "Salat",
+      "ingredient.Fish": "Fisch",
+      "ingredient.Orange": "Orange",
+      "ingredient.Milk": "Milch",
+      "ingredient.Matcha Powder": "Matchapulver",
+      "ingredient.Whipping Cream": "Schlagsahne",
+      "ingredient.Beef": "Rindfleisch",
+      "ingredient.Butter": "Butter",
+      "ingredient.Red Beans": "Rote Bohnen",
+      "ingredient.Strawberry": "Erdbeere",
+      "ingredient.Onion": "Zwiebel",
+      "ingredient.Pork": "Schweinefleisch",
+      "ingredient.Salt": "Salz",
+      "ingredient.Cookies": "Kekse",
+      "ingredient.Cheese": "Käse",
+      "ingredient.Ham": "Schinken",
+      "ingredient.Sugar": "Zucker",
+      "ingredient.Skibbles": "Skibbles",
+      "ingredient.Tomato": "Tomate",
+      "type.Beverages": "Getränke",
+      "type.Desserts": "Desserts",
+      "type.Main Dishes": "Hauptgerichte"
+    },
+    "en": {
+      "trend.Apple": "Apple",
+      "trend.Beef": "Beef",
+      "trend.Beverages": "Beverage",
+      "trend.Butter": "Butter",
+      "trend.Cheese": "Cheese",
+      "trend.Cocoa Powder": "Cocoa Powder",
+      "trend.Coconut": "Coconut",
+      "trend.Coffee Beans": "Coffee Beans",
+      "trend.Cookies": "Cookies",
+      "trend.Desserts": "Dessert",
+      "trend.Eggs": "Eggs",
+      "trend.Fish": "Fish",
+      "trend.Flour": "Flour",
+      "trend.Fruit": "Fruit",
+      "trend.Ham": "Ham",
+      "trend.Lettuce": "Lettuce",
+      "trend.Main Dishes": "Main Dish",
+      "trend.Matcha Powder": "Matcha Powder",
+      "trend.Milk": "Milk",
+      "trend.None": "No Trend",
+      "trend.Onion": "Onion",
+      "trend.Orange": "Orange",
+      "trend.Pork": "Pork",
+      "trend.Red Beans": "Red Beans",
+      "trend.Salt": "Salt",
+      "trend.Skibbles": "Skibbles",
+      "trend.Strawberry": "Strawberry",
+      "trend.Sugar": "Sugar",
+      "trend.Tomato": "Tomato",
+      "trend.Whipping Cream": "Whipping Cream",
+      "dish.Coconut Latte": "Coconut Latte",
+      "dish.Iced Mocha": "Iced Mocha",
+      "dish.Apple Pie": "Apple Pie",
+      "dish.Tomato & Fried Eggs Croissant": "Tomato & Fried Eggs Croissant",
+      "dish.Tuna Sandwich": "Tuna Sandwich",
+      "dish.Amber Glamor": "Amber Glamor",
+      "dish.Matcha Lava Mousse": "Matcha Lava Mousse",
+      "dish.Snowy Latte": "Snowy Latte",
+      "dish.Thick-Cut Fresh Beef Sandwich": "Thick-Cut Fresh Beef Sandwich",
+      "dish.Red Bean & Butter Croissant": "Red Bean & Butter Croissant",
+      "dish.Strawberry Box Cake": "Strawberry Box Cake",
+      "dish.Orange Hot Coffee": "Orange Hot Coffee",
+      "dish.Pork Cutlet Sandwich": "Pork Cutlet Sandwich",
+      "dish.Coconut Macchiato": "Coconut Macchiato",
+      "dish.Matcha Latte with Milk Cap": "Matcha Latte with Milk Cap",
+      "dish.Tiramisu": "Tiramisu",
+      "dish.Ham & Cheese Croissant": "Ham & Cheese Croissant",
+      "dish.Caramel & Cocoa Mille-Feuille": "Caramel & Cocoa Mille-Feuille",
+      "ingredient.Coffee Beans": "Coffee Beans",
+      "ingredient.Coconut": "Coconut",
+      "ingredient.Cocoa Powder": "Cocoa Powder",
+      "ingredient.Flour": "Flour",
+      "ingredient.Apple": "Apple",
+      "ingredient.Eggs": "Eggs",
+      "ingredient.Lettuce": "Lettuce",
+      "ingredient.Fish": "Fish",
+      "ingredient.Orange": "Orange",
+      "ingredient.Milk": "Milk",
+      "ingredient.Matcha Powder": "Matcha Powder",
+      "ingredient.Whipping Cream": "Whipping Cream",
+      "ingredient.Beef": "Beef",
+      "ingredient.Butter": "Butter",
+      "ingredient.Red Beans": "Red Beans",
+      "ingredient.Strawberry": "Strawberry",
+      "ingredient.Onion": "Onion",
+      "ingredient.Pork": "Pork",
+      "ingredient.Salt": "Salt",
+      "ingredient.Cookies": "Cookies",
+      "ingredient.Cheese": "Cheese",
+      "ingredient.Ham": "Ham",
+      "ingredient.Sugar": "Sugar",
+      "ingredient.Skibbles": "Skibbles",
+      "ingredient.Tomato": "Tomato",
+      "type.Beverages": "Beverages",
+      "type.Desserts": "Desserts",
+      "type.Main Dishes": "Main Dishes"
+    }
+  }
+}

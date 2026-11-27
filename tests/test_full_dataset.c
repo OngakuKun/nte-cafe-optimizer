@@ -1,4 +1,5 @@
 #include "data.h"
+#include "gamedata.h"
 #include "optimizer.h"
 #include "types.h"
 
@@ -13,6 +14,9 @@ static void assert_double_equal(double actual, double expected,
 }
 
 int main(void) {
+  if (!gamedata_init_embedded())
+    return 1;
+
   DishState dish_state[DISH_COUNT];
   CharacterState character_state[CHARACTER_COUNT];
 

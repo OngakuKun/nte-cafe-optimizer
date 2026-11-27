@@ -1,5 +1,6 @@
 #include "cli_output.h"
 #include "data.h"
+#include "gamedata.h"
 #include "optimizer.h"
 #include "types.h"
 
@@ -7,6 +8,11 @@
 #include <string.h>
 
 int main(void) {
+  if (!gamedata_init_embedded()) {
+    fprintf(stderr, "Failed to load game data\n");
+    return 1;
+  }
+
   DishState dish_state[DISH_COUNT];
   CharacterState character_state[CHARACTER_COUNT];
 

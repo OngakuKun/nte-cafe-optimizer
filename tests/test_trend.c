@@ -1,4 +1,5 @@
 #include "data.h"
+#include "gamedata.h"
 #include "trend.h"
 #include "types.h"
 
@@ -45,6 +46,9 @@ static void test_trend_price(void) {
 }
 
 int main(void) {
+  if (!gamedata_init_embedded())
+    return 1;
+
   test_trend_fruit();
   test_trend_price();
 

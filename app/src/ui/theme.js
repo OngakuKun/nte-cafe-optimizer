@@ -6,6 +6,9 @@
     { id: 'en', name: 'English' },
     { id: 'de', name: 'Deutsch' },
   ];
+  const GAMEDATA_URL = 'https://raw.githubusercontent.com/OngakuKun/nte-cafe-optimizer/dev/data/gamedata.json';
+  const GAMEDATA_CHECK_KEY = 'nte-cafe-gamedata-check';
+  let GAME_I18N = {};
   /* Canonical names from the NTE wiki page "The Café by Origen" (same source as the images). */
   const NAME_MAP = {
     'Ice Mocha': 'Iced Mocha',
@@ -261,15 +264,58 @@
   }
   /* Canonical wiki name — stable key for image lookups, independent of UI language. */
   function canonicalName(name) { return NAME_MAP[name] || name; }
-  /* Localised display name. German dish names come from Fuu's translation table; EN stays canonical. */
+  /* Localised display name. The JSON dataset is the source of truth; the maps
+   * below stay as an offline fallback. */
   function displayName(name) {
     const canonical = canonicalName(name);
-    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : canonical;
+    if ((document.documentElement.lang || 'en') !== 'de') return canonical;
+    return GAME_I18N['dish.' + canonical] || DE_NAMES[canonical] || canonical;
   }
   function trendName(name) {
-    const dict = (document.documentElement.lang || 'en') === 'de' ? TREND_DE : TREND_EN;
+    const lang = document.documentElement.lang || 'en';
     const key = SKILL_TAG_ALIAS[name] || name;
+    const fromJson = GAME_I18N['trend.' + key];
+    if (fromJson) return fromJson;
+    const dict = lang === 'de' ? TREND_DE : TREND_EN;
     return dict[key] || name;
+  }
+  async function loadGameI18n() {
+    if (typeof window.getI18n !== 'function') return;
+    try {
+      const lang = document.documentElement.lang || 'en';
+      const parsed = JSON.parse(await window.getI18n(lang));
+      if (parsed && typeof parsed === 'object') GAME_I18N = parsed;
+    } catch (e) {
+      console.warn('Game translations unavailable; using built-in map.', e);
+    }
+  }
+  async function checkGameDataUpdate() {
+    try {
+      for (let i = 0; i < 50 && typeof getAppInfo !== 'function'; i++)
+        await new Promise(r => setTimeout(r, 100));
+      if (typeof getAppInfo !== 'function' || typeof updateGamedata !== 'function') return;
+
+      let last = null;
+      try { last = JSON.parse(localStorage.getItem(GAMEDATA_CHECK_KEY) || 'null'); } catch (_) {}
+      const now = Date.now();
+      if (last && now - (last.at || 0) < 6 * 60 * 60 * 1000) return;
+
+      const info = JSON.parse(await getAppInfo());
+      const res = await fetch(GAMEDATA_URL, { cache: 'no-store' });
+      if (!res.ok) return;
+      const text = await res.text();
+      const remote = JSON.parse(text);
+      try { localStorage.setItem(GAMEDATA_CHECK_KEY, JSON.stringify({ at: now })); } catch (_) {}
+      if (!remote || remote.format !== 'nte-cafe-gamedata') return;
+      if (remote.gameVersion === info.gameVersion && remote.contentHash === info.contentHash) return;
+
+      const result = JSON.parse(await updateGamedata(text));
+      if (!result.ok) return;
+      try { localStorage.setItem(GAMEDATA_CHECK_KEY, JSON.stringify({ at: now, hash: result.contentHash })); } catch (_) {}
+      location.reload();
+    } catch (e) {
+      console.warn('Game data update check skipped.', e);
+    }
   }
   function applyLanguage(lang, persist) {
     const next = LANGS.some(l => l.id === lang) ? lang : 'en';
@@ -577,6 +623,8 @@
     applyLanguage(currentLang(), false);
     enhanceSelects(document);
     initSettingsPanel();
+    loadGameI18n();
+    checkGameDataUpdate();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName, trendName };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName, trendName, loadGameI18n, checkGameDataUpdate };
 })();

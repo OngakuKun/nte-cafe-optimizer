@@ -1,5 +1,6 @@
 add_library(nte_cafe
     src/data.c
+    src/gamedata.c
     src/combinations.c
     src/trend.c
     src/popularity.c
@@ -11,6 +12,7 @@ add_library(nte_cafe
 target_include_directories(nte_cafe
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../jsmn
 )
 
 if (MSVC)

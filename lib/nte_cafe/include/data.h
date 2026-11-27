@@ -3,13 +3,17 @@
 
 #include "types.h"
 
-extern const Ingredient INGREDIENTS[];
-extern const size_t INGREDIENT_COUNT;
+/*
+ * Game data is populated at startup by gamedata_init() from JSON.
+ * The arrays are mutable so an updated dataset can replace them at runtime.
+ */
+extern Ingredient INGREDIENTS[];
+extern size_t INGREDIENT_COUNT;
 
-extern const Dish DISHES[];
-extern const size_t DISH_COUNT;
+extern Dish DISHES[];
+extern size_t DISH_COUNT;
 
-extern const Character CHARACTERS[];
-extern const size_t CHARACTER_COUNT;
+extern Character CHARACTERS[];
+extern size_t CHARACTER_COUNT;
 
-#endif
+#endif /* NTE_CAFE_DATA_H */

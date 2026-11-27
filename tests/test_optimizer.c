@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 static void test_additive_traffic_multiplier(void) {
-  static const Dish dish = {"Test", "Beverage", 100.0, 100.0, NULL, 0};
+  static const Dish dish = {"test", "Test", "Test", "Beverage", 100.0, 100.0, NULL, 0};
 
   static const Skill skills[] = {
       {1, 0.01, 1, SKILL_TRAFFIC_MULTIPLY, TAG_NONE},
@@ -32,7 +32,7 @@ static void test_additive_traffic_multiplier(void) {
 }
 
 static void test_price_multiplier_is_additive(void) {
-  static const Dish dish = {"Test", "Beverage", 100.0, 100.0, NULL, 0};
+  static const Dish dish = {"test", "Test", "Test", "Beverage", 100.0, 100.0, NULL, 0};
 
   static const Skill skills[] = {{1, 0.01, 1, SKILL_PRICE_MULTIPLY, TAG_NONE},
                                  {1, 0.05, 1, SKILL_PRICE_MULTIPLY, TAG_NONE}};
@@ -55,7 +55,7 @@ static void test_price_multiplier_is_additive(void) {
 }
 
 static void test_hotori_is_one_percent_of_base_traffic(void) {
-  static const Dish dish = {"Test", "Beverage", 100.0, 100.0, NULL, 0};
+  static const Dish dish = {"test", "Test", "Test", "Beverage", 100.0, 100.0, NULL, 0};
 
   CandidateDish dishes[] = {{&dish, 100.0, 0.0}};
 
@@ -73,7 +73,7 @@ static void test_hotori_is_one_percent_of_base_traffic(void) {
 }
 
 static void test_trend_bonus_after_price_multiplier(void) {
-  static const Dish dish = {"Tiramisu", "Desserts", 17.0, 17.0, NULL, 0};
+  static const Dish dish = {"tiramisu", "Tiramisu", "Tiramisu", "Desserts", 17.0, 17.0, NULL, 0};
   static const Skill price_flat = {1, 1.56, 1, SKILL_PRICE_FLAT, TAG_NONE};
   static const Skill price_mult = {1, 0.055, 1, SKILL_PRICE_MULTIPLY, TAG_NONE};
 

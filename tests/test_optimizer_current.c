@@ -1,4 +1,5 @@
 #include "data.h"
+#include "gamedata.h"
 #include "optimizer.h"
 #include "trend.h"
 #include "types.h"
@@ -22,6 +23,9 @@ static bool str_eq(const char *a, const char *b) {
 }
 
 int main(void) {
+  if (!gamedata_init_embedded())
+    return 1;
+
   /* Baseline captured from WebUI /runOptimization on 2026-11-23.
    * Setup: all dishes owned level 2, all current characters owned level 5,
    * cafes 5, trend Desserts, hotori decor on. Only the character roster known
