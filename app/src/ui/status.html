@@ -87,12 +87,9 @@
         if (typeof getAppInfo !== 'function') throw new Error(T('common.noBackend'));
         const [infoRaw, dishesRaw, charsRaw] = await Promise.all([getAppInfo(), getDishes(), getCharacters()]);
         const info = JSON.parse(infoRaw), dishes = JSON.parse(dishesRaw), chars = JSON.parse(charsRaw);
-        let gameVersion = '-';
-        try {
-          const resp = await fetch('/ui/gameversion.txt', { cache: 'no-store' });
-          if (resp.ok) gameVersion = (await resp.text()).trim() || '-';
-        } catch (_) {}
-        document.getElementById('gameVersion').textContent = gameVersion;
+        // Version comes from the loaded game data via the backend, so it also
+        // works in the desktop app where gameversion.txt is not shipped.
+        document.getElementById('gameVersion').textContent = info.gameVersion || '-';
         document.getElementById('webuiVersion').textContent = info.webui || '-';
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
