@@ -400,11 +400,6 @@
           if (bonus != null) document.getElementById('trendBonus').textContent = `+${Number(bonus).toFixed(2)}`;
           await saveSettings(); await loadOverview();
         });
-        document.getElementById('cafesOwned').addEventListener('change', async (e) => {
-          cafesOwned = Math.min(5, Math.max(1, Number(e.target.value) || 1));
-          document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
-          await saveSettings(); await loadOverview();
-        });
         const card = document.getElementById('decorCard');
         const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); await loadOverview(); };
         card.addEventListener('click', toggle);
