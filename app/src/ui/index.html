@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe - Optimizer</title>
+  <title data-i18n="title.optimizer">NTE Cafe - Optimizer</title>
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
@@ -115,79 +115,79 @@
   <header>
     <div class="brand">
       <h1><span>NTE Cafe</span> Optimizer</h1>
-      <div class="sub">Roster optimization workspace</div>
+      <div class="sub" data-i18n="sub.optimizer">Roster optimization workspace</div>
     </div>
     <nav aria-label="Primary">
-      <a class="nav-link active" href="/">Optimizer</a>
-      <a class="nav-link" href="/characters">Characters</a>
-      <a class="nav-link" href="/dishes">Dishes</a>
-      <a class="nav-link" href="/cafes">Cafes</a>
-      <a class="nav-link" href="/status">Status</a>
+      <a class="nav-link active" href="/" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="/characters" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="/dishes" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link" href="/cafes" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="/status" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
     </div>
   </header>
 
   <main>
-    <div class="overview" id="overview">Loading overview...</div>
+    <div class="overview" id="overview" data-i18n="overview.loading">Loading overview...</div>
     <div class="panel-grid">
-      <section class="toggle-card cafe-card owned" aria-label="Cafes owned">
+      <section class="toggle-card cafe-card owned" data-i18n-aria="cafe.owned">
         <div class="avatar-wrap">
           <div class="cafe-icon" aria-hidden="true">☕</div>
         </div>
         <div class="overlay"></div>
-        <div class="owned-badge">Cafes</div>
+        <div class="owned-badge" data-i18n="cafe.badge">Cafes</div>
         <div class="toggle-body">
           <div>
-            <h2 class="toggle-name">Cafes Owned</h2>
-            <div class="toggle-desc">Set how many cafes are used for optimization.</div>
+            <h2 class="toggle-name" data-i18n="cafe.owned">Cafes Owned</h2>
+            <div class="toggle-desc" data-i18n="cafe.ownedDesc">Set how many cafes are used for optimization.</div>
           </div>
           <div class="toggle-meta">
             <span class="chip" id="cafeChip">1 cafe</span>
           </div>
         </div>
         <div class="cafe-controls">
-          <span class="level-label">Count</span>
+          <span class="level-label" data-i18n="cafe.count">Count</span>
           <span class="chip" id="cafeCountInfo">1</span>
-          <a href="/cafes" style="font-size:12px;color:var(--accent);text-decoration:none;">Edit cafes →</a>
+          <a href="/cafes" data-i18n="cafe.edit" style="font-size:12px;color:var(--accent);text-decoration:none;">Edit cafes →</a>
         </div>
       </section>
 
       <section class="card panel" style="display:flex; flex-direction:column;">
-        <h2>Trend</h2>
+        <h2 data-i18n="trend.title">Trend</h2>
         <div class="field">
-          <label for="trendSelect">Current trend</label>
+          <label for="trendSelect" data-i18n="trend.current">Current trend</label>
           <select id="trendSelect" class="input"></select>
-          <div class="muted" style="font-size:13px;color:var(--muted);">Trend bonus: <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
+          <div class="muted" style="font-size:13px;color:var(--muted);"><span data-i18n="trend.bonus">Trend bonus:</span> <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
         </div>
         <div style="margin-top:auto; padding-top:14px;">
-          <button id="calcBtn" class="run-opt-btn" type="button">Run Optimizer</button>
+          <button id="calcBtn" class="run-opt-btn" type="button" data-i18n="run.optimizer">Run Optimizer</button>
         </div>
       </section>
 
-      <section id="decorCard" class="toggle-card" role="button" tabindex="0" aria-pressed="false" aria-label="Toggle Hotori's Cat Decor">
+      <section id="decorCard" class="toggle-card" role="button" tabindex="0" aria-pressed="false" data-i18n-aria="decor.title">
         <div class="avatar-wrap">
-          <img src="/ui/assets/decor/exclusive-customer-service.png" alt="Exclusive Customer Service decor" loading="lazy">
+          <img src="/ui/assets/decor/exclusive-customer-service.png" data-i18n-alt="decor.alt" alt="Exclusive Customer Service decor" loading="lazy">
         </div>
         <div class="overlay"></div>
         <div id="decorBadge" class="owned-badge">Disabled</div>
         <div class="toggle-body">
           <div>
-            <h2 class="toggle-name">Hotori's Cat Decor</h2>
-            <div class="toggle-desc">Apply the Hotori cat decor bonus in optimization.</div>
+            <h2 class="toggle-name" data-i18n="decor.title">Hotori's Cat Decor</h2>
+            <div class="toggle-desc" data-i18n="decor.desc">Apply the Hotori cat decor bonus in optimization.</div>
           </div>
           <div class="toggle-meta">
-            <span class="chip">+1% base traffic</span>
+            <span class="chip" data-i18n="decor.bonus">+1% base traffic</span>
           </div>
         </div>
       </section>
     </div>
 
     <section id="resultCard" class="card panel" style="margin-top:14px; display:flex; flex-direction:column;">
-      <h2 style="text-align:center; margin-bottom:8px;">Result</h2>
+      <h2 style="text-align:center; margin-bottom:8px;" data-i18n="result.title">Result</h2>
       <div id="resultTrend" style="text-align:center; font-size:14px; color:var(--muted); margin-bottom:16px;"></div>
-      <div id="resultContent" style="font-size:14px; color:var(--muted); line-height:1.6; flex:1;">Run optimizer to see results.</div>
+      <div id="resultContent" style="font-size:14px; color:var(--muted); line-height:1.6; flex:1;" data-i18n="result.empty">Run optimizer to see results.</div>
     </section>
 
 
@@ -195,24 +195,26 @@
 
   <script src="/ui/theme.js"></script>
   <script>
+    const T = (k, v) => NteTheme.t(k, v);
+    const DN = n => NteTheme.displayName(n);
     const DISH_IMAGES = {
       'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
-      'Ice Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
+      'Iced Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
       'Apple Pie': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/dc/Item_Apple_Pie.png/revision/latest?cb=20261111041147',
-      'Tomato & Fried Egg': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
+      'Tomato & Fried Eggs Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
       'Tuna Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/da/Item_Tuna_Sandwich.png/revision/latest?cb=20261111041511',
       'Amber Glamor': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/5e/Item_Amber_Glamor.png/revision/latest?cb=20261111041238',
-      'Matacha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
+      'Matcha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
       'Snowy Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/55/Item_Snowy_Latte.png/revision/latest?cb=20261111041255',
       'Thick-Cut Fresh Beef Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/c/ca/Item_Thick-Cut_Fresh_Beef_Sandwich.png/revision/latest?cb=20261111041334',
-      'Red Bean & Butter Crossiant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
+      'Red Bean & Butter Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
       'Strawberry Box Cake': 'https://static.wikia.nocookie.net/neverness-to-everness/images/3/30/Item_Strawberry_Box_Cake.png/revision/latest?cb=20261111041346',
       'Orange Hot Coffee': 'https://static.wikia.nocookie.net/neverness-to-everness/images/b/be/Item_Orange_Hot_Coffee.png/revision/latest?cb=20261111041352',
-      'Pork Cutlet': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
+      'Pork Cutlet Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
       'Coconut Macchiato': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f1/Item_Coconut_Macchiato.png/revision/latest?cb=20261111041949',
       'Matcha Latte with Milk Cap': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/25/Item_Matcha_Latte_with_Milk_Cap.png/revision/latest?cb=20261111041943',
       'Tiramisu': 'https://static.wikia.nocookie.net/neverness-to-everness/images/1/12/Item_Tiramisu_%28Origen%29.png/revision/latest?cb=20261111041930',
-      'Ham & Cheese': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
+      'Ham & Cheese Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
       'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
     };
     const CHAR_IMAGES = {
@@ -223,7 +225,7 @@
       'Mint':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/41/Mint_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174611',
       'Haniel':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a5/Haniel_Portrait.png/revision/latest/scale-to-width-down/419?cb=20260701202324',
       'Adler':    'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0c/Adler_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173120',
-      'Dafodil':  'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f0/Daffodill_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173935',
+      'Daffodill': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f0/Daffodill_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173935',
       'Edgar':    'https://static.wikia.nocookie.net/neverness-to-everness/images/b/b4/Edgar_Portrait.png/revision/latest/scale-to-width-down/415?cb=20260701201907',
       'Aurelia':  'https://static.wikia.nocookie.net/neverness-to-everness/images/2/22/Aurelia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174756',
       'Chiz':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/42/Chiz_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173843',
@@ -243,18 +245,18 @@
       const card = document.getElementById('decorCard');
       card.classList.toggle('owned', hotoriCatDecor);
       card.setAttribute('aria-pressed', hotoriCatDecor ? 'true' : 'false');
-      document.getElementById('decorBadge').textContent = hotoriCatDecor ? 'Enabled' : 'Disabled';
+      document.getElementById('decorBadge').textContent = hotoriCatDecor ? T('decor.enabled') : T('decor.disabled');
     }
 
     async function saveSettings() {
-      setSave('Saving...');
+      setSave(T('common.saving'));
       try {
         const trend = document.getElementById('trendSelect').value;
         const obj = JSON.parse(await setOptimizerSettings(trend, hotoriCatDecor, cafesOwned));
-        if (!obj.ok) throw new Error(obj.error || 'Save failed');
-        setSave('Saved');
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
       } catch (e) {
-        setSave('Save failed', true);
+        setSave(T('common.saveFailed'), true);
         console.error(e);
       }
     }
@@ -264,7 +266,7 @@
       const el = document.getElementById('resultTrend');
       if (!el) return;
       const b = Number(bonus || 0);
-      el.innerHTML = `🔥 Trend: <strong style="color:var(--text)">${esc(trend || 'None')}</strong> <span style="color:var(--muted)">(+${b.toFixed(2)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
+      el.innerHTML = `🔥 ${T('result.trend')} <strong style="color:var(--text)">${esc(trend || T('trend.none'))}</strong> <span style="color:var(--muted)">(+${b.toFixed(2)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
     }
 
     function render(settings) {
@@ -272,9 +274,9 @@
       const trends = settings.trends || [];
       const groups = [
         { label: '', items: trends.filter(t => t.type === 'none') },
-        { label: 'Dish Types', items: trends.filter(t => t.type === 'tag') },
-        { label: 'Categories', items: trends.filter(t => t.type === 'category' && /^fruits?$/i.test(t.name || '')) },
-        { label: 'Ingredients', items: trends.filter(t => t.type === 'ingredient') },
+        { label: T('trend.group.dishTypes'), items: trends.filter(t => t.type === 'tag') },
+        { label: T('trend.group.categories'), items: trends.filter(t => t.type === 'category' && /^fruits?$/i.test(t.name || '')) },
+        { label: T('trend.group.ingredients'), items: trends.filter(t => t.type === 'ingredient') },
       ].filter(g => g.items.length);
       sel.innerHTML = groups.map(g => g.label
         ? `<optgroup label="${esc(g.label)}">${g.items.map(t => `<option value="${esc(t.name)}" data-bonus="${Number(t.bonus||0).toFixed(2)}">${esc(t.name)}</option>`).join('')}</optgroup>`
@@ -286,7 +288,7 @@
       hotoriCatDecor = !!settings.hotoriCatDecor;
       cafesOwned = Math.min(5, Math.max(1, Number(settings.cafesOwned) || 1));
       document.getElementById('cafeCountInfo').textContent = String(cafesOwned);
-      document.getElementById('cafeChip').textContent = `${cafesOwned} cafe${cafesOwned === 1 ? '' : 's'}`;
+      document.getElementById('cafeChip').textContent = cafesOwned === 1 ? T('cafe.one') : T('cafe.many', { n: cafesOwned });
       renderDecor();
     }
 
@@ -299,11 +301,11 @@
       resultContent.style.color = 'var(--text)';
       resultContent.innerHTML = `
         <div style="max-width:560px;margin:0 auto;text-align:center;padding:8px 0 4px;">
-          <div style="font-size:20px;font-weight:700;margin-bottom:8px;">Welcome to NTE Cafe Optimizer</div>
-          <p style="margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px;">Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.</p>
+          <div style="font-size:20px;font-weight:700;margin-bottom:8px;">${T('default.title')}</div>
+          <p style="margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px;">${T('default.desc')}</p>
           <div class="modal-actions" style="justify-content:center;">
-            <a class="modal-btn primary" href="/characters">Configure Characters</a>
-            <a class="modal-btn" href="/dishes">Configure Dishes</a>
+            <a class="modal-btn primary" href="/characters">${T('default.configureChars')}</a>
+            <a class="modal-btn" href="/dishes">${T('default.configureDishes')}</a>
           </div>
         </div>`;
     }
@@ -313,11 +315,11 @@
       try {
         const o = JSON.parse(await getOptimizerOverview());
         document.getElementById('overview').innerHTML = [
-          `<span><span class="kw">Characters:</span> <strong>${fmtNum(o.loadedCharacters)} owned</strong> / <strong>${fmtNum(o.characterSlots)} slots</strong></span>`,
-          `<span><span class="kw">Dishes:</span> <strong>${fmtNum(o.ownedDishes)} owned</strong> / <strong>${fmtNum(o.dishSlots)} slots</strong></span>`,
-          `<span><span class="kw">Char combos:</span> <strong>${fmtNum(o.characterCombinations)}</strong></span>`,
-          `<span><span class="kw">Dish combos:</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
-          `<span><span class="kw">Total:</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
+          `<span><span class="kw">${T('overview.characters')}</span> <strong>${fmtNum(o.loadedCharacters)} ${T('overview.owned')}</strong> / <strong>${fmtNum(o.characterSlots)} ${T('overview.slots')}</strong></span>`,
+          `<span><span class="kw">${T('overview.dishes')}</span> <strong>${fmtNum(o.ownedDishes)} ${T('overview.owned')}</strong> / <strong>${fmtNum(o.dishSlots)} ${T('overview.slots')}</strong></span>`,
+          `<span><span class="kw">${T('overview.charCombos')}</span> <strong>${fmtNum(o.characterCombinations)}</strong></span>`,
+          `<span><span class="kw">${T('overview.dishCombos')}</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
+          `<span><span class="kw">${T('overview.total')}</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
         ].join('');
         if (o.isDefault) renderDefaultSetup();
         return o;
@@ -330,37 +332,37 @@
       const resultContent = document.getElementById('resultContent');
       btn.disabled = true;
       resultContent.style.color = 'var(--muted)';
-      resultContent.textContent = 'Calculating...';
+      resultContent.textContent = T('result.calculating');
       /* no top error */
       try {
         for (let i=0; i<50 && typeof runOptimization !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
-        if (typeof runOptimization !== 'function') throw new Error('Optimization binding unavailable. Restart nte-cafe-app.');
+        if (typeof runOptimization !== 'function') throw new Error(T('common.noBackendOpt'));
         const res = JSON.parse(await runOptimization());
-        if (!res.ok) throw new Error(res.error || 'Optimization failed');
-        const dishes = (res.dishes||[]).map(d=>esc(d.name)).join(', ');
-        const chars = (res.characters||[]).map(c=>esc(c.name)).join(', ');
+        if (!res.ok) throw new Error(res.error || T('common.optimizationFailed'));
         const fonsIcon = 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/81/Item_Fons.png/revision/latest?cb=20260629185442';
         const dishCards = (res.dishes || []).map(d => {
-          const img = DISH_IMAGES[d.name] || '';
+          const name = DN(d.name);
+          const img = DISH_IMAGES[name] || '';
           const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
           return `
             <div class="result-dish">
               <div class="bg" ${bg}></div>
-              ${d.inTrend ? '<div class="trend-flame" title="In trend">🔥</div>' : ''}
+              ${d.inTrend ? `<div class="trend-flame" title="${T('result.inTrend')}">🔥</div>` : ''}
               <div class="content">
-                <div class="fph"><img src="${fonsIcon}" alt="Fons" loading="lazy"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong><span>/h</span></div>
-                <div class="name" title="${esc(d.name)}"><span class="name-inner">${esc(d.name)}</span></div>
+                <div class="fph"><img src="${fonsIcon}" alt="Fons" loading="lazy"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong><span>${T('result.perHour')}</span></div>
+                <div class="name" title="${esc(name)}"><span class="name-inner">${esc(name)}</span></div>
               </div>
             </div>`;
         }).join('');
         const charCards = (res.characters || []).map(c => {
-          const img = CHAR_IMAGES[c.name] || '';
+          const name = DN(c.name);
+          const img = CHAR_IMAGES[name] || '';
           const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
           return `
             <div class="result-char">
               <div class="bg" ${bg}></div>
               <div class="content">
-                <div class="name" title="${esc(c.name)}">${esc(c.name)}</div>
+                <div class="name" title="${esc(name)}">${esc(name)}</div>
               </div>
             </div>`;
         }).join('');
@@ -373,15 +375,15 @@
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
           `<div class="result-stats">` +
-            `<div class="result-stat"><div class="label">Traffic</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
-            `<div class="result-stat primary"><div class="label">Income</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24.toFixed(2)} in 24h - ${income48.toFixed(2)} in 48h - ${income72.toFixed(2)} in 72h</div></div>` +
+            `<div class="result-stat"><div class="label">${T('result.traffic')}</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
+            `<div class="result-stat primary"><div class="label">${T('result.income')}</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24.toFixed(2)} ${T('result.hours', { h: 24 })} - ${income48.toFixed(2)} ${T('result.hours', { h: 48 })} - ${income72.toFixed(2)} ${T('result.hours', { h: 72 })}</div></div>` +
             `<div class="result-stat split-stat"><div class="split">` +
-              `<div><div class="label">Price Buff</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
-              `<div><div class="label">Beliebtheitsbonus</div><div class="value small">${Number(res.popularityBonus || 0).toFixed(3)}</div></div>` +
+              `<div><div class="label">${T('result.priceBuff')}</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
+              `<div><div class="label">${T('result.popularityBonus')}</div><div class="value small">${Number(res.popularityBonus || 0).toFixed(3)}</div></div>` +
             `</div></div>` +
           `</div>` +
-          `<div class="result-chars">${charCards || '<div style="color:var(--muted)">No characters selected.</div>'}</div>` +
-          `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>`;
+          `<div class="result-chars">${charCards || `<div style="color:var(--muted)">${T('result.noChars')}</div>`}</div>` +
+          `<div class="result-dishes">${dishCards || `<div style="color:var(--muted)">${T('result.noDishes')}</div>`}</div>`;
         updateResultTrend(res.trend, res.trendBonus);
         requestAnimationFrame(() => {
           resultContent.querySelectorAll('.result-dish .name').forEach(name => {
@@ -396,7 +398,7 @@
         });
       } catch (e) {
         resultContent.style.color = 'var(--error)';
-        resultContent.textContent = 'Failed: ' + String(e.message || e);
+        resultContent.textContent = T('common.failed') + String(e.message || e);
         console.error(e);
       } finally { btn.disabled = false; }
     }
@@ -405,10 +407,10 @@
       const status = document.getElementById('status');
       try {
         for (let i=0; i<50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
-        if (typeof getOptimizerSettings !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        if (typeof getOptimizerSettings !== 'function') throw new Error(T('common.noBackend'));
         render(JSON.parse(await getOptimizerSettings()));
         await loadOverview();
-        status.textContent = 'Connected'; status.classList.remove('error');
+        status.textContent = T('status.connected'); status.classList.remove('error');
         document.getElementById('trendSelect').addEventListener('change', async () => {
           const sel = document.getElementById('trendSelect');
           const opt = Array.from(sel.options).find(o => o.value === sel.value);
@@ -422,12 +424,16 @@
         card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
         document.getElementById('calcBtn').addEventListener('click', runCalc);
       } catch (e) {
-        status.textContent = 'Error'; status.classList.add('error');
+        status.textContent = T('status.error'); status.classList.add('error');
         console.error(e);
       }
     }
 
-    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
+    window.addEventListener('DOMContentLoaded', () => {
+      NteTheme.initTheme();
+      load();
+      document.addEventListener('nte-langchange', () => location.reload());
+    });
   </script>
 </body>
 </html>

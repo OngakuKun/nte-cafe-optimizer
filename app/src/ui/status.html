@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe - Status</title>
+  <title data-i18n="title.status">NTE Cafe - Status</title>
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
@@ -24,41 +24,41 @@
   <header>
     <div class="brand">
       <h1><span>NTE Cafe</span> Optimizer</h1>
-      <div class="sub">Backend status and loaded data</div>
+      <div class="sub" data-i18n="sub.status">Backend status and loaded data</div>
     </div>
     <nav aria-label="Primary">
-      <a class="nav-link" href="/">Optimizer</a>
-      <a class="nav-link" href="/characters">Characters</a>
-      <a class="nav-link" href="/dishes">Dishes</a>
-      <a class="nav-link" href="/cafes">Cafes</a>
-      <a class="nav-link active" href="/status">Status</a>
+      <a class="nav-link" href="/" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="/characters" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="/dishes" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link" href="/cafes" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link active" href="/status" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
     </div>
   </header>
 
   <main>
     <div class="grid">
-      <div class="card"><div class="label">Game Version</div><div class="value" id="gameVersion">-</div></div>
-      <div class="card"><div class="label">WebUI Version</div><div class="value" id="webuiVersion">-</div></div>
-      <div class="card"><div class="label">Dishes Loaded</div><div class="value" id="dishCount">-</div></div>
-      <div class="card"><div class="label">Characters Loaded</div><div class="value" id="charCount">-</div></div>
+      <div class="card"><div class="label" data-i18n="status.gameVersion">Game Version</div><div class="value" id="gameVersion">-</div></div>
+      <div class="card"><div class="label" data-i18n="status.webuiVersion">WebUI Version</div><div class="value" id="webuiVersion">-</div></div>
+      <div class="card"><div class="label" data-i18n="status.dishesLoaded">Dishes Loaded</div><div class="value" id="dishCount">-</div></div>
+      <div class="card"><div class="label" data-i18n="status.charsLoaded">Characters Loaded</div><div class="value" id="charCount">-</div></div>
     </div>
     <div id="error" class="err"></div>
 
     <section class="section">
-      <h2>Dishes</h2>
+      <h2 data-i18n="status.section.dishes">Dishes</h2>
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Price L1</th><th>Price L2</th><th>Ingredients</th></tr></thead>
+        <thead><tr><th data-i18n="status.col.num">#</th><th data-i18n="status.col.name">Name</th><th data-i18n="status.col.type">Type</th><th data-i18n="status.col.priceL1">Price L1</th><th data-i18n="status.col.priceL2">Price L2</th><th data-i18n="status.col.ingredients">Ingredients</th></tr></thead>
         <tbody id="dishBody"></tbody>
       </table></div>
     </section>
 
     <section class="section">
-      <h2>Characters</h2>
+      <h2 data-i18n="status.section.characters">Characters</h2>
       <div class="table-wrap"><table>
-        <thead><tr><th>#</th><th>Name</th><th>Skills</th><th>Skill Details</th></tr></thead>
+        <thead><tr><th data-i18n="status.col.num">#</th><th data-i18n="status.col.name">Name</th><th data-i18n="status.col.skills">Skills</th><th data-i18n="status.col.skillDetails">Skill Details</th></tr></thead>
         <tbody id="charBody"></tbody>
       </table></div>
     </section>
@@ -66,20 +66,24 @@
 
   <script src="/ui/theme.js"></script>
   <script>
+    const T = (k, v) => NteTheme.t(k, v);
+    const DN = n => NteTheme.displayName(n);
     function esc(s) {
       return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     }
+    function typeLabel(t) { return ['Beverages','Desserts','Main Dishes'].includes(t) ? T('type.' + t) : t; }
     function fmtSkill(s) {
       const val = s.type.includes('mult') ? (s.value * 100).toFixed(2) + '%' : s.value.toFixed(2);
       const tag = s.tag && s.tag !== 'none' ? ' [' + s.tag + ']' : '';
-      return `L${s.level} ${s.type} ${val}${tag} (req ${s.req})`;
+      const kind = s.type.includes('price') ? T('skill.price') : s.type.includes('traffic') ? T('skill.traffic') : s.type;
+      return `L${s.level} ${kind} ${val}${tag} (${T('skill.req')} ${s.req})`;
     }
     async function load() {
       const err = document.getElementById('error');
       const status = document.getElementById('status');
       try {
         for (let i = 0; i < 50 && typeof getAppInfo !== 'function'; i++) await new Promise(r => setTimeout(r, 100));
-        if (typeof getAppInfo !== 'function') throw new Error('WebUI backend bindings are not available. Open through nte-cafe-app server.');
+        if (typeof getAppInfo !== 'function') throw new Error(T('common.noBackend'));
         const [infoRaw, dishesRaw, charsRaw] = await Promise.all([getAppInfo(), getDishes(), getCharacters()]);
         const info = JSON.parse(infoRaw), dishes = JSON.parse(dishesRaw), chars = JSON.parse(charsRaw);
         let gameVersion = '-';
@@ -91,15 +95,19 @@
         document.getElementById('webuiVersion').textContent = info.webui || '-';
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
-        status.textContent = 'Connected'; status.classList.remove('error');
-        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(d.name)}</td><td>${esc(d.type)}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${Array.isArray(d.ingredients)?d.ingredients.map(esc).join(', '):d.ingredients}</td></tr>`).join('');
-        document.getElementById('charBody').innerHTML = chars.map((c, i) => `<tr><td>${i+1}</td><td>${esc(c.name)}</td><td>${c.skillCount}</td><td><code>${esc((c.skills||[]).map(fmtSkill).join('; '))}</code></td></tr>`).join('');
+        status.textContent = T('status.connected'); status.classList.remove('error');
+        document.getElementById('dishBody').innerHTML = dishes.map((d, i) => `<tr><td>${i+1}</td><td>${esc(DN(d.name))}</td><td>${esc(typeLabel(d.type))}</td><td>${Number(d.priceL1).toFixed(2)}</td><td>${Number(d.priceL2).toFixed(2)}</td><td>${Array.isArray(d.ingredients)?d.ingredients.map(esc).join(', '):d.ingredients}</td></tr>`).join('');
+        document.getElementById('charBody').innerHTML = chars.map((c, i) => `<tr><td>${i+1}</td><td>${esc(DN(c.name))}</td><td>${c.skillCount}</td><td><code>${esc((c.skills||[]).map(fmtSkill).join('; '))}</code></td></tr>`).join('');
       } catch (e) {
-        status.textContent = 'Error'; status.classList.add('error');
+        status.textContent = T('status.error'); status.classList.add('error');
         err.textContent = String(e && e.stack ? e.stack : e);
       }
     }
-    window.addEventListener('DOMContentLoaded', () => { NteTheme.initTheme(); load(); });
+    window.addEventListener('DOMContentLoaded', () => {
+      NteTheme.initTheme();
+      load();
+      document.addEventListener('nte-langchange', () => location.reload());
+    });
   </script>
 </body>
 </html>

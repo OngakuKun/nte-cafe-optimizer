@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe - Cafes</title>
+  <title data-i18n="title.cafes">NTE Cafe - Cafes</title>
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
@@ -64,27 +64,27 @@
   <header>
     <div class="brand">
       <h1><span>NTE Cafe</span> Optimizer</h1>
-      <div class="sub">Cafe ownership and popularity bonuses</div>
+      <div class="sub" data-i18n="sub.cafes">Cafe ownership and popularity bonuses</div>
     </div>
     <nav aria-label="Primary">
-      <a class="nav-link" href="/">Optimizer</a>
-      <a class="nav-link" href="/characters">Characters</a>
-      <a class="nav-link" href="/dishes">Dishes</a>
-      <a class="nav-link active" href="/cafes">Cafes</a>
-      <a class="nav-link" href="/status">Status</a>
+      <a class="nav-link" href="/" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="/characters" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="/dishes" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link active" href="/cafes" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="/status" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
     </div>
   </header>
 
   <main>
     <div class="cafe-summary">
       <div>
-        <div class="label">Gesamtmultiplikator fuer alle Laeden</div>
+        <div class="label" data-i18n="cafe.popularityLabel">Total multiplier for all cafes</div>
         <div class="total" id="popularityTotal">+0.000 <small>(x1.000)</small></div>
       </div>
-      <label class="count">Cafes Owned
+      <label class="count" data-i18n="cafe.cafesOwned">Cafes Owned
         <select id="cafesOwned" class="input compact-select dropup-select">
           <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
         </select>
@@ -97,7 +97,7 @@
   </div>
   <script src="/ui/theme.js"></script>
   <script>
-    const CAFE_NAMES = ['Cafe 1', 'Cafe 2', 'Cafe 3', 'Cafe 4', 'Cafe 5'];
+    const T = (k, v) => NteTheme.t(k, v);
 
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function setSave(msg, err) {
@@ -126,22 +126,22 @@
           const level = Number(l.level);
           return `<button type="button" class="tier-btn ${level <= selected ? 'active' : ''}"
                           data-cafe="${idx}" data-level="${level}" ${active ? '' : 'disabled'}>
-                    <span>Level ${level} &middot; Beliebtheit ${Number(l.popularity)}</span>
+                    <span>${T('cafe.level', { n: level, p: Number(l.popularity) })}</span>
                     <span class="bonus">+${Number(l.bonus).toFixed(3)}</span>
                   </button>`;
         }).join('');
         return `
           <section class="cafe-card ${active ? 'active' : 'locked'}">
             <div class="cafe-head">
-              <h2>${esc(CAFE_NAMES[idx] || `Cafe ${idx + 1}`)}</h2>
-              <span class="state">${active ? 'Active' : 'Locked'}</span>
+              <h2>${esc(T('cafe.name', { n: idx + 1 }))}</h2>
+              <span class="state">${active ? T('cafe.active') : T('cafe.locked')}</span>
             </div>
             <div class="tier-list">
               <button type="button" class="tier-btn clear ${selected === 0 ? 'active' : ''}"
-                      data-cafe="${idx}" data-level="0" ${active ? '' : 'disabled'}>No bonus</button>
+                      data-cafe="${idx}" data-level="0" ${active ? '' : 'disabled'}>${T('cafe.noBonus')}</button>
               ${tiers}
             </div>
-            <div class="cafe-bonus">Current bonus: <strong>+${Number(cafe.bonus || 0).toFixed(3)}</strong></div>
+            <div class="cafe-bonus">${T('cafe.currentBonus')} <strong>+${Number(cafe.bonus || 0).toFixed(3)}</strong></div>
           </section>`;
       }).join('');
 
@@ -149,14 +149,14 @@
         btn.addEventListener('click', async () => {
           const idx = Number(btn.dataset.cafe);
           const level = Number(btn.dataset.level);
-          setSave('Saving...');
+          setSave(T('common.saving'));
           try {
             const obj = JSON.parse(await setCafePopularity(idx, level));
-            if (!obj.ok) throw new Error(obj.error || 'Save failed');
-            setSave('Saved');
+            if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+            setSave(T('common.saved'));
             await load();
           } catch (e) {
-            setSave('Save failed', true);
+            setSave(T('common.saveFailed'), true);
             document.getElementById('error').textContent = String(e.message || e);
           }
         });
@@ -165,14 +165,14 @@
 
     document.getElementById('cafesOwned').addEventListener('change', async (e) => {
       const count = Number(e.target.value);
-      setSave('Saving...');
+      setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setCafesOwned(count));
-        if (!obj.ok) throw new Error(obj.error || 'Save failed');
-        setSave('Saved');
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
         await load();
       } catch (err) {
-        setSave('Save failed', true);
+        setSave(T('common.saveFailed'), true);
         document.getElementById('error').textContent = String(err.message || err);
       }
     });
@@ -181,17 +181,18 @@
       const status = document.getElementById('status');
       try {
         for (let i = 0; i < 50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r => setTimeout(r, 100));
-        if (typeof getOptimizerSettings !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        if (typeof getOptimizerSettings !== 'function') throw new Error(T('common.noBackend'));
         render(JSON.parse(await getOptimizerSettings()));
-        status.textContent = 'Connected'; status.classList.remove('error');
+        status.textContent = T('status.connected'); status.classList.remove('error');
       } catch (e) {
-        status.textContent = 'Error'; status.classList.add('error');
+        status.textContent = T('status.error'); status.classList.add('error');
         document.getElementById('error').textContent = String(e.message || e);
       }
     }
     window.addEventListener('DOMContentLoaded', async () => {
       NteTheme.initTheme();
       load();
+      document.addEventListener('nte-langchange', () => location.reload());
     });
   </script>
 </body>

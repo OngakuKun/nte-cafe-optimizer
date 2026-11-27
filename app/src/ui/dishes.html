@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe - Dishes</title>
+  <title data-i18n="title.dishes">NTE Cafe - Dishes</title>
   <script src="/webui.js"></script>
   <link rel="stylesheet" href="/ui/shared.css">
   <style>
@@ -84,17 +84,17 @@
   <header>
     <div class="brand">
       <h1><span>NTE Cafe</span> Optimizer</h1>
-      <div class="sub">Dish ownership and levels</div>
+      <div class="sub" data-i18n="sub.dishes">Dish ownership and levels</div>
     </div>
     <nav aria-label="Primary">
-      <a class="nav-link" href="/">Optimizer</a>
-      <a class="nav-link" href="/characters">Characters</a>
-      <a class="nav-link active" href="/dishes">Dishes</a>
-      <a class="nav-link" href="/cafes">Cafes</a>
-      <a class="nav-link" href="/status">Status</a>
+      <a class="nav-link" href="/" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="/characters" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link active" href="/dishes" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link" href="/cafes" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="/status" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
     </div>
   </header>
 
@@ -105,9 +105,9 @@
         <span id="saveState" class="save-state"></span>
       </div>
       <div class="bulk-actions">
-        <button type="button" id="levelSwitch" class="bulk-btn">All to Max Level</button>
-        <button type="button" id="ownedSwitch" class="bulk-btn">All to Owned</button>
-        <button type="button" id="resetDefaults" class="bulk-btn warning">Reset to Defaults</button>
+        <button type="button" id="levelSwitch" class="bulk-btn" data-i18n="bulk.max">All to Max Level</button>
+        <button type="button" id="ownedSwitch" class="bulk-btn" data-i18n="bulk.owned">All to Owned</button>
+        <button type="button" id="resetDefaults" class="bulk-btn warning" data-i18n="bulk.reset">Reset to Defaults</button>
       </div>
     </div>
     <div id="error" class="err"></div>
@@ -116,66 +116,70 @@
   </div>
   <script src="/ui/theme.js"></script>
   <script>
+    const T = (k, v) => NteTheme.t(k, v);
+    const DN = n => NteTheme.displayName(n);
     const DISH_IMAGES = {
       'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
-      'Ice Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
+      'Iced Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
       'Apple Pie': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/dc/Item_Apple_Pie.png/revision/latest?cb=20261111041147',
-      'Tomato & Fried Egg': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
+      'Tomato & Fried Eggs Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
       'Tuna Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/da/Item_Tuna_Sandwich.png/revision/latest?cb=20261111041511',
       'Amber Glamor': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/5e/Item_Amber_Glamor.png/revision/latest?cb=20261111041238',
-      'Matacha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
+      'Matcha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
       'Snowy Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/55/Item_Snowy_Latte.png/revision/latest?cb=20261111041255',
       'Thick-Cut Fresh Beef Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/c/ca/Item_Thick-Cut_Fresh_Beef_Sandwich.png/revision/latest?cb=20261111041334',
-      'Red Bean & Butter Crossiant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
+      'Red Bean & Butter Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
       'Strawberry Box Cake': 'https://static.wikia.nocookie.net/neverness-to-everness/images/3/30/Item_Strawberry_Box_Cake.png/revision/latest?cb=20261111041346',
       'Orange Hot Coffee': 'https://static.wikia.nocookie.net/neverness-to-everness/images/b/be/Item_Orange_Hot_Coffee.png/revision/latest?cb=20261111041352',
-      'Pork Cutlet': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
+      'Pork Cutlet Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
       'Coconut Macchiato': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f1/Item_Coconut_Macchiato.png/revision/latest?cb=20261111041949',
       'Matcha Latte with Milk Cap': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/25/Item_Matcha_Latte_with_Milk_Cap.png/revision/latest?cb=20261111041943',
       'Tiramisu': 'https://static.wikia.nocookie.net/neverness-to-everness/images/1/12/Item_Tiramisu_%28Origen%29.png/revision/latest?cb=20261111041930',
-      'Ham & Cheese': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
+      'Ham & Cheese Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
       'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
     };
 
     function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
     function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join(''); }
     function typeClass(t) { return 'type-' + String(t).replace(/\s+/g,''); }
+    function typeLabel(t) { return ['Beverages','Desserts','Main Dishes'].includes(t) ? T('type.' + t) : t; }
     function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
     async function saveRow(index, owned, level) {
-      setSave('Saving...');
+      setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setDishState(index, owned, level));
-        if (!obj.ok) throw new Error(obj.error || 'Save failed');
-        setSave('Saved');
-      } catch (e) { setSave('Save failed', true); document.getElementById('error').textContent = String(e.message || e); }
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
+      } catch (e) { setSave(T('common.saveFailed'), true); document.getElementById('error').textContent = String(e.message || e); }
     }
 
     function render(dishes) {
       document.getElementById('grid').innerHTML = dishes.map((d, i) => {
-        const url = DISH_IMAGES[d.name] || '';
+        const name = DN(d.name);
+        const url = DISH_IMAGES[name] || '';
         const img = url
-          ? `<img src="${esc(url)}" alt="${esc(d.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(d.name))}</div>'">`
-          : `<div class="avatar-fallback">${esc(initials(d.name))}</div>`;
+          ? `<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(name))}</div>'">`
+          : `<div class="avatar-fallback">${esc(initials(name))}</div>`;
         const ings = Array.isArray(d.ingredients) ? d.ingredients : [];
-        const tags = [`<span class="tag ${typeClass(d.type)}">${esc(d.type)}</span>`, ...ings.map(x => `<span class="tag">${esc(x)}</span>`)].join('');
+        const tags = [`<span class="tag ${typeClass(d.type)}">${esc(typeLabel(d.type))}</span>`, ...ings.map(x => `<span class="tag">${esc(x)}</span>`)].join('');
         return `
-          <article class="dish-card ${d.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${d.owned ? 'true' : 'false'}" aria-label="Toggle ${esc(d.name)} owned">
+          <article class="dish-card ${d.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${d.owned ? 'true' : 'false'}" aria-label="${T('card.toggleOwned', { name: esc(name) })}">
             <div class="avatar-wrap">${img}</div>
             <div class="overlay"></div>
-            <div class="owned-badge">${d.owned ? 'Owned' : 'Not owned'}</div>
+            <div class="owned-badge">${d.owned ? T('card.owned') : T('card.notOwned')}</div>
             <div class="body">
               <div>
-                <h2 class="name">${esc(d.name)}</h2>
-                <div class="prices">L1 ${Number(d.priceL1).toFixed(2)} · L2 ${Number(d.priceL2).toFixed(2)}</div>
+                <h2 class="name">${esc(name)}</h2>
+                <div class="prices">${T('dish.prices', { a: 1, p1: Number(d.priceL1).toFixed(2), b: 2, p2: Number(d.priceL2).toFixed(2) })}</div>
               </div>
               <div class="tags">${tags}</div>
             </div>
             <div class="controls">
-              <span class="level-label">Level</span>
+              <span class="level-label">${T('card.level')}</span>
               <div class="level-picker" data-i="${i}">
-                <button type="button" class="level-btn" data-i="${i}" ${d.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">Lv ${Number(d.level)||1}</button>
-                <div class="level-menu" role="listbox" aria-label="Level for ${esc(d.name)}">
-                  ${[1,2].map(l => `<button type="button" class="level-option ${Number(d.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">Lv ${l}</button>`).join('')}
+                <button type="button" class="level-btn" data-i="${i}" ${d.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">${T('card.lv', { n: Number(d.level)||1 })}</button>
+                <div class="level-menu" role="listbox" aria-label="${T('card.levelFor', { name: esc(name) })}">
+                  ${[1,2].map(l => `<button type="button" class="level-option ${Number(d.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">${T('card.lv', { n: l })}</button>`).join('')}
                 </div>
               </div>
             </div>
@@ -191,7 +195,7 @@
           const owned = !card.classList.contains('owned');
           card.classList.toggle('owned', owned);
           card.setAttribute('aria-pressed', owned ? 'true' : 'false');
-          card.querySelector('.owned-badge').textContent = owned ? 'Owned' : 'Not owned';
+          card.querySelector('.owned-badge').textContent = owned ? T('card.owned') : T('card.notOwned');
           const levelBtn = card.querySelector('.level-btn');
           levelBtn.disabled = !owned;
           await saveRow(i, owned, Number(levelBtn.textContent.replace(/\D/g,'')) || 1);
@@ -218,7 +222,7 @@
           const i = Number(opt.dataset.i);
           const level = Number(opt.dataset.level);
           const card = document.querySelector(`[data-card="${i}"]`);
-          btn.textContent = `Lv ${level}`;
+          btn.textContent = T('card.lv', { n: level });
           picker.querySelectorAll('.level-option').forEach(o => o.classList.toggle('selected', o === opt));
           closeMenus();
           await saveRow(i, card.classList.contains('owned'), level);
@@ -226,14 +230,14 @@
       });
     }
 
-    const RESET_WARNING = 'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.';
+    const RESET_WARNING = T('reset.dishes');
     const LEVEL_STEPS = [
-      { mode: 1, label: 'All to Max Level' },
-      { mode: 2, label: 'All to Min Level' }
+      { mode: 1, label: T('bulk.max') },
+      { mode: 2, label: T('bulk.min') }
     ];
     const OWNED_STEPS = [
-      { mode: 3, label: 'All to Owned' },
-      { mode: 4, label: 'All to Unowned' }
+      { mode: 3, label: T('bulk.owned') },
+      { mode: 4, label: T('bulk.unowned') }
     ];
     let levelStep = 0;
     let ownedStep = 0;
@@ -244,16 +248,16 @@
       btn.addEventListener('click', async () => {
         const idx = getStep() % steps.length;
         const step = steps[idx];
-        setSave('Saving...');
+        setSave(T('common.saving'));
         try {
           const obj = JSON.parse(await setAllDishStates(step.mode));
-          if (!obj.ok) throw new Error(obj.error || 'Save failed');
+          if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
           setStep((idx + 1) % steps.length);
           paint();
           await load();
-          setSave('Saved');
+          setSave(T('common.saved'));
         } catch (e) {
-          setSave('Save failed', true);
+          setSave(T('common.saveFailed'), true);
           document.getElementById('error').textContent = String(e.message || e);
         }
       });
@@ -265,18 +269,18 @@
 
     document.getElementById('resetDefaults').addEventListener('click', async () => {
       if (!window.confirm(RESET_WARNING)) return;
-      setSave('Saving...');
+      setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setAllDishStates(5));
-        if (!obj.ok) throw new Error(obj.error || 'Save failed');
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
         levelStep = 0;
         ownedStep = 0;
         document.getElementById('levelSwitch').textContent = LEVEL_STEPS[0].label;
         document.getElementById('ownedSwitch').textContent = OWNED_STEPS[0].label;
         await load();
-        setSave('Saved');
+        setSave(T('common.saved'));
       } catch (e) {
-        setSave('Save failed', true);
+        setSave(T('common.saveFailed'), true);
         document.getElementById('error').textContent = String(e.message || e);
       }
     });
@@ -285,27 +289,28 @@
       const status = document.getElementById('status');
       try {
         for (let i=0; i<50 && typeof getDishStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
-        if (typeof getDishStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
+        if (typeof getDishStates !== 'function') throw new Error(T('common.noBackend'));
         const states = JSON.parse(await getDishStates());
         render(states);
         const active = states.filter(d => d.owned);
         const counts = new Map();
         active.forEach(d => { const lv = Number(d.level) || 0; counts.set(lv, (counts.get(lv) || 0) + 1); });
         const breakdown = [...counts.entries()].sort((a,b) => b[0] - a[0]).map(([lv,n]) => `<strong>${n}</strong> L${lv}`).join(', ');
-        document.getElementById('summary').innerHTML = `Dishes active: <strong>${active.length}</strong>/${states.length} (${breakdown})`;
+        document.getElementById('summary').innerHTML = T('summary.dishes', { a: `<strong>${active.length}</strong>`, n: states.length, b: breakdown });
         levelStep = states.length > 0 && states.every(d => Number(d.level) === 2) ? 1 : 0;
         ownedStep = states.length > 0 && states.every(d => d.owned) ? 1 : 0;
         document.getElementById('levelSwitch').textContent = LEVEL_STEPS[levelStep].label;
         document.getElementById('ownedSwitch').textContent = OWNED_STEPS[ownedStep].label;
-        status.textContent = 'Connected'; status.classList.remove('error');
+        status.textContent = T('status.connected'); status.classList.remove('error');
       } catch (e) {
-        status.textContent = 'Error'; status.classList.add('error');
+        status.textContent = T('status.error'); status.classList.add('error');
         document.getElementById('error').textContent = String(e.message || e);
       }
     }
     window.addEventListener('DOMContentLoaded', async () => {
       NteTheme.initTheme();
       load();
+      document.addEventListener('nte-langchange', () => location.reload());
     });
   </script>
 </body>

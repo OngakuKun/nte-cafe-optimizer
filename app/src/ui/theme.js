@@ -5,26 +5,83 @@
   const LANGS = [
     { id: 'en', name: 'English' },
     { id: 'de', name: 'Deutsch' },
-    { id: 'ja', name: '日本語' },
-    { id: 'zh-CN', name: '简体中文' },
   ];
+  /* Canonical names from the NTE wiki page "The Café by Origen" (same source as the images). */
+  const NAME_MAP = {
+    'Ice Mocha': 'Iced Mocha',
+    'Tomato & Fried Egg': 'Tomato & Fried Eggs Croissant',
+    'Matacha Lava Mousse': 'Matcha Lava Mousse',
+    'Red Bean & Butter Crossiant': 'Red Bean & Butter Croissant',
+    'Pork Cutlet': 'Pork Cutlet Sandwich',
+    'Ham & Cheese': 'Ham & Cheese Croissant',
+    'Dafodil': 'Daffodill',
+  };
   const I18N = {
+    en: {
+      'title.optimizer':'NTE Cafe - Optimizer','title.characters':'NTE Cafe - Characters','title.dishes':'NTE Cafe - Dishes','title.cafes':'NTE Cafe - Cafes','title.status':'NTE Cafe - Status',
+      'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
+      'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
+      'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
+      'settings.title':'Settings','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
+      'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
+      'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
+      'common.optimizationFailed':'Optimization failed','common.failed':'Failed: ',
+      'export.exporting':'Exporting…','export.importing':'Importing…','export.done':'Exported {a} characters, {d} dishes.','export.failed':'Export failed: ',
+      'import.done':'Imported {a} characters, {d} dishes.','import.failed':'Import failed: ',
+      'import.invalid':'Not an NTE Cafe config (format/version mismatch).','import.missing':'Config is missing the characters or dishes array.',
+      'theme.importFailed':'Theme import failed: ',
+      'overview.loading':'Loading overview...','overview.characters':'Characters:','overview.dishes':'Dishes:','overview.charCombos':'Char combos:','overview.dishCombos':'Dish combos:','overview.total':'Total:','overview.owned':'owned','overview.slots':'slots',
+      'cafe.owned':'Cafes Owned','cafe.ownedDesc':'Set how many cafes are used for optimization.','cafe.badge':'Cafes','cafe.count':'Count','cafe.edit':'Edit cafes →','cafe.one':'1 cafe','cafe.many':'{n} cafes',
+      'trend.title':'Trend','trend.current':'Current trend','trend.bonus':'Trend bonus:','trend.none':'None','trend.group.dishTypes':'Dish Types','trend.group.categories':'Categories','trend.group.ingredients':'Ingredients',
+      'run.optimizer':'Run Optimizer',
+      'decor.title':"Hotori's Cat Decor",'decor.desc':'Apply the Hotori cat decor bonus in optimization.','decor.alt':'Exclusive Customer Service decor','decor.bonus':'+1% base traffic','decor.enabled':'Enabled','decor.disabled':'Disabled',
+      'result.title':'Result','result.empty':'Run optimizer to see results.','result.calculating':'Calculating...','result.traffic':'Traffic','result.income':'Income','result.priceBuff':'Price Buff','result.popularityBonus':'Popularity Bonus','result.hours':'in {h}h','result.trend':'Trend:','result.inTrend':'In trend','result.noChars':'No characters selected.','result.noDishes':'No dishes selected.','result.perHour':'/h',
+      'default.title':'Welcome to NTE Cafe Optimizer','default.desc':'Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.','default.configureChars':'Configure Characters','default.configureDishes':'Configure Dishes',
+      'summary.characters':'Character active: {a}/{n} ({b})','summary.dishes':'Dishes active: {a}/{n} ({b})',
+      'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned','bulk.reset':'Reset to Defaults',
+      'reset.characters':'Reset ALL characters to unowned and Level 0? Every character setting will be lost.','reset.dishes':'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.',
+      'card.owned':'Owned','card.notOwned':'Not owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
+      'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
+      'dish.prices':'L{a} {p1} · L{b} {p2}',
+      'type.Beverages':'Beverages','type.Desserts':'Desserts','type.Main Dishes':'Main Dishes',
+      'cafe.popularityLabel':'Total multiplier for all cafes','cafe.cafesOwned':'Cafes Owned','cafe.level':'Level {n} · Popularity {p}','cafe.active':'Active','cafe.locked':'Locked','cafe.noBonus':'No bonus','cafe.currentBonus':'Current bonus:','cafe.name':'Cafe {n}',
+      'status.gameVersion':'Game Version','status.webuiVersion':'WebUI Version','status.dishesLoaded':'Dishes Loaded','status.charsLoaded':'Characters Loaded',
+      'status.section.dishes':'Dishes','status.section.characters':'Characters',
+      'status.col.num':'#','status.col.name':'Name','status.col.type':'Type','status.col.priceL1':'Price L1','status.col.priceL2':'Price L2','status.col.ingredients':'Ingredients','status.col.skills':'Skills','status.col.skillDetails':'Skill Details'
+    },
     de: {
-      'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status',
-      'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache',
-      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reload':'Neu laden','settings.config':'Config'
-    },
-    ja: {
-      'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.cafes':'カフェ','nav.status':'ステータス',
-      'sub.cafes':'カフェの人気度とボーナス','settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
-      'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報',
-      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む','settings.reload':'再読み込み','settings.config':'設定'
-    },
-    'zh-CN': {
-      'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.cafes':'咖啡馆','nav.status':'状态',
-      'sub.cafes':'咖啡馆人气与奖励','settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
-      'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息',
-      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置','settings.reload':'重新加载','settings.config':'配置'
+      'title.optimizer':'NTE Cafe - Optimierer','title.characters':'NTE Cafe - Charaktere','title.dishes':'NTE Cafe - Gerichte','title.cafes':'NTE Cafe - Cafés','title.status':'NTE Cafe - Status',
+      'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status','nav.menu':'Menü',
+      'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
+      'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
+      'settings.title':'Einstellungen','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
+      'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
+      'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
+      'common.optimizationFailed':'Optimierung fehlgeschlagen','common.failed':'Fehlgeschlagen: ',
+      'export.exporting':'Exportiere…','export.importing':'Importiere…','export.done':'{a} Charaktere und {d} Gerichte exportiert.','export.failed':'Export fehlgeschlagen: ',
+      'import.done':'{a} Charaktere und {d} Gerichte importiert.','import.failed':'Import fehlgeschlagen: ',
+      'import.invalid':'Keine NTE-Cafe-Config (Format/Version unbekannt).','import.missing':'Config enthält keine Character- oder Dishes-Liste.',
+      'theme.importFailed':'Design-Import fehlgeschlagen: ',
+      'overview.loading':'Lädt Übersicht...','overview.characters':'Charaktere:','overview.dishes':'Gerichte:','overview.charCombos':'Char-Kombis:','overview.dishCombos':'Gericht-Kombis:','overview.total':'Gesamt:','overview.owned':'im Besitz','overview.slots':'Slots',
+      'cafe.owned':'Cafés im Besitz','cafe.ownedDesc':'Lege fest, wie viele Cafés optimiert werden.','cafe.badge':'Cafés','cafe.count':'Anzahl','cafe.edit':'Cafés bearbeiten →','cafe.one':'1 Café','cafe.many':'{n} Cafés',
+      'trend.title':'Trend','trend.current':'Aktueller Trend','trend.bonus':'Trend-Bonus:','trend.none':'Keiner','trend.group.dishTypes':'Gerichttypen','trend.group.categories':'Kategorien','trend.group.ingredients':'Zutaten',
+      'run.optimizer':'Optimierer starten',
+      'decor.title':'Hotoris Katzendeko','decor.desc':'Hotori-Katzendeko-Bonus bei der Optimierung berücksichtigen.','decor.alt':'Exklusive Kundenservice-Deko','decor.bonus':'+1 % Grund-Traffic','decor.enabled':'Aktiviert','decor.disabled':'Deaktiviert',
+      'result.title':'Ergebnis','result.empty':'Optimierer starten, um Ergebnisse zu sehen.','result.calculating':'Berechne...','result.traffic':'Traffic','result.income':'Einkommen','result.priceBuff':'Preis-Buff','result.popularityBonus':'Beliebtheitsbonus','result.hours':'in {h} Std.','result.trend':'Trend:','result.inTrend':'Im Trend','result.noChars':'Keine Charaktere ausgewählt.','result.noDishes':'Keine Gerichte ausgewählt.','result.perHour':'/h',
+      'default.title':'Willkommen beim NTE Cafe Optimizer','default.desc':'Deine Einstellungen sind noch standardmäßig. Konfiguriere deine Charaktere, Gerichte und Cafés, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','default.configureChars':'Charaktere konfigurieren','default.configureDishes':'Gerichte konfigurieren',
+      'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
+      'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen','bulk.reset':'Auf Standard zurücksetzen',
+      'reset.characters':'ALLE Charaktere auf nicht besitzt und Stufe 0 zurücksetzen? Alle Charaktereinstellungen gehen verloren.','reset.dishes':'ALLE Gerichte auf nicht besitzt und Stufe 1 zurücksetzen? Alle Gerichtseinstellungen gehen verloren.',
+      'card.owned':'Besitzt','card.notOwned':'Nicht besitzt','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
+      'skill.price':'Preis','skill.traffic':'Traffic','skill.req':'Benötigt',
+      'dish.prices':'L{a} {p1} · L{b} {p2}',
+      'type.Beverages':'Getränke','type.Desserts':'Desserts','type.Main Dishes':'Hauptgerichte',
+      'cafe.popularityLabel':'Gesamtmultiplikator für alle Läden','cafe.cafesOwned':'Cafés im Besitz','cafe.level':'Stufe {n} · Beliebtheit {p}','cafe.active':'Aktiv','cafe.locked':'Gesperrt','cafe.noBonus':'Kein Bonus','cafe.currentBonus':'Aktueller Bonus:','cafe.name':'Café {n}',
+      'status.gameVersion':'Spielversion','status.webuiVersion':'WebUI-Version','status.dishesLoaded':'Gerichte geladen','status.charsLoaded':'Charaktere geladen',
+      'status.section.dishes':'Gerichte','status.section.characters':'Charaktere',
+      'status.col.num':'#','status.col.name':'Name','status.col.type':'Typ','status.col.priceL1':'Preis L1','status.col.priceL2':'Preis L2','status.col.ingredients':'Zutaten','status.col.skills':'Skills','status.col.skillDetails':'Skill-Details'
     }
   };
   const BUILTIN_THEMES = [
@@ -124,42 +181,34 @@
   function currentLang() {
     try { const s = localStorage.getItem(LANG_KEY); if (LANGS.some(l => l.id === s)) return s; } catch (_) {}
     const nav = (navigator.language || 'en').toLowerCase();
-    if (nav.startsWith('de')) return 'de';
-    if (nav.startsWith('ja')) return 'ja';
-    if (nav.startsWith('zh')) return 'zh-CN';
-    return 'en';
+    return nav.startsWith('de') ? 'de' : 'en';
   }
-  function t(key) {
+  function t(key, vars) {
     const lang = document.documentElement.lang || 'en';
-    return (I18N[lang] && I18N[lang][key]) || (I18N.en && I18N.en[key]) || null;
+    let s = (I18N[lang] && I18N[lang][key]) ?? (I18N.en && I18N.en[key]) ?? key;
+    if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll('{' + k + '}', String(v));
+    return s;
   }
+  function displayName(name) { return NAME_MAP[name] || name; }
   function applyLanguage(lang, persist) {
     const next = LANGS.some(l => l.id === lang) ? lang : 'en';
     document.documentElement.lang = next;
     if (persist) { try { localStorage.setItem(LANG_KEY, next); } catch (_) {} }
     const sel = document.getElementById('langSelect');
     if (sel) sel.value = next;
-    const dict = I18N[next] || {};
-    const map = { '/':'nav.optimizer','/characters':'nav.characters','/dishes':'nav.dishes','/cafes':'nav.cafes','/status':'nav.status' };
-    document.querySelectorAll('nav a.nav-link').forEach(a => {
-      if (!a.dataset.defaultText) a.dataset.defaultText = a.textContent;
-      const k = map[a.getAttribute('href')];
-      a.textContent = (k && dict[k]) ? dict[k] : a.dataset.defaultText;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = t(el.dataset.i18n);
+      if (v != null) el.textContent = v;
     });
-    const st = document.querySelector('#navSettings .settings-title'); if (st) st.textContent = dict['settings.title'] || 'Settings';
-    const tl = document.querySelector('label[for="themeSelect"]'); if (tl) tl.textContent = dict['settings.theme'] || 'Theme';
-    const ib = document.getElementById('importThemeBtn'); if (ib) ib.textContent = dict['settings.import'] || 'Import Theme';
-    const eb = document.getElementById('exportConfigBtn'); if (eb) eb.textContent = dict['settings.exportConfig'] || 'Export Config';
-    const cb = document.getElementById('importConfigBtn'); if (cb) cb.textContent = dict['settings.importConfig'] || 'Import Config';
-    const gt = document.getElementById('configGroupTitle'); if (gt) gt.textContent = dict['settings.config'] || 'Config';
-    const ll = document.querySelector('label[for="langSelect"]'); if (ll) ll.textContent = dict['settings.language'] || 'Language';
-    const sub = document.querySelector('.sub');
-    if (sub) {
-      if (!sub.dataset.defaultText) sub.dataset.defaultText = sub.textContent;
-      const path = location.pathname.replace(/\/+$/, '') || '/';
-      const sk = map[path] ? map[path].replace('nav.', 'sub.') : null;
-      sub.textContent = (sk && dict[sk]) ? dict[sk] : sub.dataset.defaultText;
-    }
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      const v = t(el.dataset.i18nAria);
+      if (v != null) el.setAttribute('aria-label', v);
+    });
+    document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+      const v = t(el.dataset.i18nAlt);
+      if (v != null) el.setAttribute('alt', v);
+    });
+    document.dispatchEvent(new CustomEvent('nte-langchange', { detail: { lang: next } }));
   }
   async function waitForBindings(names, timeoutMs = 8000) {
     const start = Date.now();
@@ -184,12 +233,12 @@
   }
   function checkResult(raw) {
     const obj = JSON.parse(raw);
-    if (obj && obj.ok === false) throw new Error(obj.error || 'Save failed');
+    if (obj && obj.ok === false) throw new Error(obj.error || t('common.saveFailed'));
     return obj;
   }
   async function exportConfig() {
     const names = ['getOptimizerSettings', 'getCharacterStates', 'getDishStates'];
-    if (!await waitForBindings(names)) throw new Error('Backend bindings unavailable. Open through the nte-cafe-app server.');
+    if (!await waitForBindings(names)) throw new Error(t('common.noBackend'));
     const [s, c, d] = await Promise.all(names.map(n => window[n]()));
     const settings = JSON.parse(s), chars = JSON.parse(c), dishes = JSON.parse(d);
     const cfg = {
@@ -210,16 +259,16 @@
     a.download = `nte-cafe-config-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    configStatus(`Exported ${chars.length} characters, ${dishes.length} dishes.`, 'ok');
+    configStatus(t('export.done', { a: chars.length, d: dishes.length }), 'ok');
   }
   async function importConfigFile(file) {
     const cfg = JSON.parse(await file.text());
     if (!cfg || cfg.format !== 'nte-cafe-config' || cfg.version !== 1)
-      throw new Error('Not an NTE Cafe config (format/version mismatch).');
+      throw new Error(t('import.invalid'));
     if (!Array.isArray(cfg.characters) || !Array.isArray(cfg.dishes))
-      throw new Error('Config is missing the characters or dishes array.');
+      throw new Error(t('import.missing'));
     const names = ['getOptimizerSettings', 'setOptimizerSettings', 'setCafePopularity', 'setCharacterState', 'setDishState'];
-    if (!await waitForBindings(names)) throw new Error('Backend bindings unavailable. Open through the nte-cafe-app server.');
+    if (!await waitForBindings(names)) throw new Error(t('common.noBackend'));
 
     const s = cfg.settings || {};
     const current = JSON.parse(await getOptimizerSettings());
@@ -235,24 +284,24 @@
       const d = cfg.dishes[i] || {};
       checkResult(await setDishState(i, !!d.owned, Number(d.level) || 1));
     }
-    configStatus(`Imported ${cfg.characters.length} characters, ${cfg.dishes.length} dishes.`, 'ok', true);
+    configStatus(t('import.done', { a: cfg.characters.length, d: cfg.dishes.length }), 'ok', true);
   }
   function initSettingsPanel() {
     const eb = document.getElementById('exportConfigBtn');
     const ib = document.getElementById('importConfigBtn');
     const file = document.getElementById('importConfigFile');
     if (eb) eb.addEventListener('click', async () => {
-      configStatus('Exporting…');
+      configStatus(t('export.exporting'));
       try { await exportConfig(); }
-      catch (e) { configStatus('Export failed: ' + (e && e.message ? e.message : String(e)), 'error'); }
+      catch (e) { configStatus(t('export.failed') + (e && e.message ? e.message : String(e)), 'error'); }
     });
     if (ib && file) {
       ib.addEventListener('click', () => file.click());
       file.addEventListener('change', async (e) => {
         const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
-        configStatus('Importing…');
+        configStatus(t('export.importing'));
         try { await importConfigFile(f); }
-        catch (ex) { configStatus('Import failed: ' + (ex && ex.message ? ex.message : String(ex)), 'error'); }
+        catch (ex) { configStatus(t('import.failed') + (ex && ex.message ? ex.message : String(ex)), 'error'); }
       });
     }
   }
@@ -349,7 +398,7 @@
     if (!btn) {
       btn = document.createElement('button');
       btn.id = 'menuBtn'; btn.className = 'icon-btn menu-btn'; btn.type = 'button';
-      btn.setAttribute('aria-label', 'Menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', nav.id || 'siteNav');
+      btn.setAttribute('aria-label', t('nav.menu')); btn.setAttribute('data-i18n-aria', 'nav.menu'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', nav.id || 'siteNav');
       btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>';
       headerRight.appendChild(btn);
     }
@@ -361,22 +410,22 @@
       settings = document.createElement('div');
       settings.id = 'navSettings'; settings.className = 'nav-settings';
       settings.innerHTML = `
-        <div class="settings-title">Settings</div>
+        <div class="settings-title" data-i18n="settings.title">Settings</div>
         <div class="settings-group">
-          <div class="settings-group-title" id="configGroupTitle">Config</div>
+          <div class="settings-group-title" id="configGroupTitle" data-i18n="settings.config">Config</div>
           <div class="settings-config-row">
-            <button id="exportConfigBtn" class="theme-btn" type="button">Export Config</button>
-            <button id="importConfigBtn" class="theme-btn" type="button">Import Config</button>
+            <button id="exportConfigBtn" class="theme-btn" type="button" data-i18n="settings.exportConfig">Export Config</button>
+            <button id="importConfigBtn" class="theme-btn" type="button" data-i18n="settings.importConfig">Import Config</button>
           </div>
           <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
           <div id="configStatus" class="settings-hint"></div>
         </div>
         <div class="settings-row">
-          <label for="langSelect">Language</label>
-          <select id="langSelect" class="theme-select" aria-label="Language"></select>
-          <label for="themeSelect">Theme</label>
+          <label for="langSelect" data-i18n="settings.language">Language</label>
+          <select id="langSelect" class="theme-select" data-i18n-aria="settings.language"></select>
+          <label for="themeSelect" data-i18n="settings.theme">Theme</label>
           <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
-          <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
+          <button id="importThemeBtn" class="theme-btn" type="button" data-i18n="settings.import">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
         </div>`;
     }
@@ -386,7 +435,7 @@
     if (!settingsBtn) {
       const wrap = document.createElement('div');
       wrap.className = 'settings-wrap';
-      wrap.innerHTML = `<button id="settingsBtn" class="icon-btn settings-btn" type="button" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg></button><div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Settings"></div>`;
+      wrap.innerHTML = `<button id="settingsBtn" class="icon-btn settings-btn" type="button" aria-label="Settings" data-i18n-aria="settings.title" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.28 7.28 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.8a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/></svg></button><div id="settingsPanel" class="settings-panel" role="dialog" aria-label="Settings" data-i18n-aria="settings.title"></div>`;
       headerRight.appendChild(wrap);
       settingsBtn = wrap.querySelector('#settingsBtn');
       settingsPanel = wrap.querySelector('#settingsPanel');
@@ -433,7 +482,7 @@
       file.addEventListener('change', async (e) => {
         const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
         try { await importThemeFile(f); }
-        catch (ex) { const err = document.getElementById('error'); if (err) err.textContent = 'Theme import failed: ' + (ex && ex.message ? ex.message : String(ex)); }
+        catch (ex) { const err = document.getElementById('error'); if (err) err.textContent = t('theme.importFailed') + (ex && ex.message ? ex.message : String(ex)); }
       });
     }
     const langSelect = document.getElementById('langSelect');
@@ -445,5 +494,5 @@
     enhanceSelects(document);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName };
 })();
