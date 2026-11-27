@@ -271,6 +271,18 @@
       el.innerHTML = `🔥 ${T('result.trend')} <strong style="color:var(--text)">${esc(TN(trend || 'None'))}</strong> <span style="color:var(--muted)">(+${b.toFixed(2)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
     }
 
+    /* After a result the trend goes back to "None" — also persisted, so the next run starts trendless. */
+    async function resetTrend() {
+      const sel = document.getElementById('trendSelect');
+      const opts = sel ? Array.from(sel.options) : [];
+      if (!opts.some(o => o.value === 'None')) return;
+      sel.value = 'None';
+      const bonus = opts.find(o => o.value === 'None')?.dataset?.bonus;
+      if (bonus != null) document.getElementById('trendBonus').textContent = `+${Number(bonus).toFixed(2)}`;
+      await saveSettings();
+      await loadOverview();
+    }
+
     function render(settings) {
       const sel = document.getElementById('trendSelect');
       const trends = settings.trends || [];
@@ -387,6 +399,7 @@
           `<div class="result-chars">${charCards || `<div style="color:var(--muted)">${T('result.noChars')}</div>`}</div>` +
           `<div class="result-dishes">${dishCards || `<div style="color:var(--muted)">${T('result.noDishes')}</div>`}</div>`;
         updateResultTrend(res.trend, res.trendBonus);
+        await resetTrend();
         requestAnimationFrame(() => {
           resultContent.querySelectorAll('.result-dish .name').forEach(name => {
             const inner = name.querySelector('.name-inner');
