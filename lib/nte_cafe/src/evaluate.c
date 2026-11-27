@@ -1,4 +1,5 @@
 #include "evaluate.h"
+#include "popularity.h"
 #include "skills.h"
 #include "types.h"
 
@@ -57,8 +58,10 @@ double evaluate_income_fast(const MenuStats *menu,
 
   double adjusted_price_sum = menu->base_price_sum - menu->trend_bonus_sum +
                               ((double)menu->dish_count * price_buff);
-  return (adjusted_price_sum * price_multiplier + menu->trend_bonus_sum) *
-         (traffic / 100.0);
+  double income = (adjusted_price_sum * price_multiplier +
+                   menu->trend_bonus_sum) *
+                  (traffic / 100.0);
+  return income * (1.0 + popularity_total_bonus(settings));
 }
 
 static void apply_flat_skills(const CandidateCharacter *characters,
@@ -197,8 +200,10 @@ OptimizationResult evaluate_candidate(const CandidateDish *dishes,
   result.traffic = traffic;
   result.price_buff = price_buff;
   result.price_multiplier = price_multiplier;
-  result.income =
-      calculate_income(&menu, traffic, price_buff, price_multiplier);
+  result.popularity_bonus = popularity_total_bonus(settings);
+  result.income = calculate_income(&menu, traffic, price_buff,
+                                   price_multiplier) *
+                  (1.0 + result.popularity_bonus);
 
   return result;
 }

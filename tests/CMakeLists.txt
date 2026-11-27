@@ -46,6 +46,18 @@ target_link_libraries(test_optimizer_current
 add_test(NAME optimizer_current COMMAND test_optimizer_current)
 
 
+add_executable(test_popularity
+    test_popularity.c
+)
+
+target_link_libraries(test_popularity
+    PRIVATE
+        nte_cafe
+)
+
+add_test(NAME popularity COMMAND test_popularity)
+
+
 add_executable(benchmark_optimizer
     benchmark_optimizer.c
 )

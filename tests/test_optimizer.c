@@ -18,7 +18,9 @@ static void test_additive_traffic_multiplier(void) {
   CandidateCharacter team[2] = {{NULL, 1, {skills[0]}, 1},
                                 {NULL, 1, {skills[1]}, 1}};
 
-  CafeSettings settings = {1, TAG_NONE, "", 0.0, 0.0, false};
+  CafeSettings settings = {.cafes_owned = 1,
+                             .trend_tag = TAG_NONE,
+                             .trend_name = ""};
 
   MenuStats menu;
   calculate_menu_stats(dishes, 1, &menu);
@@ -40,7 +42,9 @@ static void test_price_multiplier_is_additive(void) {
   CandidateCharacter team[2] = {{NULL, 1, {skills[0]}, 1},
                                 {NULL, 1, {skills[1]}, 1}};
 
-  CafeSettings settings = {1, TAG_NONE, "", 0.0, 0.0, false};
+  CafeSettings settings = {.cafes_owned = 1,
+                             .trend_tag = TAG_NONE,
+                             .trend_name = ""};
 
   MenuStats menu;
   calculate_menu_stats(dishes, 1, &menu);
@@ -55,7 +59,10 @@ static void test_hotori_is_one_percent_of_base_traffic(void) {
 
   CandidateDish dishes[] = {{&dish, 100.0, 0.0}};
 
-  CafeSettings settings = {1, TAG_NONE, "", 0.0, 0.0, true};
+  CafeSettings settings = {.cafes_owned = 1,
+                             .trend_tag = TAG_NONE,
+                             .trend_name = "",
+                             .hotori_cat_decor = true};
 
   MenuStats menu;
   calculate_menu_stats(dishes, 1, &menu);
@@ -75,7 +82,10 @@ static void test_trend_bonus_after_price_multiplier(void) {
   CandidateDish dishes[] = {{&dish, 17.75, 0.75}};
   CandidateCharacter team[2] = {{NULL, 1, {price_flat}, 1},
                                 {NULL, 1, {price_mult}, 1}};
-  CafeSettings settings = {1, TAG_NONE, "Coffee Beans", 0.75, 0.0, false};
+  CafeSettings settings = {.cafes_owned = 1,
+                             .trend_tag = TAG_NONE,
+                             .trend_name = "Coffee Beans",
+                             .trend_bonus = 0.75};
 
   MenuStats menu;
   calculate_menu_stats(dishes, 1, &menu);

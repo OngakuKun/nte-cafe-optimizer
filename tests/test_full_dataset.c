@@ -32,7 +32,11 @@ int main(void) {
                      CHARACTER_COUNT,
                      dish_state,
                      character_state,
-                     {5, TAG_NONE, "", 1.0, 0.0, true}};
+                     {.cafes_owned = 5,
+                      .trend_tag = TAG_NONE,
+                      .trend_name = "",
+                      .trend_bonus = 1.0,
+                      .hotori_cat_decor = true}};
 
   OptimizationResult result;
   if (!optimize_cafe(&ctx, &result)) {

@@ -2,6 +2,7 @@ add_library(nte_cafe
     src/data.c
     src/combinations.c
     src/trend.c
+    src/popularity.c
     src/skills.c
     src/evaluate.c
     src/optimizer.c

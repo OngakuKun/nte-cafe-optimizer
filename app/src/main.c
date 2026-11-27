@@ -2,6 +2,7 @@
 #include "types.h"
 #include "webui.h"
 #include "trend.h"
+#include "popularity.h"
 #include "optimizer.h"
 
 #include <stdio.h>
@@ -12,6 +13,7 @@
 #define STATUS_HTML_PATH "/ui/status.html"
 #define CHARACTERS_HTML_PATH "/ui/characters.html"
 #define DISHES_HTML_PATH "/ui/dishes.html"
+#define CAFES_HTML_PATH "/ui/cafes.html"
 
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
@@ -69,6 +71,7 @@ static void init_default_cafe_settings(CafeSettings *cs) {
   cs->trend_tag = TAG_NONE;
   cs->trend_name = "None";
   cs->hotori_cat_decor = false;
+  memset(cs->cafe_popularity, 0, sizeof(cs->cafe_popularity));
   cs->popularity_bonus = 0.0;
   Trend t = {TREND_NONE, "None"};
   cs->trend_bonus = get_trend_bonus(t.type);
@@ -78,7 +81,7 @@ static void init_default_cafe_settings(CafeSettings *cs) {
 static void init_default_character_state(ClientState *cs) {
   for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
     cs->character_state[i].owned = false;
-    cs->character_state[i].level = 5;
+    cs->character_state[i].level = 0;
   }
   cs->character_state_initialized = true;
 }
@@ -86,7 +89,7 @@ static void init_default_character_state(ClientState *cs) {
 static void init_default_dish_state(ClientState *cs) {
   for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
     cs->dish_state[i].owned = false;
-    cs->dish_state[i].level = 2;
+    cs->dish_state[i].level = 1;
   }
   cs->dish_state_initialized = true;
 }
@@ -125,6 +128,9 @@ static const void *file_handler(const char *filename, int *length) {
   else if (strcmp(path, "/dishes") == 0 || strcmp(path, "/dishes.html") == 0 ||
            strcmp(path, "/ui/dishes.html") == 0)
     path = DISHES_HTML_PATH;
+  else if (strcmp(path, "/cafes") == 0 || strcmp(path, "/cafes.html") == 0 ||
+           strcmp(path, "/ui/cafes.html") == 0)
+    path = CAFES_HTML_PATH;
 
   if (path[0] == '/')
     path++;
@@ -312,7 +318,8 @@ static unsigned long long nck_u64(size_t n, size_t k) {
 static void get_optimizer_overview(webui_event_t *e) {
   ClientState *cs = get_client_state(e->client_id);
   size_t owned_chars = 0;
-  for (size_t i = 0; i < CHARACTER_COUNT; i++) if (cs->character_state[i].owned) owned_chars++;
+  for (size_t i = 0; i < CHARACTER_COUNT; i++)
+    if (cs->character_state[i].owned && cs->character_state[i].level > 0) owned_chars++;
   size_t owned_dishes_l1 = 0, owned_dishes_l2 = 0, owned_dishes = 0;
   for (size_t i = 0; i < DISH_COUNT; i++) {
     if (!cs->dish_state[i].owned) continue;
@@ -333,7 +340,8 @@ static void get_optimizer_overview(webui_event_t *e) {
   bool is_default = (owned_chars == 0 && owned_dishes == 0 &&
                      cs->cafe_settings.cafes_owned == 1 &&
                      !cs->cafe_settings.hotori_cat_decor &&
-                     cs->cafe_settings.trend_tag == TAG_NONE);
+                     cs->cafe_settings.trend_tag == TAG_NONE &&
+                     popularity_total_bonus(&cs->cafe_settings) <= 0.0);
   char buf[720];
   snprintf(buf, sizeof(buf),
            "{\"loadedCharacters\":%zu,\"ownedDishes\":%zu,\"ownedDishesL1\":%zu,\"ownedDishesL2\":%zu,\"dishSlots\":%zu,\"characterSlots\":%zu,\"dishCombinations\":\"%llu\",\"characterCombinations\":\"%llu\",\"possibleCombinations\":\"%llu\",\"isDefault\":%s}",
@@ -344,7 +352,7 @@ static void get_optimizer_overview(webui_event_t *e) {
 static void get_optimizer_settings(webui_event_t *e) {
   ClientState *cs = get_client_state(e->client_id);
   TrendOptions opts = get_trend_options();
-  size_t cap = 2048 + opts.count * 128;
+  size_t cap = 4096 + opts.count * 128 + MAX_CAFES * 512;
   char *buf = (char*)malloc(cap);
   if (!buf) { webui_return_string(e, "{}"); return; }
   size_t off = 0;
@@ -360,7 +368,22 @@ static void get_optimizer_settings(webui_event_t *e) {
     else if (opts.trends[i].type == TREND_INGREDIENT) tt = "ingredient";
     off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"type\":\"%s\",\"bonus\":%.2f}", i?",":"", n, tt, get_trend_bonus(opts.trends[i].type));
   }
-  if (off + 8 < cap) off += snprintf(buf+off, cap-off, "]}");
+  if (off + 16 < cap) off += snprintf(buf+off, cap-off, "],\"cafes\":[");
+  for (int c = 0; c < MAX_CAFES && off + 400 < cap; c++) {
+    int selected = cs->cafe_settings.cafe_popularity[c];
+    off += snprintf(buf+off, cap-off, "%s{\"index\":%d,\"maxLevel\":%d,\"selected\":%d,\"bonus\":%.3f,\"levels\":[",
+                    c ? "," : "", c, popularity_max_level(c), selected,
+                    popularity_cafe_bonus(&cs->cafe_settings, c));
+    for (int l = 1; l <= popularity_max_level(c); l++) {
+      off += snprintf(buf+off, cap-off, "%s{\"level\":%d,\"popularity\":%d,\"bonus\":%.3f}",
+                      l > 1 ? "," : "", l, popularity_threshold(c, l),
+                      popularity_level_bonus(c, l));
+    }
+    if (off + 4 < cap) off += snprintf(buf+off, cap-off, "]}");
+  }
+  if (off + 48 < cap)
+    off += snprintf(buf+off, cap-off, "],\"popularityBonus\":%.3f}",
+                    popularity_total_bonus(&cs->cafe_settings));
   webui_return_string(e, buf);
   free(buf);
 }
@@ -384,6 +407,70 @@ static void set_optimizer_settings(webui_event_t *e) {
   cs->cafe_settings.trend_tag = get_trend_tag(selected);
   cs->cafe_settings.trend_bonus = get_trend_bonus(selected.type);
   cs->cafe_settings.hotori_cat_decor = hotori;
+  cs->cafe_settings.popularity_bonus =
+      popularity_total_bonus(&cs->cafe_settings);
+  webui_return_string(e, "{\"ok\":true}");
+}
+
+static void set_cafe_popularity(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  long long idx = webui_get_int_at(e, 0);
+  long long level = webui_get_int_at(e, 1);
+  if (idx < 0 || idx >= MAX_CAFES) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"invalid cafe index\"}");
+    return;
+  }
+  int max_level = popularity_max_level((int)idx);
+  if (level < 0) level = 0;
+  if (level > max_level) level = max_level;
+  cs->cafe_settings.cafe_popularity[idx] = (int)level;
+  cs->cafe_settings.popularity_bonus =
+      popularity_total_bonus(&cs->cafe_settings);
+  webui_return_string(e, "{\"ok\":true}");
+}
+
+static void set_cafes_owned(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  long long cafes = webui_get_int_at(e, 0);
+  if (cafes < 1) cafes = 1;
+  if (cafes > MAX_CAFES) cafes = MAX_CAFES;
+  cs->cafe_settings.cafes_owned = (int)cafes;
+  cs->cafe_settings.popularity_bonus =
+      popularity_total_bonus(&cs->cafe_settings);
+  webui_return_string(e, "{\"ok\":true}");
+}
+
+/* mode: 1 all max level, 2 all min level, 3 all owned,
+ *       4 all unowned, 5 reset everything to the default state. */
+static void set_all_character_states(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  long long mode = webui_get_int_at(e, 0);
+  for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
+    if (mode == 1)
+      cs->character_state[i].level = 5;
+    else if (mode == 2 || mode == 5)
+      cs->character_state[i].level = 0;
+    if (mode == 3)
+      cs->character_state[i].owned = true;
+    else if (mode == 4 || mode == 5)
+      cs->character_state[i].owned = false;
+  }
+  webui_return_string(e, "{\"ok\":true}");
+}
+
+static void set_all_dish_states(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  long long mode = webui_get_int_at(e, 0);
+  for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
+    if (mode == 1)
+      cs->dish_state[i].level = 2;
+    else if (mode == 2 || mode == 5)
+      cs->dish_state[i].level = 1;
+    if (mode == 3)
+      cs->dish_state[i].owned = true;
+    else if (mode == 4 || mode == 5)
+      cs->dish_state[i].owned = false;
+  }
   webui_return_string(e, "{\"ok\":true}");
 }
 
@@ -405,7 +492,7 @@ static void run_optimization(webui_event_t *e) {
   if (!buf) { webui_return_string(e, "{\"ok\":false,\"error\":\"Out of memory\"}"); return; }
   size_t off = 0;
   char trend_name_esc[128]; json_escape(cs->cafe_settings.trend_name ? cs->cafe_settings.trend_name : "None", trend_name_esc, sizeof(trend_name_esc));
-  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"trend\":\"%s\",\"trendBonus\":%.2f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier, trend_name_esc, cs->cafe_settings.trend_bonus);
+  off += snprintf(buf+off, cap-off, "{\"ok\":true,\"income\":%.2f,\"traffic\":%.2f,\"priceBuff\":%.2f,\"priceMultiplier\":%.2f,\"trend\":\"%s\",\"trendBonus\":%.2f,\"popularityBonus\":%.3f,\"dishes\":[", res.income, res.traffic, res.price_buff, res.price_multiplier, trend_name_esc, cs->cafe_settings.trend_bonus, res.popularity_bonus);
   for (size_t i = 0; i < res.dish_count && off + 360 < cap; i++) {
     char n[128]; json_escape(res.dishes[i]->name ? res.dishes[i]->name : "", n, sizeof(n));
     int level = 1;
@@ -420,7 +507,8 @@ static void run_optimization(webui_event_t *e) {
     bool in_trend = dish_matches_trend(res.dishes[i], &cs->cafe_settings);
     double trend_bonus = in_trend ? cs->cafe_settings.trend_bonus : 0.0;
     double fph = ((base_price - trend_bonus + res.price_buff) * res.price_multiplier +
-                  trend_bonus) * (res.traffic / 100.0);
+                  trend_bonus) * (res.traffic / 100.0) *
+                 (1.0 + res.popularity_bonus);
     off += snprintf(buf+off, cap-off, "%s{\"name\":\"%s\",\"level\":%d,\"fonsPerHour\":%.2f,\"inTrend\":%s}", i?",":"", n, level, fph, in_trend ? "true" : "false");
   }
   off += snprintf(buf+off, cap-off, "],\"characters\":[");
@@ -501,7 +589,7 @@ static void set_character_state(webui_event_t *e) {
     webui_return_string(e, "{\"ok\":false,\"error\":\"invalid index\"}");
     return;
   }
-  if (level < 1) level = 1;
+  if (level < 0) level = 0;
   if (level > 5) level = 5;
   cs->character_state[idx].owned = owned;
   cs->character_state[idx].level = (int)level;
@@ -526,13 +614,17 @@ int main(int argc, char **argv) {
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getDishStates", get_dish_states);
   webui_bind(win, "setDishState", set_dish_state);
+  webui_bind(win, "setAllDishStates", set_all_dish_states);
   webui_bind(win, "getOptimizerSettings", get_optimizer_settings);
   webui_bind(win, "setOptimizerSettings", set_optimizer_settings);
+  webui_bind(win, "setCafePopularity", set_cafe_popularity);
+  webui_bind(win, "setCafesOwned", set_cafes_owned);
   webui_bind(win, "getOptimizerOverview", get_optimizer_overview);
   webui_bind(win, "runOptimization", run_optimization);
   webui_bind(win, "getCharacters", get_characters);
   webui_bind(win, "getCharacterStates", get_character_states);
   webui_bind(win, "setCharacterState", set_character_state);
+  webui_bind(win, "setAllCharacterStates", set_all_character_states);
 
   const char *port_env = getenv("PORT");
   size_t port = 80;

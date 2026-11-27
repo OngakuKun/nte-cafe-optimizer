@@ -147,6 +147,10 @@ bool optimize_cafe(const CafeContext *ctx, OptimizationResult *result) {
     if (!ctx->character_state[i].owned)
       continue;
 
+    /* Level 0 marks a character as owned but keeps it out of the search. */
+    if (ctx->character_state[i].level <= 0)
+      continue;
+
     if (char_pool_count >= MAX_CHARACTER_POOL)
       return false;
 

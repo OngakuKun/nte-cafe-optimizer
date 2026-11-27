@@ -10,17 +10,17 @@
   ];
   const I18N = {
     de: {
-      'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.status':'Status',
-      'settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache'
+      'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status',
+      'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache'
     },
     ja: {
-      'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.status':'ステータス',
-      'settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
+      'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.cafes':'カフェ','nav.status':'ステータス',
+      'sub.cafes':'カフェの人気度とボーナス','settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
       'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報'
     },
     'zh-CN': {
-      'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.status':'状态',
-      'settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
+      'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.cafes':'咖啡馆','nav.status':'状态',
+      'sub.cafes':'咖啡馆人气与奖励','settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
       'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息'
     }
   };
@@ -137,7 +137,7 @@
     const sel = document.getElementById('langSelect');
     if (sel) sel.value = next;
     const dict = I18N[next] || {};
-    const map = { '/':'nav.optimizer','/characters':'nav.characters','/dishes':'nav.dishes','/status':'nav.status' };
+    const map = { '/':'nav.optimizer','/characters':'nav.characters','/dishes':'nav.dishes','/cafes':'nav.cafes','/status':'nav.status' };
     document.querySelectorAll('nav a.nav-link').forEach(a => {
       if (!a.dataset.defaultText) a.dataset.defaultText = a.textContent;
       const k = map[a.getAttribute('href')];

@@ -6,6 +6,7 @@
 
 #define MAX_DISH_SLOTS 5
 #define MAX_CHARACTER_SLOTS 10
+#define MAX_CAFES 5
 
 #define MAX_DISH_POOL 32
 #define MAX_CHARACTER_POOL 64
@@ -89,6 +90,9 @@ typedef struct {
     SkillTag trend_tag;
     const char *trend_name;
     double trend_bonus;
+    /* Selected popularity buff level per cafe (0 = no bonus). */
+    int cafe_popularity[MAX_CAFES];
+    /* Sum of the selected cafe bonuses ("Gesamtmultiplikator fuer alle Laeden"). */
     double popularity_bonus;
     bool hotori_cat_decor;
 } CafeSettings;
@@ -141,6 +145,7 @@ typedef struct {
     double price_buff;
     double price_multiplier;
     double income;
+    double popularity_bonus;
     BuffLog log;
 } OptimizationResult;
 

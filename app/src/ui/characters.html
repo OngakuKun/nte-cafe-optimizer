@@ -10,6 +10,17 @@
     .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
     .toolbar .muted { color: var(--muted); font-size: 13px; }
     .save-state { font-size: 13px; color: var(--muted); }
+    .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .bulk-btn {
+      padding:8px 12px; font:inherit; font-size:13px; font-weight:600;
+      background:var(--panel-alt); color:var(--text); border:1px solid var(--border);
+      border-radius:8px; cursor:pointer;
+    }
+    .bulk-btn:hover { border-color:var(--accent); }
+    .bulk-btn.warning {
+      background:color-mix(in srgb, var(--error) 14%, var(--panel-alt));
+      border-color:var(--error); color:var(--error);
+    }
     .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:14px; }
     .char-card {
       position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: visible;
@@ -80,6 +91,7 @@
       <a class="nav-link" href="/">Optimizer</a>
       <a class="nav-link active" href="/characters">Characters</a>
       <a class="nav-link" href="/dishes">Dishes</a>
+      <a class="nav-link" href="/cafes">Cafes</a>
       <a class="nav-link" href="/status">Status</a>
     </nav>
     <div class="header-right">
@@ -89,6 +101,10 @@
 
   <main>
     <div class="toolbar">
+      <div class="bulk-actions">
+        <button type="button" id="levelSwitch" class="bulk-btn">All to Max Level</button>
+        <button type="button" id="ownedSwitch" class="bulk-btn">All to Owned</button>
+      </div>
       <span class="muted">Set ownership and level for each character. Changes are saved automatically.</span>
       <span id="saveState" class="save-state"></span>
     </div>
@@ -154,9 +170,9 @@
             <div class="controls">
               <span class="level-label">Level</span>
               <div class="level-picker" data-i="${i}">
-                <button type="button" class="level-btn" data-i="${i}" ${c.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">Lv ${Number(c.level)||1}</button>
+                <button type="button" class="level-btn" data-i="${i}" ${c.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">Lv ${Number(c.level)||0}</button>
                 <div class="level-menu" role="listbox" aria-label="Level for ${esc(c.name)}">
-                  ${[1,2,3,4,5].map(l => `<button type="button" class="level-option ${Number(c.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">Lv ${l}</button>`).join('')}
+                  ${[0,1,2,3,4,5].map(l => `<button type="button" class="level-option ${Number(c.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">Lv ${l}</button>`).join('')}
                 </div>
               </div>
             </div>
@@ -175,7 +191,7 @@
           card.querySelector('.owned-badge').textContent = owned ? 'Owned' : 'Not owned';
           const levelBtn = card.querySelector('.level-btn');
           levelBtn.disabled = !owned;
-          await saveRow(i, owned, Number(levelBtn.textContent.replace(/\D/g,'')) || 1);
+          await saveRow(i, owned, Number(levelBtn.textContent.replace(/\D/g,'')) || 0);
         };
         card.addEventListener('click', (e) => { if (e.target.closest('.controls')) return; toggle(); });
         card.addEventListener('keydown', (e) => {
@@ -207,6 +223,52 @@
         }));
       });
     }
+
+    const LEVEL_STEPS = [
+      { mode: 1, label: 'All to Max Level' },
+      { mode: 2, label: 'All to Min Level' },
+      { mode: 5, label: 'All to Default', warning: true }
+    ];
+    const OWNED_STEPS = [
+      { mode: 3, label: 'All to Owned' },
+      { mode: 4, label: 'All to Unowned' },
+      { mode: 5, label: 'All to Default', warning: true }
+    ];
+    let levelStep = 0;
+    let ownedStep = 0;
+
+    function setupBulkButton(id, steps, getStep, setStep, warningText) {
+      const btn = document.getElementById(id);
+      const paint = () => {
+        const step = steps[getStep()];
+        btn.textContent = step.label;
+        btn.classList.toggle('warning', !!step.warning);
+      };
+      btn.addEventListener('click', async () => {
+        const idx = getStep() % steps.length;
+        const step = steps[idx];
+        if (step.warning && !window.confirm(warningText)) return;
+        setSave('Saving...');
+        try {
+          const obj = JSON.parse(await setAllCharacterStates(step.mode));
+          if (!obj.ok) throw new Error(obj.error || 'Save failed');
+          setStep((idx + 1) % steps.length);
+          paint();
+          await load();
+          setSave('Saved');
+        } catch (e) {
+          setSave('Save failed', true);
+          document.getElementById('error').textContent = String(e.message || e);
+        }
+      });
+      paint();
+    }
+
+    setupBulkButton('levelSwitch', LEVEL_STEPS, () => levelStep, v => { levelStep = v; },
+      'Reset ALL characters to unowned and Level 0? Every character setting will be lost.');
+    setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; },
+      'Reset ALL characters to unowned and Level 0? Every character setting will be lost.');
+
     async function load() {
       const status = document.getElementById('status');
       try {
