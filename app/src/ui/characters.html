@@ -9,6 +9,8 @@
   <style>
     .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
     .toolbar .muted { color: var(--muted); font-size: 13px; }
+    .summary { margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+    .summary strong { color: var(--text); }
     .save-state { font-size: 13px; color: var(--muted); }
     .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
     .bulk-btn {
@@ -100,6 +102,7 @@
   </header>
 
   <main>
+    <div id="summary" class="summary"></div>
     <div class="toolbar">
       <span id="saveState" class="save-state"></span>
       <div class="bulk-actions">
@@ -286,6 +289,11 @@
         if (typeof getCharacterStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
         const states = JSON.parse(await getCharacterStates());
         render(states);
+        const active = states.filter(c => c.owned);
+        const counts = new Map();
+        active.forEach(c => { const lv = Number(c.level) || 0; counts.set(lv, (counts.get(lv) || 0) + 1); });
+        const breakdown = [...counts.entries()].sort((a,b) => b[0] - a[0]).map(([lv,n]) => `<strong>${n}</strong> L${lv}`).join(', ');
+        document.getElementById('summary').innerHTML = `Character active: <strong>${active.length}</strong>/${states.length} (${breakdown})`;
         levelStep = states.length > 0 && states.every(c => Number(c.level) === 5) ? 1 : 0;
         ownedStep = states.length > 0 && states.every(c => c.owned) ? 1 : 0;
         document.getElementById('levelSwitch').textContent = LEVEL_STEPS[levelStep].label;

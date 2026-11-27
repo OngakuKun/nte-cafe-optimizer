@@ -30,15 +30,17 @@
     .run-opt-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, var(--panel-alt)); border-color: var(--accent); }
     .run-opt-btn:disabled { opacity: .6; cursor: default; }
     .result-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .result-stat { padding: 14px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); text-align: center; }
+    .result-stat { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); text-align: center; }
     .result-stat.primary { background: color-mix(in srgb, var(--accent) 12%, var(--panel-alt)); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent); }
     .result-stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
-    .result-stat .value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.2; }
-    .result-stat.primary .value { color: var(--accent); font-size: 28px; }
+    .result-stat .value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .result-stat.primary .value { color: var(--accent); font-size: 32px; }
     .result-stat .bonus-note { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    .result-stat .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .result-stat .split > div + div { border-left: 1px solid var(--border); }
-    .result-stat .value.small { font-size: 20px; }
+    .result-stat.split-stat { padding: 0; overflow: hidden; }
+    .result-stat.split-stat .split { display: grid; grid-template-columns: 1fr 1fr; width: 100%; min-height: 100%; }
+    .result-stat.split-stat .split > div { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 8px; }
+    .result-stat.split-stat .split > div + div { border-left: 1px solid var(--border); }
+    .result-stat .value.small { font-size: 24px; }
     .result-stat .split .label { font-size: 11px; margin-bottom: 4px; }
     .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
     .result-dish { position: relative; aspect-ratio: 4 / 3; padding: 10px 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
@@ -372,7 +374,7 @@
           `<div class="result-stats">` +
             `<div class="result-stat"><div class="label">Traffic</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
             `<div class="result-stat primary"><div class="label">Income</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24.toFixed(2)} in 24h - ${income48.toFixed(2)} in 48h - ${income72.toFixed(2)} in 72h</div></div>` +
-            `<div class="result-stat"><div class="split">` +
+            `<div class="result-stat split-stat"><div class="split">` +
               `<div><div class="label">Price Buff</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
               `<div><div class="label">Gesamtmultiplikator</div><div class="value small">${Number(res.priceMultiplier).toFixed(2)}</div></div>` +
             `</div></div>` +

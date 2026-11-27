@@ -12,19 +12,19 @@
     de: {
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status',
       'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache',
-      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reload':'Neu laden'
+      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reload':'Neu laden','settings.config':'Config'
     },
     ja: {
       'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.cafes':'カフェ','nav.status':'ステータス',
       'sub.cafes':'カフェの人気度とボーナス','settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
       'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報',
-      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む','settings.reload':'再読み込み'
+      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む','settings.reload':'再読み込み','settings.config':'設定'
     },
     'zh-CN': {
       'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.cafes':'咖啡馆','nav.status':'状态',
       'sub.cafes':'咖啡馆人气与奖励','settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
       'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息',
-      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置','settings.reload':'重新加载'
+      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置','settings.reload':'重新加载','settings.config':'配置'
     }
   };
   const BUILTIN_THEMES = [
@@ -151,6 +151,7 @@
     const ib = document.getElementById('importThemeBtn'); if (ib) ib.textContent = dict['settings.import'] || 'Import Theme';
     const eb = document.getElementById('exportConfigBtn'); if (eb) eb.textContent = dict['settings.exportConfig'] || 'Export Config';
     const cb = document.getElementById('importConfigBtn'); if (cb) cb.textContent = dict['settings.importConfig'] || 'Import Config';
+    const gt = document.getElementById('configGroupTitle'); if (gt) gt.textContent = dict['settings.config'] || 'Config';
     const ll = document.querySelector('label[for="langSelect"]'); if (ll) ll.textContent = dict['settings.language'] || 'Language';
     const sub = document.querySelector('.sub');
     if (sub) {
@@ -196,7 +197,6 @@
       version: 1,
       exportedAt: new Date().toISOString(),
       settings: {
-        trend: settings.trend || 'None',
         hotoriCatDecor: !!settings.hotoriCatDecor,
         cafesOwned: Number(settings.cafesOwned) || 1,
         cafePopularity: (settings.cafes || []).map(x => Number(x.selected) || 0)
@@ -218,11 +218,12 @@
       throw new Error('Not an NTE Cafe config (format/version mismatch).');
     if (!Array.isArray(cfg.characters) || !Array.isArray(cfg.dishes))
       throw new Error('Config is missing the characters or dishes array.');
-    const names = ['setOptimizerSettings', 'setCafePopularity', 'setCharacterState', 'setDishState'];
+    const names = ['getOptimizerSettings', 'setOptimizerSettings', 'setCafePopularity', 'setCharacterState', 'setDishState'];
     if (!await waitForBindings(names)) throw new Error('Backend bindings unavailable. Open through the nte-cafe-app server.');
 
     const s = cfg.settings || {};
-    checkResult(await setOptimizerSettings(String(s.trend || 'None'), !!s.hotoriCatDecor, Number(s.cafesOwned) || 1));
+    const current = JSON.parse(await getOptimizerSettings());
+    checkResult(await setOptimizerSettings(String(current.trend || 'None'), !!s.hotoriCatDecor, Number(s.cafesOwned) || 1));
     const cafes = Array.isArray(s.cafePopularity) ? s.cafePopularity : [];
     for (let i = 0; i < cafes.length; i++)
       checkResult(await setCafePopularity(i, Number(cafes[i]) || 0));
@@ -361,6 +362,15 @@
       settings.id = 'navSettings'; settings.className = 'nav-settings';
       settings.innerHTML = `
         <div class="settings-title">Settings</div>
+        <div class="settings-group">
+          <div class="settings-group-title" id="configGroupTitle">Config</div>
+          <div class="settings-config-row">
+            <button id="exportConfigBtn" class="theme-btn" type="button">Export Config</button>
+            <button id="importConfigBtn" class="theme-btn" type="button">Import Config</button>
+          </div>
+          <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
+          <div id="configStatus" class="settings-hint"></div>
+        </div>
         <div class="settings-row">
           <label for="langSelect">Language</label>
           <select id="langSelect" class="theme-select" aria-label="Language"></select>
@@ -368,12 +378,6 @@
           <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
           <button id="importThemeBtn" class="theme-btn" type="button">Import Theme</button>
           <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
-          <div class="settings-config-row">
-            <button id="exportConfigBtn" class="theme-btn" type="button">Export Config</button>
-            <button id="importConfigBtn" class="theme-btn" type="button">Import Config</button>
-          </div>
-          <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
-          <div id="configStatus" class="settings-hint"></div>
         </div>`;
     }
 
