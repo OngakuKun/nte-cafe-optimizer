@@ -272,7 +272,7 @@
       if (!await NteTheme.confirmDialog(T('reset.dishes'), { title: T('dialog.resetTitle'), confirmLabel: T('dialog.reset') })) return;
       setSave(T('common.saving'));
       try {
-        const obj = JSON.parse(await setAllDishStates(5));
+        const obj = JSON.parse(await resetDefaults());
         if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
         levelStep = 0;
         ownedStep = 0;

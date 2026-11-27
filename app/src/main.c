@@ -772,6 +772,15 @@ static void load_config(webui_event_t *e) {
   webui_return_string(e, buf);
 }
 
+/* Full reset to dataset minimums (not config.json values), so the optimizer's
+ * default-setup notice appears again. Only the current client is affected. */
+static void reset_defaults(webui_event_t *e) {
+  CafeConfig cfg;
+  config_init_defaults(&cfg);
+  config_to_client(&cfg, get_client_state(e->client_id));
+  webui_return_string(e, "{\"ok\":true}");
+}
+
 static void get_config_path(webui_event_t *e) {
   char escaped[1300];
   char buf[1400];
@@ -879,6 +888,7 @@ int main(int argc, char **argv) {
   webui_bind(win, "saveConfig", save_config);
   webui_bind(win, "loadConfig", load_config);
   webui_bind(win, "getConfigPath", get_config_path);
+  webui_bind(win, "resetDefaults", reset_defaults);
 
   if (!desktop) {
     const char *port_env = getenv("PORT");
