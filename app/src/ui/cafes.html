@@ -137,9 +137,9 @@
               <span class="state">${active ? 'Active' : 'Locked'}</span>
             </div>
             <div class="tier-list">
-              ${tiers}
               <button type="button" class="tier-btn clear ${selected === 0 ? 'active' : ''}"
                       data-cafe="${idx}" data-level="0" ${active ? '' : 'disabled'}>No bonus</button>
+              ${tiers}
             </div>
             <div class="cafe-bonus">Current bonus: <strong>+${Number(cafe.bonus || 0).toFixed(3)}</strong></div>
           </section>`;

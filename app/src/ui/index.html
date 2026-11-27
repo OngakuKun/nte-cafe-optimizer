@@ -36,6 +36,10 @@
     .result-stat .value { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.2; }
     .result-stat.primary .value { color: var(--accent); font-size: 28px; }
     .result-stat .bonus-note { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .result-stat .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .result-stat .split > div + div { border-left: 1px solid var(--border); }
+    .result-stat .value.small { font-size: 20px; }
+    .result-stat .split .label { font-size: 11px; margin-bottom: 4px; }
     .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
     .result-dish { position: relative; aspect-ratio: 4 / 3; padding: 10px 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
     .result-dish .bg { position: absolute; inset: 0; background-size: 78%; background-position: center 35%; background-repeat: no-repeat; opacity: .95; }
@@ -357,12 +361,20 @@
               </div>
             </div>`;
         }).join('');
+        const popularityBonus = Number(res.popularityBonus || 0);
+        const incomeBase = Number(res.income) / (1 + popularityBonus);
+        const income24Base = incomeBase * 24;
+        const income24Bonus = Number(res.income) * 24 - income24Base;
+        const income24Total = Number(res.income) * 24;
         resultContent.style.color = 'var(--text)';
         resultContent.innerHTML =
           `<div class="result-stats">` +
             `<div class="result-stat"><div class="label">Traffic</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
-            `<div class="result-stat primary"><div class="label">Income</div><div class="value">${Number(res.income).toFixed(2)}</div><div class="bonus-note">(+${Number(res.popularityBonus || 0).toFixed(3)} popularity)</div></div>` +
-            `<div class="result-stat"><div class="label">Price Buff</div><div class="value">${Number(res.priceBuff).toFixed(2)}</div></div>` +
+            `<div class="result-stat primary"><div class="label">Income</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24Base.toFixed(2)} in 24h - +${income24Bonus.toFixed(2)} in 24h - ${income24Total.toFixed(2)} in 24h</div></div>` +
+            `<div class="result-stat"><div class="split">` +
+              `<div><div class="label">Price Buff</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
+              `<div><div class="label">Gesamtmultiplikator</div><div class="value small">${Number(res.priceMultiplier).toFixed(2)}</div></div>` +
+            `</div></div>` +
           `</div>` +
           `<div class="result-chars">${charCards || '<div style="color:var(--muted)">No characters selected.</div>'}</div>` +
           `<div class="result-dishes">${dishCards || '<div style="color:var(--muted)">No dishes selected.</div>'}</div>`;

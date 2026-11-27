@@ -66,10 +66,6 @@
 
   <script src="/ui/theme.js"></script>
   <script>
-    /* Mirrors GAME_DATA_VERSION in app/src/main.c; kept here so the card works
-     * before the next binary rebuild. Update both when the data patch changes. */
-    const GAME_VERSION_FALLBACK = 'Unknown';
-
     function esc(s) {
       return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     }
@@ -86,7 +82,12 @@
         if (typeof getAppInfo !== 'function') throw new Error('WebUI backend bindings are not available. Open through nte-cafe-app server.');
         const [infoRaw, dishesRaw, charsRaw] = await Promise.all([getAppInfo(), getDishes(), getCharacters()]);
         const info = JSON.parse(infoRaw), dishes = JSON.parse(dishesRaw), chars = JSON.parse(charsRaw);
-        document.getElementById('gameVersion').textContent = info.gameVersion || GAME_VERSION_FALLBACK;
+        let gameVersion = '-';
+        try {
+          const resp = await fetch('/ui/gameversion.txt', { cache: 'no-store' });
+          if (resp.ok) gameVersion = (await resp.text()).trim() || '-';
+        } catch (_) {}
+        document.getElementById('gameVersion').textContent = gameVersion;
         document.getElementById('webuiVersion').textContent = info.webui || '-';
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;

@@ -280,7 +280,12 @@
       try {
         for (let i=0; i<50 && typeof getDishStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
         if (typeof getDishStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
-        render(JSON.parse(await getDishStates()));
+        const states = JSON.parse(await getDishStates());
+        render(states);
+        levelStep = states.length > 0 && states.every(d => Number(d.level) === 2) ? 1 : 0;
+        ownedStep = states.length > 0 && states.every(d => d.owned) ? 1 : 0;
+        document.getElementById('levelSwitch').textContent = LEVEL_STEPS[levelStep].label;
+        document.getElementById('ownedSwitch').textContent = OWNED_STEPS[ownedStep].label;
         status.textContent = 'Connected'; status.classList.remove('error');
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');

@@ -15,12 +15,6 @@
 #define DISHES_HTML_PATH "/ui/dishes.html"
 #define CAFES_HTML_PATH "/ui/cafes.html"
 
-#ifndef GAME_DATA_VERSION
-/* Game patch the bundled dish/character data was extracted from.
- * Override at build time with -DGAME_DATA_VERSION='"1.2.3"'. */
-#define GAME_DATA_VERSION "Unknown"
-#endif
-
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
   if (!f)
@@ -233,8 +227,7 @@ static void json_escape(const char *src, char *dst, size_t dst_size) {
 static void get_app_info(webui_event_t *e) {
   char buf[512];
   snprintf(buf, sizeof(buf),
-           "{\"app\":\"NTE Cafe Optimizer\",\"gameVersion\":\"" GAME_DATA_VERSION "\","
-           "\"webui\":\"%s\",\"dishCount\":%zu,"
+           "{\"app\":\"NTE Cafe Optimizer\",\"webui\":\"%s\",\"dishCount\":%zu,"
            "\"characterCount\":%zu,\"ingredientCount\":%zu}",
            WEBUI_VERSION, DISH_COUNT, CHARACTER_COUNT, INGREDIENT_COUNT);
   webui_return_string(e, buf);

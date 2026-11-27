@@ -284,7 +284,12 @@
       try {
         for (let i=0; i<50 && typeof getCharacterStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
         if (typeof getCharacterStates !== 'function') throw new Error('WebUI backend bindings unavailable. Open through nte-cafe-app server.');
-        render(JSON.parse(await getCharacterStates()));
+        const states = JSON.parse(await getCharacterStates());
+        render(states);
+        levelStep = states.length > 0 && states.every(c => Number(c.level) === 5) ? 1 : 0;
+        ownedStep = states.length > 0 && states.every(c => c.owned) ? 1 : 0;
+        document.getElementById('levelSwitch').textContent = LEVEL_STEPS[levelStep].label;
+        document.getElementById('ownedSwitch').textContent = OWNED_STEPS[ownedStep].label;
         status.textContent = 'Connected'; status.classList.remove('error');
       } catch (e) {
         status.textContent = 'Error'; status.classList.add('error');

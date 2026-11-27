@@ -26,6 +26,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /build/app/nte-cafe-app /app/nte-cafe-app
 COPY --from=build /build/app/ui /app/ui
+COPY gameversion.txt /app/ui/gameversion.txt
 
 ENV PORT=80
 EXPOSE 80 8080
