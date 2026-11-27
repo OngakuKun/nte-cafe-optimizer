@@ -148,7 +148,7 @@
       'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen','bulk.reset':'Auf Standard zurücksetzen',
       'dialog.confirm':'Bestätigen','dialog.cancel':'Abbrechen','dialog.reset':'Zurücksetzen','dialog.resetTitle':'Auf Standard zurücksetzen',
       'reset.characters':'ALLE Charaktere auf nicht besitzt und Stufe 0 zurücksetzen? Alle Charaktereinstellungen gehen verloren.','reset.dishes':'ALLE Gerichte auf nicht besitzt und Stufe 1 zurücksetzen? Alle Gerichtseinstellungen gehen verloren.',
-      'card.owned':'In Besitzt','card.notOwned':'Nicht besitzt','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
+      'card.owned':'In Besitz','card.notOwned':'Nicht in Besitz','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
       'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Getränke','type.Desserts':'Desserts','type.Main Dishes':'Hauptgerichte',
