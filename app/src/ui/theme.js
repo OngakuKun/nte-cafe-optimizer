@@ -113,7 +113,7 @@
       'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned','bulk.reset':'Reset to Defaults',
       'dialog.confirm':'Confirm','dialog.cancel':'Cancel','dialog.reset':'Reset','dialog.resetTitle':'Reset to Defaults',
       'reset.characters':'Reset ALL characters to unowned and Level 0? Every character setting will be lost.','reset.dishes':'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.',
-      'card.owned':'Owned','card.notOwned':'Not owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
+      'card.owned':'Owned','card.notOwned':'Not Owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Beverages','type.Desserts':'Desserts','type.Main Dishes':'Main Dishes',
