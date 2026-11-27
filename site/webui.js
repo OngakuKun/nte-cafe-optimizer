@@ -40,7 +40,7 @@
       const saved = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
       if (saved && Array.isArray(saved.dish) && Array.isArray(saved.character)) return saved;
     } catch (_) { /* ignore broken local state */ }
-    return defaultState(true);
+    return defaultState(false);
   }
 
   function persist() {
