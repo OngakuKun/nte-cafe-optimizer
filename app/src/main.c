@@ -800,9 +800,17 @@ int main(int argc, char **argv) {
   if (argc > 0 && argv[0] && argv[0][0] != '\0') {
     static char root_buf[1024];
     snprintf(root_buf, sizeof(root_buf), "%s", argv[0]);
-    char *slash = strrchr(root_buf, '/');
-    if (slash)
-      *slash = '\0';
+    /* Windows uses backslashes, POSIX uses slashes; accept both. */
+    char *sep = NULL;
+    for (char *p = root_buf; *p; ++p)
+      if (*p == '/' || *p == '\\')
+        sep = p;
+    if (sep == root_buf)
+      root_buf[1] = '\0'; /* filesystem root */
+    else if (sep)
+      *sep = '\0';
+    else
+      root_buf[0] = '\0'; /* bare executable name: use current directory */
     app_root = root_buf;
   }
 

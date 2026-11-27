@@ -100,7 +100,9 @@ cmake --build build --target nte-cafe-desktop -j
 ./build/app/nte-cafe-desktop
 ```
 
-On Linux, native WebView needs GTK3 + WebKitGTK at runtime; without them the browser fallback is used. Either binary can switch modes at runtime: `--desktop` opens the window, `--server` starts the HTTP server, `--help` lists all options. UI assets and `data/gamedata.json` are copied next to each executable by the build, so a desktop binary can be run from its folder. `NTE_CAFE_CONFIG` and `NTE_CAFE_GAMEDATA` override the default paths (next to the executable).
+Desktop mode is cross-platform: WebUI supports Windows WebView2, Linux GTK WebView and macOS WKWebView. WebView is optional on all three — without the runtime (on Windows also `WebView2Loader.dll`), the app opens in the installed default browser instead. On Linux, native WebView needs GTK3 + WebKitGTK at runtime. Windows and POSIX path separators are both accepted for asset/config lookup.
+
+Either binary can switch modes at runtime: `--desktop` opens the window, `--server` starts the HTTP server, `--help` lists all options. UI assets and `data/gamedata.json` are copied next to each executable by the build, so a desktop binary can be run from its folder. `NTE_CAFE_CONFIG` and `NTE_CAFE_GAMEDATA` override the default paths (next to the executable). Builds are verified on Linux; Windows/macOS targets use WebUI's own CMake platform handling but were not built here.
 
 ## Configuration
 
