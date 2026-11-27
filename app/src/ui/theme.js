@@ -113,7 +113,7 @@
       'summary.characters':'Character active: {a}/{n} ({b})','summary.dishes':'Dishes active: {a}/{n} ({b})',
       'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned',
       'dialog.confirm':'Confirm','dialog.cancel':'Cancel','dialog.reset':'Reset','dialog.resetTitle':'Reset to Defaults',
-      'reset.defaults':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.',
+      'reset.defaults':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.','reset.reloadHint':'Reload the page to see the changes.',
       'card.owned':'Owned','card.notOwned':'Not Owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -149,7 +149,7 @@
       'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
       'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen',
       'dialog.confirm':'Bestätigen','dialog.cancel':'Abbrechen','dialog.reset':'Zurücksetzen','dialog.resetTitle':'Auf Standard zurücksetzen',
-      'reset.defaults':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.',
+      'reset.defaults':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.','reset.reloadHint':'Lade die Seite neu, damit die Änderungen sichtbar werden.',
       'card.owned':'In Besitz','card.notOwned':'Nicht in Besitz','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
       'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -419,17 +419,7 @@
         catch (ex) { configStatus(t('import.failed') + (ex && ex.message ? ex.message : String(ex)), 'error'); }
       });
     }
-    if (rb) rb.addEventListener('click', async () => {
-      if (!await confirmDialog(t('reset.defaults'), { title: t('dialog.resetTitle'), confirmLabel: t('dialog.reset') })) return;
-      configStatus(t('common.saving'));
-      try {
-        if (!await waitForBindings(['resetDefaults'])) throw new Error(t('common.noBackend'));
-        checkResult(await window.resetDefaults());
-        configStatus(t('settings.resetDone'), 'ok', true);
-      } catch (ex) {
-        configStatus(t('common.saveFailed') + (ex && ex.message ? ' ' + ex.message : String(ex)), 'error');
-      }
-    });
+    if (rb) rb.addEventListener('click', () => resetDefaultsDialog());
   }
 
   function enhanceSelect(select) {
@@ -600,59 +590,105 @@
     window.addEventListener('resize', () => { updateHeaderH(); if (window.innerWidth > 900) closeNav(); if (window.innerWidth <= 900) closeSettings(); placeSettings(); });
   }
 
+  /* Shared shell for the in-app popup, used in the browser and desktop WebView. */
+  function createDialogShell() {
+    const previous = document.getElementById('nteConfirmDialog');
+    if (previous) previous.remove();
+    const backdrop = document.createElement('div');
+    backdrop.id = 'nteConfirmDialog';
+    backdrop.className = 'nte-dialog-backdrop';
+    const box = document.createElement('div');
+    box.className = 'nte-dialog';
+    box.setAttribute('role', 'alertdialog');
+    box.setAttribute('aria-modal', 'true');
+    const title = document.createElement('div');
+    title.className = 'nte-dialog-title';
+    const text = document.createElement('p');
+    text.className = 'nte-dialog-message';
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions nte-dialog-actions';
+    box.append(title, text, actions);
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+    let onKey = () => {};
+    const key = (fn) => {
+      document.removeEventListener('keydown', onKey);
+      onKey = fn;
+      document.addEventListener('keydown', onKey);
+    };
+    const close = () => { document.removeEventListener('keydown', onKey); backdrop.remove(); };
+    const button = (label, cls, onClick) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = cls; b.textContent = label;
+      b.addEventListener('click', onClick);
+      return b;
+    };
+    const set = (titleText, message, buttons) => {
+      title.textContent = titleText;
+      text.textContent = message;
+      actions.textContent = '';
+      buttons.forEach(b => actions.appendChild(b));
+      if (buttons.length) buttons[buttons.length - 1].focus();
+    };
+    return { backdrop, key, close, button, set };
+  }
+
   /* Central in-app confirmation dialog. Replaces window.confirm so the same
    * styled popup is used in the browser and the desktop WebView. Resolves to
    * true only on the confirm button; Escape, backdrop and Cancel resolve false. */
   function confirmDialog(message, options = {}) {
     return new Promise((resolve) => {
-      const previous = document.getElementById('nteConfirmDialog');
-      if (previous) previous.remove();
-      const backdrop = document.createElement('div');
-      backdrop.id = 'nteConfirmDialog';
-      backdrop.className = 'nte-dialog-backdrop';
-      const box = document.createElement('div');
-      box.className = 'nte-dialog';
-      box.setAttribute('role', 'alertdialog');
-      box.setAttribute('aria-modal', 'true');
-      const title = document.createElement('div');
-      title.className = 'nte-dialog-title';
-      title.textContent = options.title || t('dialog.confirm');
-      const text = document.createElement('p');
-      text.className = 'nte-dialog-message';
-      text.textContent = message;
-      const actions = document.createElement('div');
-      actions.className = 'modal-actions nte-dialog-actions';
-      const cancel = document.createElement('button');
-      cancel.type = 'button';
-      cancel.className = 'modal-btn';
-      cancel.textContent = t('dialog.cancel');
-      const accept = document.createElement('button');
-      accept.type = 'button';
-      accept.className = options.danger === false ? 'modal-btn primary' : 'modal-btn danger';
-      accept.textContent = options.confirmLabel || t('dialog.confirm');
-      actions.append(cancel, accept);
-      box.append(title, text, actions);
-      backdrop.appendChild(box);
-      document.body.appendChild(backdrop);
-
+      const d = createDialogShell();
       let settled = false;
       const finish = (value) => {
         if (settled) return;
         settled = true;
-        document.removeEventListener('keydown', onKey);
-        backdrop.remove();
+        d.close();
         resolve(value);
       };
-      const onKey = (e) => {
+      d.set(options.title || t('dialog.confirm'), message, [
+        d.button(t('dialog.cancel'), 'modal-btn', () => finish(false)),
+        d.button(options.confirmLabel || t('dialog.confirm'),
+                 options.danger === false ? 'modal-btn primary' : 'modal-btn danger',
+                 () => finish(true))
+      ]);
+      d.key((e) => {
         if (e.key === 'Escape') { e.preventDefault(); finish(false); }
         else if (e.key === 'Enter') { e.preventDefault(); finish(true); }
-      };
-      cancel.addEventListener('click', () => finish(false));
-      accept.addEventListener('click', () => finish(true));
-      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) finish(false); });
-      document.addEventListener('keydown', onKey);
-      accept.focus();
+      });
+      d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) finish(false); });
     });
+  }
+
+  /* Reset stays in one popup: confirm first, then show success with a Reload
+   * button right there. Dismissing after success also reloads, so the UI can
+   * never be left showing stale state. */
+  function resetDefaultsDialog() {
+    const d = createDialogShell();
+    let reloaded = false;
+    const dismiss = () => { if (reloaded) location.reload(); else d.close(); };
+    const cancel = d.button(t('dialog.cancel'), 'modal-btn', () => d.close());
+    const reset = d.button(t('dialog.reset'), 'modal-btn danger', async () => {
+      cancel.disabled = true; reset.disabled = true;
+      try {
+        if (!await waitForBindings(['resetDefaults'])) throw new Error(t('common.noBackend'));
+        checkResult(await window.resetDefaults());
+        reloaded = true;
+        d.set(t('settings.resetDone'), t('reset.reloadHint'), [
+          d.button(t('settings.reload'), 'modal-btn primary', () => location.reload())
+        ]);
+      } catch (ex) {
+        d.set(t('common.saveFailed'), t('common.saveFailed') + (ex && ex.message ? ' ' + ex.message : String(ex)), [
+          d.button(t('dialog.cancel'), 'modal-btn', () => d.close())
+        ]);
+      }
+    });
+    d.set(t('dialog.resetTitle'), t('reset.defaults'), [cancel, reset]);
+    d.key((e) => {
+      if (e.key === 'Escape') { e.preventDefault(); dismiss(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (reloaded) location.reload(); else reset.click(); }
+    });
+    d.backdrop.addEventListener('click', (e) => { if (e.target === d.backdrop) dismiss(); });
   }
 
   function initTheme() {
