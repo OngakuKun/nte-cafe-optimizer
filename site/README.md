@@ -1,8 +1,11 @@
 # Project site sources
 
 `docs/` is generated — don't edit it by hand. Run `node scripts/build-site.mjs`
-or push to `dev`; the workflow in `.github/workflows/site.yml` regenerates it
-on every push.
+for a local preview, or push to `dev`: the workflow in
+`.github/workflows/site.yml` regenerates `docs/` and publishes the same files
+to the root of the dedicated `gh-pages` branch, which is what GitHub Pages
+serves (Settings → Pages → **gh-pages / (root)**). Set `SITE_OUT=/some/dir` to
+generate somewhere else; CI uses that for the gh-pages checkout.
 
 Order of precedence:
 
