@@ -79,6 +79,9 @@ jobs:
           set -eu
           mkdir -p package
           cp "${{ matrix.bin_dir }}/${{ matrix.exe }}" package/
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp "${{ matrix.bin_dir }}/WebView2Loader.dll" package/
+          fi
           cp -R "${{ matrix.bin_dir }}/ui" package/ui
           cp -R data package/data
           cp README.md package/
@@ -106,4 +109,5 @@ jobs:
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           generate_release_notes: true
+          overwrite_files: true
           files: dist/*.zip

@@ -474,7 +474,7 @@
       docker: 'Docker-Build', dockerHint: 'Lieber den Server im Container?',
       copy: 'Kopieren', copied: 'Kopiert!', copyFailed: 'Kopieren fehlgeschlagen',
       compose: 'docker-compose.yml ansehen',
-      note: 'Die Download-Links gehen mit dem ersten v*-Tag live.', close: 'Schließen'
+      note: 'Alle Builds sind ZIP-Archive.', close: 'Schließen'
     } : {
       title: 'Download NTE Cafe Optimizer',
       intro: 'Pick your platform. Each link points to the latest release build.',
@@ -485,7 +485,7 @@
       docker: 'Docker build', dockerHint: 'Prefer the server in a container?',
       copy: 'Copy', copied: 'Copied!', copyFailed: 'Copy failed',
       compose: 'View docker-compose.yml',
-      note: 'Release links go live with the first v* tag.', close: 'Close'
+      note: 'All builds are ZIP archives.', close: 'Close'
     };
   }
 
