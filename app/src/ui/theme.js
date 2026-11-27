@@ -37,6 +37,49 @@
     'Ham & Cheese Croissant': 'Schinken-Käse-Croissant',
     'Caramel & Cocoa Mille-Feuille': 'Mille-Feuille mit Karamell und Kakao',
   };
+  /* English display names from Fuu's current translation table; keys are canonical wiki names. */
+  const EN_NAMES = {
+    'Tomato & Fried Eggs Croissant': 'Tonato & Fried Egg Croissant',
+  };
+  /* Trend option labels. Keys are the raw backend values — never translate the value itself. */
+  const TREND_DE = {
+    'None': 'Ohne Trend',
+    'Main Dishes': 'Hauptgericht',
+    'Desserts': 'Dessert',
+    'Beverages': 'Getränke',
+    'Fruit': 'Obst',
+    'Coffee Beans': 'Kaffeebohnen',
+    'Coconut': 'Kokos',
+    'Cocoa Powder': 'Kakaopulver',
+    'Flour': 'Mehl',
+    'Apple': 'Apfel',
+    'Eggs': 'Eier',
+    'Lettuce': 'Salat',
+    'Fish': 'Fisch',
+    'Orange': 'Orange',
+    'Milk': 'Milch',
+    'Matcha Powder': 'Matchapulver',
+    'Whipping Cream': 'Schlagsahne',
+    'Beef': 'Rindfleisch',
+    'Butter': 'Butter',
+    'Red Beans': 'Rote Bohnen',
+    'Strawberry': 'Erdbeere',
+    'Onion': 'Zwiebel',
+    'Pork': 'Schweinefleisch',
+    'Salt': 'Salz',
+    'Cookies': 'Kekse',
+    'Cheese': 'Käse',
+    'Ham': 'Schinken',
+    'Sugar': 'Zucker',
+    'Skibbles': 'Skibbles',
+    'Tomato': 'Tomate',
+  };
+  const TREND_EN = {
+    'None': 'No Trend',
+    'Main Dishes': 'Main Dish',
+    'Desserts': 'Dessert',
+    'Beverages': 'Beverage',
+  };
   const I18N = {
     en: {
       'title.optimizer':'NTE Cafe - Optimizer','title.characters':'NTE Cafe - Characters','title.dishes':'NTE Cafe - Dishes','title.cafes':'NTE Cafe - Cafes','title.status':'NTE Cafe - Status',
@@ -67,8 +110,8 @@
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Beverages','type.Desserts':'Desserts','type.Main Dishes':'Main Dishes',
       'cafe.popularityLabel':'Total multiplier for all cafes','cafe.cafesOwned':'Cafes Owned','cafe.level':'Level {n} · Popularity {p}','cafe.active':'Active','cafe.locked':'Locked','cafe.noBonus':'No bonus','cafe.currentBonus':'Current bonus:',
-      /* Branch names from the wiki's "Café Locations" table. */
-      'cafe.name.1':'Bluebird Street','cafe.name.2':'Fiscus Avenue','cafe.name.3':'North Davidia Alley','cafe.name.4':'Moomin Street','cafe.name.5':'Hankaku Street Square','cafe.name':'Cafe {n}',
+      /* Branch names from Fuu's current translation table. */
+      'cafe.name.1':'Bluebeard Road Location','cafe.name.2':'Fiscus Avenue Location','cafe.name.3':'Davidia Avenue Location','cafe.name.4':'Moomin Street Location','cafe.name.5':'Hankaku Street Location','cafe.name':'Cafe {n}',
       'status.gameVersion':'Game Version','status.webuiVersion':'WebUI Version','status.dishesLoaded':'Dishes Loaded','status.charsLoaded':'Characters Loaded',
       'status.section.dishes':'Dishes','status.section.characters':'Characters',
       'status.col.num':'#','status.col.name':'Name','status.col.type':'Type','status.col.priceL1':'Price L1','status.col.priceL2':'Price L2','status.col.ingredients':'Ingredients','status.col.skills':'Skills','status.col.skillDetails':'Skill Details'
@@ -219,7 +262,11 @@
   /* Localised display name. German dish names come from Fuu's translation table. */
   function displayName(name) {
     const canonical = canonicalName(name);
-    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : canonical;
+    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : (EN_NAMES[canonical] || canonical);
+  }
+  function trendName(name) {
+    const dict = (document.documentElement.lang || 'en') === 'de' ? TREND_DE : TREND_EN;
+    return dict[name] || name;
   }
   function applyLanguage(lang, persist) {
     const next = LANGS.some(l => l.id === lang) ? lang : 'en';
@@ -525,5 +572,5 @@
     enhanceSelects(document);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName, trendName };
 })();
