@@ -76,6 +76,14 @@
     'Desserts': 'Dessert',
     'Beverages': 'Beverage',
   };
+  /* Backend skill-tag identifiers -> canonical trend keys (used on the Status page). */
+  const SKILL_TAG_ALIAS = {
+    'none': 'None',
+    'any': 'None',
+    'beverages': 'Beverages',
+    'desserts': 'Desserts',
+    'main_dishes': 'Main Dishes',
+  };
   const I18N = {
     en: {
       'title.optimizer':'NTE Cafe - Optimizer','title.characters':'NTE Cafe - Characters','title.dishes':'NTE Cafe - Dishes','title.cafes':'NTE Cafe - Cafes','title.status':'NTE Cafe - Status',
@@ -260,7 +268,8 @@
   }
   function trendName(name) {
     const dict = (document.documentElement.lang || 'en') === 'de' ? TREND_DE : TREND_EN;
-    return dict[name] || name;
+    const key = SKILL_TAG_ALIAS[name] || name;
+    return dict[key] || name;
   }
   function applyLanguage(lang, persist) {
     const next = LANGS.some(l => l.id === lang) ? lang : 'en';
