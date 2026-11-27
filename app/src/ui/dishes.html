@@ -20,10 +20,6 @@
       border-radius:8px; cursor:pointer;
     }
     .bulk-btn:hover { border-color:var(--accent); }
-    .bulk-btn.warning {
-      background:color-mix(in srgb, var(--error) 14%, var(--panel-alt));
-      border-color:var(--error); color:var(--error);
-    }
     .grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:14px; }
     @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .body { max-width: 72%; } }
@@ -107,7 +103,6 @@
       <div class="bulk-actions">
         <button type="button" id="levelSwitch" class="bulk-btn" data-i18n="bulk.max">All to Max Level</button>
         <button type="button" id="ownedSwitch" class="bulk-btn" data-i18n="bulk.owned">All to Owned</button>
-        <button type="button" id="resetDefaults" class="bulk-btn warning" data-i18n="bulk.reset">Reset to Defaults</button>
       </div>
     </div>
     <div id="error" class="err"></div>
@@ -267,24 +262,6 @@
 
     setupBulkButton('levelSwitch', LEVEL_STEPS, () => levelStep, v => { levelStep = v; });
     setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
-
-    document.getElementById('resetDefaults').addEventListener('click', async () => {
-      if (!await NteTheme.confirmDialog(T('reset.dishes'), { title: T('dialog.resetTitle'), confirmLabel: T('dialog.reset') })) return;
-      setSave(T('common.saving'));
-      try {
-        const obj = JSON.parse(await resetDefaults());
-        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
-        levelStep = 0;
-        ownedStep = 0;
-        document.getElementById('levelSwitch').textContent = T(LEVEL_STEPS[0].label);
-        document.getElementById('ownedSwitch').textContent = T(OWNED_STEPS[0].label);
-        await load();
-        setSave(T('common.saved'));
-      } catch (e) {
-        setSave(T('common.saveFailed'), true);
-        document.getElementById('error').textContent = String(e.message || e);
-      }
-    });
 
     async function load() {
       const status = document.getElementById('status');

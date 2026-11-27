@@ -144,6 +144,8 @@ nav { display: flex; gap: 8px; align-items: center; }
   border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; cursor: pointer; width: 100%;
 }
 .theme-btn:hover { border-color: var(--accent); }
+.theme-btn.warning { background: color-mix(in srgb, var(--error) 14%, var(--panel-alt)); border-color: var(--error); color: var(--error); }
+.theme-btn.warning:hover { background: color-mix(in srgb, var(--error) 24%, var(--panel-alt)); }
 .settings-group { display: flex; flex-direction: column; gap: 8px; }
 .settings-config-row { display: flex; gap: 8px; }
 .settings-config-row .theme-btn { flex: 1; padding: 8px 6px; }

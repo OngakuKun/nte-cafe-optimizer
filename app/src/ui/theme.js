@@ -93,7 +93,7 @@
       'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
       'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
       'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
-      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.reset':'Reset to Defaults','settings.resetDone':'Setup reset to defaults.','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
       'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
       'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
       'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
@@ -111,9 +111,9 @@
       'default.title':'Welcome to NTE Cafe Optimizer','default.desc':'Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.','default.configureChars':'Configure Characters','default.configureDishes':'Configure Dishes',
       'setup.title':'Setup incomplete','setup.descBoth':'Own at least one character and one dish so the optimizer can calculate meaningful results.','setup.descChars':'Own at least one character so the optimizer can calculate meaningful results.','setup.descDishes':'Own at least one dish so the optimizer can calculate meaningful results.',
       'summary.characters':'Character active: {a}/{n} ({b})','summary.dishes':'Dishes active: {a}/{n} ({b})',
-      'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned','bulk.reset':'Reset to Defaults',
+      'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned',
       'dialog.confirm':'Confirm','dialog.cancel':'Cancel','dialog.reset':'Reset','dialog.resetTitle':'Reset to Defaults',
-      'reset.characters':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.','reset.dishes':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.',
+      'reset.defaults':'Reset the whole setup to defaults? All characters and dishes become "Not Owned", cafés go to 1, trend to None, Hotori decor off and popularity to 0. All settings will be lost.',
       'card.owned':'Owned','card.notOwned':'Not Owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -129,7 +129,7 @@
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menü',
       'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
       'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
-      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reset':'Auf Standard zurücksetzen','settings.resetDone':'Einstellungen auf Standard zurückgesetzt.','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
       'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
       'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
       'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
@@ -147,9 +147,9 @@
       'default.title':'Willkommen beim NTE Cafe Optimizer','default.desc':'Deine Einstellungen sind noch standardmäßig. Konfiguriere deine Charaktere, Gerichte und Cafes, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','default.configureChars':'Charaktere konfigurieren','default.configureDishes':'Gerichte konfigurieren',
       'setup.title':'Einstellungen unvollständig','setup.descBoth':'Besitze mindestens einen Charakter und ein Gericht, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','setup.descChars':'Besitze mindestens einen Charakter, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','setup.descDishes':'Besitze mindestens ein Gericht, damit der Optimierer sinnvolle Ergebnisse berechnen kann.',
       'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
-      'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen','bulk.reset':'Auf Standard zurücksetzen',
+      'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen',
       'dialog.confirm':'Bestätigen','dialog.cancel':'Abbrechen','dialog.reset':'Zurücksetzen','dialog.resetTitle':'Auf Standard zurücksetzen',
-      'reset.characters':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.','reset.dishes':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.',
+      'reset.defaults':'Die gesamte Konfiguration auf Standard zurücksetzen? Alle Charaktere und Gerichte sind dann „Nicht in Besitz", die Cafés auf 1, der Trend auf Keiner, das Hotori-Dekor aus und die Beliebtheit auf 0. Alle Einstellungen gehen verloren.',
       'card.owned':'In Besitz','card.notOwned':'Nicht in Besitz','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
       'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
@@ -403,6 +403,7 @@
   function initSettingsPanel() {
     const eb = document.getElementById('exportConfigBtn');
     const ib = document.getElementById('importConfigBtn');
+    const rb = document.getElementById('resetDefaultsBtn');
     const file = document.getElementById('importConfigFile');
     if (eb) eb.addEventListener('click', async () => {
       configStatus(t('export.exporting'));
@@ -418,6 +419,17 @@
         catch (ex) { configStatus(t('import.failed') + (ex && ex.message ? ex.message : String(ex)), 'error'); }
       });
     }
+    if (rb) rb.addEventListener('click', async () => {
+      if (!await confirmDialog(t('reset.defaults'), { title: t('dialog.resetTitle'), confirmLabel: t('dialog.reset') })) return;
+      configStatus(t('common.saving'));
+      try {
+        if (!await waitForBindings(['resetDefaults'])) throw new Error(t('common.noBackend'));
+        checkResult(await window.resetDefaults());
+        configStatus(t('settings.resetDone'), 'ok', true);
+      } catch (ex) {
+        configStatus(t('common.saveFailed') + (ex && ex.message ? ' ' + ex.message : String(ex)), 'error');
+      }
+    });
   }
 
   function enhanceSelect(select) {
@@ -541,6 +553,9 @@
           <div class="settings-config-row">
             <button id="exportConfigBtn" class="theme-btn" type="button" data-i18n="settings.exportConfig">Export Config</button>
             <button id="importConfigBtn" class="theme-btn" type="button" data-i18n="settings.importConfig">Import Config</button>
+          </div>
+          <div class="settings-config-row">
+            <button id="resetDefaultsBtn" class="theme-btn warning" type="button" data-i18n="settings.reset">Reset to Defaults</button>
           </div>
           <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
           <div id="configStatus" class="settings-hint"></div>
