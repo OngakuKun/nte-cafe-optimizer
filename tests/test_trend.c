@@ -45,12 +45,21 @@ static void test_trend_price(void) {
   assert(fabs(price - 11.2) < 1e-9);
 }
 
+static void test_trend_tag(void) {
+  assert(get_trend_tag((Trend){TREND_TAG, "Main Dishes"}) == TAG_MAIN_DISHES);
+  assert(get_trend_tag((Trend){TREND_TAG, "Desserts"}) == TAG_DESSERTS);
+  assert(get_trend_tag((Trend){TREND_TAG, "Beverages"}) == TAG_BEVERAGES);
+  assert(get_trend_tag((Trend){TREND_NONE, "None"}) == TAG_NONE);
+  assert(get_trend_tag((Trend){TREND_INGREDIENT, "Coffee Beans"}) == TAG_NONE);
+}
+
 int main(void) {
   if (!gamedata_init_embedded())
     return 1;
 
   test_trend_fruit();
   test_trend_price();
+  test_trend_tag();
 
   puts("All optimizer tests passed.");
   return 0;

@@ -940,5 +940,15 @@
       "type.Desserts": "Desserts",
       "type.Main Dishes": "Main Dishes"
     }
+  },
+  "levels": {
+    "character": {
+      "min": 0,
+      "max": 5
+    },
+    "dish": {
+      "min": 1,
+      "max": 2
+    }
   }
 }

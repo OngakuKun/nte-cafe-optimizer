@@ -20,11 +20,11 @@ float get_trend_bonus(TrendType type) {
 }
 
 SkillTag get_trend_tag(Trend trend) {
-  if (strcmp(trend.name, "Main Dishes"))
+  if (trend.name && strcmp(trend.name, "Main Dishes") == 0)
     return TAG_MAIN_DISHES;
-  if (strcmp(trend.name, "Desserts"))
+  if (trend.name && strcmp(trend.name, "Desserts") == 0)
     return TAG_DESSERTS;
-  if (strcmp(trend.name, "Beverages"))
+  if (trend.name && strcmp(trend.name, "Beverages") == 0)
     return TAG_BEVERAGES;
   return TAG_NONE;
 }

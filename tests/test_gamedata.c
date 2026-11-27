@@ -23,6 +23,11 @@ int main(void) {
   assert(strcmp(CHARACTERS[0].name, "Nanally") == 0);
   assert(CHARACTERS[0].skill_count == 2);
 
+  assert(gamedata_character_min_level() == 0);
+  assert(gamedata_character_max_level() == 5);
+  assert(gamedata_dish_min_level() == 1);
+  assert(gamedata_dish_max_level() == 2);
+
   assert(strcmp(gamedata_i18n("de", "trend.None"), "Ohne Trend") == 0);
   assert(strcmp(gamedata_i18n("en", "trend.None"), "No Trend") == 0);
   assert(strcmp(gamedata_i18n("de", "dish.Iced Mocha"), "Eis-Mokka") == 0);

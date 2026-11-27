@@ -30,6 +30,10 @@ static size_t s_i18n_count = 0;
 
 static const char *s_game_version = "";
 static const char *s_content_hash = "";
+static int s_character_min_level = 0;
+static int s_character_max_level = 5;
+static int s_dish_min_level = 1;
+static int s_dish_max_level = 2;
 
 /* Parsed JSON buffers stay alive for the process lifetime: all names point
  * into them. Updates add a buffer rather than moving strings underneath us. */
@@ -173,7 +177,9 @@ static bool parse_dataset(const Parsed *p, Ingredient *ings, size_t *ing_count,
                           Character *chars, size_t *char_count,
                           int ing_pool[MAX_DISH_POOL][MAX_INGREDIENTS_PER_DISH],
                           I18nEntry *i18n, size_t *i18n_count,
-                          const char **version, const char **hash) {
+                          const char **version, const char **hash,
+                          int *char_min, int *char_max, int *dish_min,
+                          int *dish_max) {
   const char *js = p->buffer;
   const jsmntok_t *t = p->tokens;
   int n = p->count;
@@ -189,6 +195,28 @@ static bool parse_dataset(const Parsed *p, Ingredient *ings, size_t *ing_count,
   int h = obj_get(js, t, n, 0, "contentHash");
   *version = v >= 0 ? tok_str(js, &t[v]) : "";
   *hash = h >= 0 ? tok_str(js, &t[h]) : "";
+
+  *char_min = 0;
+  *char_max = 5;
+  *dish_min = 1;
+  *dish_max = 2;
+  int levels = obj_get(js, t, n, 0, "levels");
+  if (levels >= 0 && t[levels].type == JSMN_OBJECT) {
+    int character = obj_get(js, t, n, levels, "character");
+    if (character >= 0) {
+      int lo = obj_get(js, t, n, character, "min");
+      int hi = obj_get(js, t, n, character, "max");
+      if (lo >= 0) *char_min = (int)tok_number(js, &t[lo]);
+      if (hi >= 0) *char_max = (int)tok_number(js, &t[hi]);
+    }
+    int dish = obj_get(js, t, n, levels, "dish");
+    if (dish >= 0) {
+      int lo = obj_get(js, t, n, dish, "min");
+      int hi = obj_get(js, t, n, dish, "max");
+      if (lo >= 0) *dish_min = (int)tok_number(js, &t[lo]);
+      if (hi >= 0) *dish_max = (int)tok_number(js, &t[hi]);
+    }
+  }
 
   size_t ic = 0;
   int ingredients = obj_get(js, t, n, 0, "ingredients");
@@ -364,10 +392,12 @@ bool gamedata_init(const char *json, size_t len) {
   size_t ing_n = 0, dish_n = 0, char_n = 0, i18n_n = 0;
   const char *version = "";
   const char *hash = "";
+  int char_min = 0, char_max = 5, dish_min = 1, dish_max = 2;
 
   bool ok = parse_dataset(&p, tmp_ings, &ing_n, tmp_dishes, &dish_n,
                           tmp_chars, &char_n, tmp_pool, tmp_i18n, &i18n_n,
-                          &version, &hash);
+                          &version, &hash, &char_min, &char_max, &dish_min,
+                          &dish_max);
   if (!ok) {
     free(p.tokens);
     free(p.buffer);
@@ -388,6 +418,10 @@ bool gamedata_init(const char *json, size_t len) {
   s_i18n_count = i18n_n;
   s_game_version = version;
   s_content_hash = hash;
+  s_character_min_level = char_min;
+  s_character_max_level = char_max;
+  s_dish_min_level = dish_min;
+  s_dish_max_level = dish_max;
 
   if (s_kept_count < MAX_KEPT_BUFFERS)
     s_kept_buffers[s_kept_count++] = p.buffer;
@@ -457,6 +491,14 @@ const char *gamedata_i18n(const char *lang, const char *key) {
   }
   return key;
 }
+
+int gamedata_character_min_level(void) { return s_character_min_level; }
+
+int gamedata_character_max_level(void) { return s_character_max_level; }
+
+int gamedata_dish_min_level(void) { return s_dish_min_level; }
+
+int gamedata_dish_max_level(void) { return s_dish_max_level; }
 
 size_t gamedata_i18n_count(void) { return s_i18n_count; }
 

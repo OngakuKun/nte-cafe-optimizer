@@ -46,23 +46,9 @@ void print_optimization_result(CafeContext *cafeContext,
   printf("Characters: %d owned / %d slots\n", ownedC, maxC);
   printf("Dish Combo: %d\n", nCr(ownedD, MIN(ownedD, maxD)));
   printf("Char Combo: %d\n", nCr(ownedC, MIN(ownedC, maxC)));
-  switch (cafeContext->settings.trend_tag) {
-  case TAG_NONE:
-    printf("Trend: %s\n", cafeContext->settings.trend_name);
-    break;
-  case TAG_ANY:
-    printf("Trend: %s\n", cafeContext->settings.trend_name);
-    break;
-  case TAG_MAIN_DISHES:
-    printf("Trend: Main Dishes\n");
-    break;
-  case TAG_BEVERAGES:
-    printf("Trend: Beverages\n");
-    break;
-  case TAG_DESSERTS:
-    printf("Trend: Desserts\n");
-    break;
-  }
+  printf("Trend: %s\n", cafeContext->settings.trend_name
+                            ? cafeContext->settings.trend_name
+                            : "None");
 
   printf("====================================================================="
          "===========\n");
@@ -81,63 +67,15 @@ void print_optimization_result(CafeContext *cafeContext,
            result->dishes[i]->price_l2);
 
   printf("Characters:\n");
-  for (size_t i = 0; i < result->character_count; ++i) {
-    printf("  - %-*s", 20, result->characters[i]->name);
+  for (size_t i = 0; i < result->character_count; ++i)
+    printf("  - %s\n", result->characters[i]->name);
 
-    double pFlatSum = 0.0;
-    double pMultiSum = 0.0;
-    double tFlatSum = 0.0;
-    double tMultiSum = 0.0;
-
-    for (int j = 0; j < (int)result->characters[i]->skill_count; ++j) {
-      Skill skill = result->characters[i]->skills[j];
-
-      switch (skill.type) {
-      case SKILL_PRICE_FLAT:
-        pFlatSum += skill.value;
-        break;
-
-      case SKILL_PRICE_MULTIPLY:
-        pMultiSum += skill.value;
-        break;
-
-      case SKILL_TRAFFIC_FLAT:
-        tFlatSum += skill.value;
-        break;
-
-      case SKILL_TRAFFIC_MULTIPLY:
-        tMultiSum += skill.value;
-        break;
-      }
-    }
-
-    bool first = true;
-
-    if (pFlatSum != 0.0) {
-      printf("%s%+g price", first ? "" : " & ", pFlatSum);
-      first = false;
-    }
-
-    if (pMultiSum != 0.0) {
-      printf("%s+%.2f%% price", first ? "" : " & ", pMultiSum * 100);
-      first = false;
-    }
-
-    if (tFlatSum != 0.0) {
-      printf("%s%+g traffic", first ? "" : " & ", tFlatSum);
-      first = false;
-    }
-
-    if (tMultiSum != 0.0) {
-      printf("%s+%.2f%% traffic", first ? "" : " & ", tMultiSum * 100);
-      first = false;
-    }
-
-    printf("\n");
-  }
-  if (cafeContext->settings.hotori_cat_decor) {
+  /* The buff log contains only skills that really applied to this menu. */
+  if (result->log.count > 0) {
     printf("Buffs:\n");
-    printf("  - %-*s+1%% traffic\n", 20, "Hotori Cat Decor");
+    for (size_t i = 0; i < result->log.count; ++i)
+      printf("  - %-*s%+g\n", 20, result->log.entries[i].text,
+             result->log.entries[i].value);
   }
 
   printf("====================================================================="

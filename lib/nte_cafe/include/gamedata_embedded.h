@@ -945,6 +945,16 @@
   "      \"type.Desserts\": \"Desserts\",\n" \
   "      \"type.Main Dishes\": \"Main Dishes\"\n" \
   "    }\n" \
+  "  },\n" \
+  "  \"levels\": {\n" \
+  "    \"character\": {\n" \
+  "      \"min\": 0,\n" \
+  "      \"max\": 5\n" \
+  "    },\n" \
+  "    \"dish\": {\n" \
+  "      \"min\": 1,\n" \
+  "      \"max\": 2\n" \
+  "    }\n" \
   "  }\n" \
   "}\n"
 

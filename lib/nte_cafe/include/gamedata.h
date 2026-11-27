@@ -24,4 +24,10 @@ size_t gamedata_i18n_count(void);
 bool gamedata_i18n_at(size_t index, const char **lang, const char **key,
                       const char **value);
 
+/* Allowed level ranges from the dataset (defaults 0..5 / 1..2). */
+int gamedata_character_min_level(void);
+int gamedata_character_max_level(void);
+int gamedata_dish_min_level(void);
+int gamedata_dish_max_level(void);
+
 #endif /* NTE_CAFE_GAMEDATA_H */
