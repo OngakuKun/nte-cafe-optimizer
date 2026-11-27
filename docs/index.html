@@ -1,172 +1,195 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="macchiato">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>NTE Cafe Optimizer — find the best cafe loadout</title>
-  <meta name="description" content="Open-source optimizer for NTE cafe loadouts: find the best dish and character combination for your trend, cafes and owned roster. C library, CLI, WebUI and desktop app.">
-  <meta name="theme-color" content="#11111b">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e1e2e'/%3E%3Cpath d='M7 10h15v8a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7v-8Zm15 2h2a4 4 0 0 1 0 8h-2M6 28h20' fill='none' stroke='%2389b4fa' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <title>NTE Cafe - Project Site</title>
+  <meta name="description" content="Project site for NTE Cafe Optimizer — find the best dish and character combination for your cafe loadout. C99 library, CLI, WebUI and desktop app.">
+  <meta name="theme-color" content="#24273a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e2030'/%3E%3Cpath d='M7 10h15v8a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7v-8Zm15 2h2a4 4 0 0 1 0 8h-2M6 28h20' fill='none' stroke='%23f5a97f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="shared.css">
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
-
-  <header class="site-header">
-    <div class="wrap header-inner">
-      <a class="brand" href="#top" aria-label="NTE Cafe Optimizer, back to top">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32"><path d="M7 10h15v8a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7v-8Zm15 2h2a4 4 0 0 1 0 8h-2M6 28h20"/></svg>
-        </span>
-        <span>NTE Cafe <strong>Optimizer</strong></span>
-      </a>
-      <nav class="nav" aria-label="Main navigation">
-        <a href="#features">Features</a>
-        <a href="#workflow">How it works</a>
-        <a href="#start">Get started</a>
-        <a class="nav-github" href="https://github.com/OngakuKun/nte-cafe-optimizer" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
-      </nav>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub">Project site · First release in preparation</div>
+    </div>
+    <nav id="siteNav" aria-label="Primary">
+      <a class="nav-link active" href="#overview">Overview</a>
+      <a class="nav-link" href="#features">Features</a>
+      <a class="nav-link" href="#workflow">How it works</a>
+      <a class="nav-link" href="#start">Get started</a>
+    </nav>
+    <div class="header-right">
+      <a class="pill" href="https://nte.ongakukun.de/" target="_blank" rel="noopener">Live WebUI</a>
+      <select id="themeSelect" class="theme-select site-theme" aria-label="Color theme">
+        <option value="macchiato">Macchiato</option>
+        <option value="mocha">Mocha</option>
+        <option value="frappe">Frappé</option>
+        <option value="latte">Latte</option>
+      </select>
+      <button id="menuBtn" class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="siteNav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      </button>
     </div>
   </header>
+  <div id="navOverlay" class="nav-overlay"></div>
 
-  <main id="main">
-    <section class="hero" id="top">
-      <div class="hero-glow" aria-hidden="true"></div>
-      <div class="wrap hero-inner">
-        <div class="hero-copy">
-          <p class="eyebrow"><span class="dot"></span> Open source · C99 · WebUI · Desktop</p>
-          <h1>The best cafe setup,<br><span>calculated.</span></h1>
-          <p class="lede">Tell it which characters and dishes you own, which cafés you run and which trend is active — NTE Cafe Optimizer searches every combination and shows you the strongest loadout.</p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="https://nte.ongakukun.de/" target="_blank" rel="noopener">Try the live WebUI <span aria-hidden="true">↗</span></a>
-            <a class="btn btn-ghost" href="https://github.com/OngakuKun/nte-cafe-optimizer" target="_blank" rel="noopener">View source <span aria-hidden="true">↗</span></a>
-          </div>
-          <p class="hero-note">First release in preparation · No account needed · Runs in your browser</p>
-        </div>
-        <div class="hero-visual" aria-label="Example optimizer result">
-          <div class="result-card">
-            <div class="result-head">
-              <span class="result-title">Best setup</span>
-              <span class="pill">Example output</span>
-            </div>
-            <div class="result-hero">
-              <span class="result-label">Income</span>
-              <strong>12,480<span>/h</span></strong>
-              <span class="result-sub">including trend and popularity bonuses</span>
-            </div>
-            <div class="result-grid">
-              <div><span>Trend</span><strong>In trend</strong></div>
-              <div><span>Cafés</span><strong>5 owned</strong></div>
-              <div><span>Characters</span><strong>4 active</strong></div>
-              <div><span>Dishes</span><strong>5 active</strong></div>
-            </div>
-            <div class="result-foot">
-              <span class="bar"><i></i></span>
-              <span>Optimized across all valid combinations</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="features">
-      <div class="wrap">
-        <div class="section-head">
-          <p class="kicker">What it does</p>
-          <h2>Everything in one place</h2>
-          <p>A small C core, a friendly interface, and the same config whether you run it in a browser, on your desktop or from the command line.</p>
-        </div>
-        <div class="cards">
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V9m5 9V5m5 13v-7m5 7V8"/></svg></span>
-            <h3>Real optimization</h3>
-            <p>Scores every valid dish and character combination for your settings and returns the best result with income, traffic and buffs.</p>
-          </article>
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4.4 3.4 7.3 8 8 4.6-.7 8-3.6 8-8V7l-8-4Zm-3 9 2 2 4-4"/></svg></span>
-            <h3>Your roster, your rules</h3>
-            <p>Mark characters and dishes as owned, set their levels, adjust cafés, trend and decor. The result updates to match.</p>
-          </article>
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 7h9l3 3v7H8l-3-3V7h3Zm3 5h6M8 17v3m8-3v3"/></svg></span>
-            <h3>One config everywhere</h3>
-            <p>WebUI, desktop app and CLI share one ID-keyed <code>config.json</code>. Export it, import it, or just copy it to another machine.</p>
-          </article>
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H4V5Zm5 15h6m-3-4v4"/></svg></span>
-            <h3>Desktop or browser</h3>
-            <p>The native desktop build uses the same UI and bindings. No WebView runtime? It opens in your default browser instead.</p>
-          </article>
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.5"/></svg></span>
-            <h3>Make it yours</h3>
-            <p>Catppuccin themes, theme import, and English/German interface text. Game data stays the source of truth.</p>
-          </article>
-          <article class="card">
-            <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16v11H4V8Zm3-4h10v4H7V4Zm3 8h4m-4 3h4"/></svg></span>
-            <h3>Easy to run</h3>
-            <p>One Docker Compose command, or a plain CMake build. No services to register for and no secrets to configure.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-alt" id="workflow">
-      <div class="wrap">
-        <div class="section-head">
-          <p class="kicker">How it works</p>
-          <h2>Four steps to a better loadout</h2>
-          <p>From an empty setup to a concrete recommendation — no spreadsheet required.</p>
-        </div>
-        <ol class="steps">
-          <li><span class="step-no">01</span><h3>Set the frame</h3><p>Choose how many cafés you own, the active trend and whether Hotori's Cat Decor is on.</p></li>
-          <li><span class="step-no">02</span><h3>Mark your roster</h3><p>Flag owned characters (level 1 or higher counts) and owned dishes on the card pages.</p></li>
-          <li><span class="step-no">03</span><h3>Run the optimizer</h3><p>The C core checks the combinations and presents the top result with all bonuses included.</p></li>
-          <li><span class="step-no">04</span><h3>Save or share</h3><p>Export your config from Settings, import it elsewhere, or keep using the same desktop binary.</p></li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="section" id="start">
-      <div class="wrap">
-        <div class="section-head">
-          <p class="kicker">Get started</p>
-          <h2>Run it your way</h2>
-          <p>Clone with submodules first: <code>git clone --recurse-submodules</code>. Then pick one of these.</p>
-        </div>
-        <div class="start-grid">
-          <div class="code-panel">
-            <div class="code-head"><h3>With Docker</h3><button type="button" class="copy" data-copy="docker">Copy</button></div>
-            <pre id="code-docker"><code>docker compose up -d --build
-# UI at http://localhost:18423</code></pre>
-            <p>Compose persists the shared config in a named volume, so your roster survives rebuilds.</p>
-          </div>
-          <div class="code-panel">
-            <div class="code-head"><h3>From source</h3><button type="button" class="copy" data-copy="source">Copy</button></div>
-            <pre id="code-source"><code>./build.sh Debug
-./build/app/nte-cafe-app
-# desktop: cmake --build build --target nte-cafe-desktop</code></pre>
-            <p>Open the UI through the app server — the page bindings need the backend, not just the HTML files.</p>
-          </div>
-        </div>
-        <p class="start-foot">Full requirements, environment variables and deployment notes are in the <a href="https://github.com/OngakuKun/nte-cafe-optimizer#readme" target="_blank" rel="noopener">README <span aria-hidden="true">↗</span></a>.</p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <div>
-        <strong>NTE Cafe Optimizer</strong>
-        <span>Built by OngakuKun.</span>
-      </div>
-      <nav aria-label="Footer links">
-        <a href="https://github.com/OngakuKun/nte-cafe-optimizer" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://nte.ongakukun.de/" target="_blank" rel="noopener">Live WebUI</a>
-        <a href="#top">Back to top</a>
-      </nav>
+  <main>
+    <div class="overview" id="overview">
+      <span>Open source · <strong>C99</strong> core · WebUI + Desktop · <span class="kw">one shared config.json</span></span>
+      <span><strong>Goal:</strong> find the best cafe loadout for your roster.</span>
     </div>
-  </footer>
+
+    <div class="panel-grid">
+      <section class="toggle-card cafe-card owned">
+        <div class="avatar-wrap"><div class="cafe-icon" aria-hidden="true">☕</div></div>
+        <div class="overlay"></div>
+        <div class="owned-badge">WebUI</div>
+        <div class="toggle-body">
+          <div>
+            <h2 class="toggle-name">Try the Optimizer</h2>
+            <div class="toggle-desc">Open the live app in your browser — no install, no account.</div>
+          </div>
+          <div class="toggle-meta">
+            <span class="chip">Browser</span>
+            <span class="chip">No signup</span>
+          </div>
+        </div>
+        <div class="cafe-controls">
+          <a class="site-link" href="https://nte.ongakukun.de/" target="_blank" rel="noopener">Open live app →</a>
+        </div>
+      </section>
+
+      <section class="card panel site-panel" style="display:flex; flex-direction:column;">
+        <h2>Quick start</h2>
+        <div class="field">
+          <label for="dockerCmd">Docker</label>
+          <pre id="dockerCmd" class="site-code">docker compose up -d --build</pre>
+          <div class="muted" style="font-size:13px;color:var(--muted);">UI at <strong>localhost:18423</strong></div>
+        </div>
+        <div style="margin-top:auto; padding-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="copyDocker" class="run-opt-btn" type="button" style="width:auto;min-height:0;">Copy command</button>
+          <a class="modal-btn" href="https://github.com/OngakuKun/nte-cafe-optimizer#readme" target="_blank" rel="noopener">README ↗</a>
+        </div>
+      </section>
+
+      <section class="toggle-card cafe-card owned">
+        <div class="avatar-wrap"><div class="cafe-icon" aria-hidden="true">⌘</div></div>
+        <div class="overlay"></div>
+        <div class="owned-badge">Source</div>
+        <div class="toggle-body">
+          <div>
+            <h2 class="toggle-name">Run it your way</h2>
+            <div class="toggle-desc">C99 library, CLI, WebUI server and native desktop app — one codebase.</div>
+          </div>
+          <div class="toggle-meta">
+            <span class="chip">C99</span>
+            <span class="chip">CLI</span>
+            <span class="chip">Desktop</span>
+          </div>
+        </div>
+        <div class="cafe-controls">
+          <a class="site-link" href="https://github.com/OngakuKun/nte-cafe-optimizer" target="_blank" rel="noopener">View source →</a>
+        </div>
+      </section>
+    </div>
+
+    <section class="site-section" id="features">
+      <h2 class="site-heading">Features</h2>
+      <div class="panel-grid">
+        <article class="card panel site-panel">
+          <h2>Real optimization</h2>
+          <p>Scores every valid dish and character combination and returns income, traffic and buffs.</p>
+          <div class="chip-row"><span class="chip">C core</span></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>Your roster, your rules</h2>
+          <p>Mark characters and dishes as owned, set their levels, cafés, trend and decor.</p>
+          <div class="chip-row"><span class="chip">Characters</span><span class="chip">Dishes</span></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>One config everywhere</h2>
+          <p>WebUI, desktop app and CLI share one ID-keyed <code>config.json</code> — export it or copy it along.</p>
+          <div class="chip-row"><span class="chip">nte-cafe-config v1</span></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>Desktop or browser</h2>
+          <p>The desktop build runs the same UI and bindings in a native WebView, with a browser fallback.</p>
+          <div class="chip-row"><span class="chip">Windows</span><span class="chip">Linux</span><span class="chip">macOS</span></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>Make it yours</h2>
+          <p>Catppuccin themes, theme import and English/German interface text. Game data stays the source of truth.</p>
+          <div class="chip-row"><span class="chip">4 themes</span><span class="chip">EN / DE</span></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>Easy to run</h2>
+          <p>One Docker Compose command or a plain CMake build — no signup, no secrets to configure.</p>
+          <div class="chip-row"><span class="chip">Docker</span><span class="chip">CMake</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="site-section" id="workflow">
+      <h2 class="site-heading">How it works</h2>
+      <div class="panel-grid">
+        <article class="card panel site-panel">
+          <div class="label">01</div>
+          <h2>Set the frame</h2>
+          <p>Choose your café count, the active trend and whether Hotori's Cat Decor is on.</p>
+        </article>
+        <article class="card panel site-panel">
+          <div class="label">02</div>
+          <h2>Mark your roster</h2>
+          <p>Flag owned characters (level 1 or higher counts) and owned dishes on the card pages.</p>
+        </article>
+        <article class="card panel site-panel">
+          <div class="label">03</div>
+          <h2>Run the optimizer</h2>
+          <p>The C core checks the combinations and shows the best result with all bonuses included.</p>
+        </article>
+        <article class="card panel site-panel">
+          <div class="label">04</div>
+          <h2>Save or share</h2>
+          <p>Export your config from Settings, import it elsewhere, or keep using the same desktop binary.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="site-section" id="start">
+      <h2 class="site-heading">Get started</h2>
+      <div class="panel-grid">
+        <article class="card panel site-panel">
+          <h2>With Docker</h2>
+          <pre id="codeDocker" class="site-code">docker compose up -d --build
+# UI at http://localhost:18423</pre>
+          <p>Compose keeps the shared config in a named volume, so your roster survives rebuilds.</p>
+          <div style="margin-top:14px;"><button class="run-opt-btn copy-btn" type="button" data-copy="codeDocker" style="width:auto;min-height:0;">Copy command</button></div>
+        </article>
+        <article class="card panel site-panel">
+          <h2>From source</h2>
+          <pre id="codeSource" class="site-code">git clone --recurse-submodules &lt;repo-url&gt;
+./build.sh Debug
+./build/app/nte-cafe-app</pre>
+          <p>Open the UI through the app server — the page bindings need the backend, not just the HTML files.</p>
+          <div style="margin-top:14px;"><button class="run-opt-btn copy-btn" type="button" data-copy="codeSource" style="width:auto;min-height:0;">Copy command</button></div>
+        </article>
+      </div>
+      <p class="site-footnote">Full requirements, environment variables and deployment notes are in the <a href="https://github.com/OngakuKun/nte-cafe-optimizer#readme" target="_blank" rel="noopener">README ↗</a>.</p>
+    </section>
+
+    <div class="overview site-footer">
+      <span><strong>NTE Cafe Optimizer</strong> · Built by OngakuKun</span>
+      <span>
+        <a href="https://github.com/OngakuKun/nte-cafe-optimizer" target="_blank" rel="noopener">GitHub ↗</a> ·
+        <a href="https://nte.ongakukun.de/" target="_blank" rel="noopener">Live WebUI ↗</a> ·
+        <a href="#overview">Back to top</a>
+      </span>
+    </div>
+  </main>
 </body>
 </html>
