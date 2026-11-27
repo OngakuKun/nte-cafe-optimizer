@@ -24,6 +24,8 @@ RUN apt-get update \
  && useradd -r -u 10001 -m appuser
 
 WORKDIR /app
+# config.json lives in a mounted volume so settings survive container rebuilds.
+RUN mkdir -p /app/config && chown appuser:appuser /app/config
 COPY --from=build /build/app/nte-cafe-app /app/nte-cafe-app
 COPY --from=build /build/app/ui /app/ui
 COPY gameversion.txt /app/ui/gameversion.txt

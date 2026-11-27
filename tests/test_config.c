@@ -52,6 +52,20 @@ int main(void) {
   assert(strcmp(loaded.trend_name, "None") == 0);
   assert(loaded.dish_state[0].level == gamedata_dish_min_level());
 
+  /* The string API used by WebUI export/import must round-trip too. */
+  char json[CONFIG_JSON_MAX];
+  assert(config_to_json(&cfg, json, sizeof(json)));
+  CafeConfig from_json;
+  char json_warn[512];
+  assert(config_from_json(json, strlen(json), &from_json, json_warn,
+                          sizeof(json_warn)));
+  assert(json_warn[0] == '\0');
+  assert(from_json.cafes_owned == cfg.cafes_owned);
+  assert(strcmp(from_json.trend_name, cfg.trend_name) == 0);
+  assert(from_json.decor == cfg.decor);
+  assert(from_json.dish_state[0].level == cfg.dish_state[0].level);
+  assert(from_json.character_state[0].level == cfg.character_state[0].level);
+
   /* Round-trip real settings, keyed by stable IDs. */
   int nanally = index_of_character("nanally");
   int latte = index_of_dish("coconut_latte");

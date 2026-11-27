@@ -1,3 +1,4 @@
+#include "config.h"
 #include "data.h"
 #include "gamedata.h"
 #include "types.h"
@@ -67,31 +68,48 @@ typedef struct {
 #define MAX_CLIENT_STATES 256
 static ClientState client_states[MAX_CLIENT_STATES];
 
-static void init_default_cafe_settings(CafeSettings *cs) {
-  cs->cafes_owned = 1;
-  cs->trend_tag = TAG_NONE;
-  cs->trend_name = "None";
-  cs->hotori_cat_decor = false;
-  memset(cs->cafe_popularity, 0, sizeof(cs->cafe_popularity));
-  cs->popularity_bonus = 0.0;
-  Trend t = {TREND_NONE, "None"};
+/* One shared config.json, in the same format as the CLI, seeds every new
+ * WebUI client. It is loaded once at startup and can be saved/loaded from the
+ * settings panel without restarting. */
+static CafeConfig g_app_config;
+static char g_config_path[1200] = "";
+
+static Trend find_trend_by_name(const char *name) {
+  TrendOptions opts = get_trend_options();
+  for (size_t i = 0; i < opts.count; ++i)
+    if (opts.trends[i].name && name && strcmp(opts.trends[i].name, name) == 0)
+      return opts.trends[i];
+  Trend none = {TREND_NONE, "None"};
+  return none;
+}
+
+static void apply_trend(CafeSettings *cs, const char *name) {
+  Trend t = find_trend_by_name(name);
+  cs->trend_name = t.name;
+  cs->trend_tag = get_trend_tag(t);
   cs->trend_bonus = get_trend_bonus(t.type);
 }
 
-/* Defaults are intentionally empty: user must configure owned chars/dishes. */
+static void init_default_cafe_settings(CafeSettings *cs) {
+  memset(cs, 0, sizeof(*cs));
+  cs->cafes_owned = g_app_config.cafes_owned;
+  memcpy(cs->cafe_popularity, g_app_config.cafe_popularity,
+         sizeof(cs->cafe_popularity));
+  cs->hotori_cat_decor = g_app_config.decor;
+  apply_trend(cs, g_app_config.trend_name);
+  cs->popularity_bonus = popularity_total_bonus(cs);
+}
+
+/* Defaults come from config.json; when none exists they are all minimums. */
 static void init_default_character_state(ClientState *cs) {
-  for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++) {
-    cs->character_state[i].owned = false;
-    cs->character_state[i].level = 0;
-  }
+  for (size_t i = 0; i < CHARACTER_COUNT && i < MAX_CHARACTER_POOL; i++)
+    cs->character_state[i] = g_app_config.character_state[i];
   cs->character_state_initialized = true;
 }
 
 static void init_default_dish_state(ClientState *cs) {
-  for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++) {
-    cs->dish_state[i].owned = false;
-    cs->dish_state[i].level = 1;
-  }
+  for (size_t i = 0; i < DISH_COUNT && i < MAX_DISH_POOL; i++)
+    cs->dish_state[i] = g_app_config.dish_state[i];
   cs->dish_state_initialized = true;
 }
 
@@ -649,6 +667,97 @@ static void get_i18n(webui_event_t *e) {
   free(buf);
 }
 
+static void client_to_config(const ClientState *cs, CafeConfig *cfg) {
+  config_init_defaults(cfg);
+  memcpy(cfg->dish_state, cs->dish_state, sizeof(cfg->dish_state));
+  memcpy(cfg->character_state, cs->character_state,
+         sizeof(cfg->character_state));
+  cfg->cafes_owned = cs->cafe_settings.cafes_owned;
+  memcpy(cfg->cafe_popularity, cs->cafe_settings.cafe_popularity,
+         sizeof(cfg->cafe_popularity));
+  cfg->trend_name =
+      cs->cafe_settings.trend_name ? cs->cafe_settings.trend_name : "None";
+  cfg->decor = cs->cafe_settings.hotori_cat_decor;
+}
+
+static void config_to_client(const CafeConfig *cfg, ClientState *cs) {
+  memcpy(cs->dish_state, cfg->dish_state, sizeof(cs->dish_state));
+  memcpy(cs->character_state, cfg->character_state,
+         sizeof(cs->character_state));
+  cs->cafe_settings.cafes_owned = cfg->cafes_owned;
+  memcpy(cs->cafe_settings.cafe_popularity, cfg->cafe_popularity,
+         sizeof(cs->cafe_settings.cafe_popularity));
+  cs->cafe_settings.hotori_cat_decor = cfg->decor;
+  apply_trend(&cs->cafe_settings, cfg->trend_name);
+  cs->cafe_settings.popularity_bonus =
+      popularity_total_bonus(&cs->cafe_settings);
+  cs->dish_state_initialized = true;
+  cs->character_state_initialized = true;
+  cs->cafe_settings_initialized = true;
+}
+
+/* Returns the canonical config JSON for the current client, so WebUI export
+ * and the CLI share one file format. */
+static void export_config(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  CafeConfig cfg;
+  client_to_config(cs, &cfg);
+  char json[CONFIG_JSON_MAX];
+  if (!config_to_json(&cfg, json, sizeof(json))) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"serialization failed\"}");
+    return;
+  }
+  webui_return_string(e, json);
+}
+
+static void import_config(webui_event_t *e) {
+  const char *json = webui_get_string_at(e, 0);
+  CafeConfig cfg;
+  char warn[512];
+  if (!json || !config_from_json(json, strlen(json), &cfg, warn, sizeof(warn))) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"invalid config\"}");
+    return;
+  }
+  config_to_client(&cfg, get_client_state(e->client_id));
+  char escaped[700];
+  char buf[800];
+  json_escape(warn, escaped, sizeof(escaped));
+  snprintf(buf, sizeof(buf), "{\"ok\":true,\"warning\":\"%s\"}", escaped);
+  webui_return_string(e, buf);
+}
+
+static void save_config(webui_event_t *e) {
+  ClientState *cs = get_client_state(e->client_id);
+  CafeConfig cfg;
+  client_to_config(cs, &cfg);
+  webui_return_string(e, config_save_file(g_config_path, &cfg)
+                             ? "{\"ok\":true}"
+                             : "{\"ok\":false,\"error\":\"write failed\"}");
+}
+
+static void load_config(webui_event_t *e) {
+  CafeConfig cfg;
+  char warn[512];
+  if (!config_load_file(g_config_path, &cfg, warn, sizeof(warn))) {
+    webui_return_string(e, "{\"ok\":false,\"error\":\"read failed\"}");
+    return;
+  }
+  config_to_client(&cfg, get_client_state(e->client_id));
+  char escaped[700];
+  char buf[800];
+  json_escape(warn, escaped, sizeof(escaped));
+  snprintf(buf, sizeof(buf), "{\"ok\":true,\"warning\":\"%s\"}", escaped);
+  webui_return_string(e, buf);
+}
+
+static void get_config_path(webui_event_t *e) {
+  char escaped[1300];
+  char buf[1400];
+  json_escape(g_config_path, escaped, sizeof(escaped));
+  snprintf(buf, sizeof(buf), "{\"path\":\"%s\"}", escaped);
+  webui_return_string(e, buf);
+}
+
 int main(int argc, char **argv) {
   if (argc > 0 && argv[0] && argv[0][0] != '\0') {
     static char root_buf[1024];
@@ -681,6 +790,23 @@ int main(int argc, char **argv) {
          gamedata_game_version(), gamedata_content_hash(), DISH_COUNT,
          CHARACTER_COUNT);
 
+  config_init_defaults(&g_app_config);
+  const char *config_env = getenv("NTE_CAFE_CONFIG");
+  char *default_config = config_default_path(argv[0]);
+  if (config_env && *config_env)
+    snprintf(g_config_path, sizeof(g_config_path), "%s", config_env);
+  else
+    snprintf(g_config_path, sizeof(g_config_path), "%s",
+             default_config ? default_config : "config.json");
+  free(default_config);
+  char config_warn[512];
+  if (config_load_file(g_config_path, &g_app_config, config_warn,
+                       sizeof(config_warn)))
+    printf("Config: %s%s\n", g_config_path,
+           config_warn[0] ? " (warnings on load)" : "");
+  else
+    printf("Config: %s not found; using minimum defaults\n", g_config_path);
+
   webui_set_config(multi_client, true);
   size_t win = webui_new_window();
   webui_set_file_handler(win, file_handler);
@@ -702,6 +828,11 @@ int main(int argc, char **argv) {
   webui_bind(win, "setAllCharacterStates", set_all_character_states);
   webui_bind(win, "getI18n", get_i18n);
   webui_bind(win, "updateGamedata", update_gamedata);
+  webui_bind(win, "exportConfig", export_config);
+  webui_bind(win, "importConfig", import_config);
+  webui_bind(win, "saveConfig", save_config);
+  webui_bind(win, "loadConfig", load_config);
+  webui_bind(win, "getConfigPath", get_config_path);
 
   const char *port_env = getenv("PORT");
   size_t port = 80;

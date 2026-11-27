@@ -8,3 +8,9 @@ services:
       - "18423:80"
     environment:
       - PORT=80
+      - NTE_CAFE_CONFIG=/app/config/config.json
+    volumes:
+      - nte-cafe-config:/app/config
+
+volumes:
+  nte-cafe-config:

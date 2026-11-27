@@ -158,7 +158,7 @@ char *config_default_path(const char *argv0) {
 
   size_t len = 0;
   if (sep == path) {
-    path[1] = '\0'; /* root directory */
+    path[1] = '\0';
     len = 1;
   } else if (sep) {
     *sep = '\0';
@@ -174,65 +174,116 @@ char *config_default_path(const char *argv0) {
   return dup_str(full);
 }
 
-static void write_string(FILE *f, const char *s) {
-  fputc('"', f);
-  for (const unsigned char *p = (const unsigned char *)s; *p; ++p) {
-    if (*p == '"' || *p == '\\') {
-      fputc('\\', f);
-      fputc(*p, f);
-    } else if (*p == '\n') {
-      fputs("\\n", f);
+static void write_string(char **cursor, char *end, const char *s) {
+  char *p = *cursor;
+  if (p >= end)
+    return;
+  *p++ = '"';
+  for (const unsigned char *c = (const unsigned char *)s; *c && p + 2 < end;
+       ++c) {
+    if (*c == '"' || *c == '\\') {
+      *p++ = '\\';
+      *p++ = *c;
+    } else if (*c == '\n') {
+      *p++ = '\\';
+      *p++ = 'n';
     } else {
-      fputc(*p, f);
+      *p++ = (char)*c;
     }
   }
-  fputc('"', f);
+  if (p < end)
+    *p++ = '"';
+  *cursor = p;
+}
+
+bool config_to_json(const CafeConfig *cfg, char *buf, size_t len) {
+  if (!cfg || !buf || len < 256)
+    return false;
+
+  char *p = buf;
+  char *end = buf + len - 1;
+  int written = snprintf(p, (size_t)(end - p),
+                         "{\n  \"format\": \"" CONFIG_FORMAT "\",\n"
+                         "  \"version\": %d,\n  \"cafes\": %d,\n  \"trend\": ",
+                         CONFIG_VERSION, cfg->cafes_owned);
+  if (written < 0 || (size_t)written >= (size_t)(end - p))
+    return false;
+  p += written;
+  write_string(&p, end, cfg->trend_name ? cfg->trend_name : "None");
+
+  written = snprintf(p, (size_t)(end - p),
+                     ",\n  \"decor\": %s,\n  \"popularity\": [",
+                     cfg->decor ? "true" : "false");
+  if (written < 0 || (size_t)written >= (size_t)(end - p))
+    return false;
+  p += written;
+  for (int i = 0; i < MAX_CAFES; ++i) {
+    written = snprintf(p, (size_t)(end - p), "%s%d", i ? ", " : "",
+                       cfg->cafe_popularity[i]);
+    if (written < 0 || (size_t)written >= (size_t)(end - p))
+      return false;
+    p += written;
+  }
+
+  written = snprintf(p, (size_t)(end - p), "],\n  \"characters\": {\n");
+  if (written < 0 || (size_t)written >= (size_t)(end - p))
+    return false;
+  p += written;
+  for (size_t i = 0; i < CHARACTER_COUNT; ++i) {
+    written = snprintf(p, (size_t)(end - p), "    ");
+    if (written < 0 || (size_t)written >= (size_t)(end - p))
+      return false;
+    p += written;
+    write_string(&p, end, CHARACTERS[i].id ? CHARACTERS[i].id : "");
+    written = snprintf(p, (size_t)(end - p),
+                       ": { \"owned\": %s, \"level\": %d }%s\n",
+                       cfg->character_state[i].owned ? "true" : "false",
+                       cfg->character_state[i].level,
+                       i + 1 < CHARACTER_COUNT ? "," : "");
+    if (written < 0 || (size_t)written >= (size_t)(end - p))
+      return false;
+    p += written;
+  }
+
+  written = snprintf(p, (size_t)(end - p), "  },\n  \"dishes\": {\n");
+  if (written < 0 || (size_t)written >= (size_t)(end - p))
+    return false;
+  p += written;
+  for (size_t i = 0; i < DISH_COUNT; ++i) {
+    written = snprintf(p, (size_t)(end - p), "    ");
+    if (written < 0 || (size_t)written >= (size_t)(end - p))
+      return false;
+    p += written;
+    write_string(&p, end, DISHES[i].id ? DISHES[i].id : "");
+    written = snprintf(p, (size_t)(end - p),
+                       ": { \"owned\": %s, \"level\": %d }%s\n",
+                       cfg->dish_state[i].owned ? "true" : "false",
+                       cfg->dish_state[i].level, i + 1 < DISH_COUNT ? "," : "");
+    if (written < 0 || (size_t)written >= (size_t)(end - p))
+      return false;
+    p += written;
+  }
+
+  written = snprintf(p, (size_t)(end - p), "  }\n}\n");
+  if (written < 0 || (size_t)written >= (size_t)(end - p))
+    return false;
+  p += written;
+  return true;
 }
 
 bool config_save_file(const char *path, const CafeConfig *cfg) {
-  if (!path || !cfg)
+  char json[CONFIG_JSON_MAX];
+  if (!path || !cfg || !config_to_json(cfg, json, sizeof(json)))
     return false;
 
   FILE *f = fopen(path, "w");
   if (!f)
     return false;
-
-  fprintf(f, "{\n  \"format\": \"" CONFIG_FORMAT "\",\n  \"version\": %d,\n",
-          CONFIG_VERSION);
-  fprintf(f, "  \"cafes\": %d,\n", cfg->cafes_owned);
-  fprintf(f, "  \"trend\": ");
-  write_string(f, cfg->trend_name ? cfg->trend_name : "None");
-  fprintf(f, ",\n  \"decor\": %s,\n", cfg->decor ? "true" : "false");
-
-  fprintf(f, "  \"popularity\": [");
-  for (int i = 0; i < MAX_CAFES; ++i)
-    fprintf(f, "%s%d", i ? ", " : "", cfg->cafe_popularity[i]);
-  fprintf(f, "],\n");
-
-  fprintf(f, "  \"characters\": {\n");
-  for (size_t i = 0; i < CHARACTER_COUNT; ++i) {
-    const char *id = CHARACTERS[i].id ? CHARACTERS[i].id : "";
-    fprintf(f, "    ");
-    write_string(f, id);
-    fprintf(f, ": { \"owned\": %s, \"level\": %d }%s\n",
-            cfg->character_state[i].owned ? "true" : "false",
-            cfg->character_state[i].level,
-            i + 1 < CHARACTER_COUNT ? "," : "");
-  }
-  fprintf(f, "  },\n");
-
-  fprintf(f, "  \"dishes\": {\n");
-  for (size_t i = 0; i < DISH_COUNT; ++i) {
-    const char *id = DISHES[i].id ? DISHES[i].id : "";
-    fprintf(f, "    ");
-    write_string(f, id);
-    fprintf(f, ": { \"owned\": %s, \"level\": %d }%s\n",
-            cfg->dish_state[i].owned ? "true" : "false",
-            cfg->dish_state[i].level, i + 1 < DISH_COUNT ? "," : "");
-  }
-  fprintf(f, "  }\n}\n");
-
-  return fclose(f) == 0;
+  size_t expected = strlen(json);
+  size_t n = fwrite(json, 1, expected, f);
+  int flush_rc = fflush(f);
+  int close_rc = fclose(f);
+  return n == expected && flush_rc == 0 && close_rc == 0;
 }
 
 /* Parse one "id": { "owned": bool, "level": int } pair into a state array. */
@@ -283,23 +334,17 @@ static void parse_entries(const char *js, const jsmntok_t *tokens, int count,
   }
 }
 
-bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
-                      size_t warn_len) {
+bool config_from_json(const char *json, size_t len, CafeConfig *cfg,
+                      char *warn, size_t warn_len) {
   if (warn && warn_len > 0)
     warn[0] = '\0';
-  if (!path || !cfg)
+  if (!json || len == 0 || len > CONFIG_MAX_FILE || !cfg)
     return false;
 
-  FILE *f = fopen(path, "rb");
-  if (!f)
+  char *buffer = (char *)malloc(len + 1);
+  if (!buffer)
     return false;
-  char *buffer = (char *)malloc(CONFIG_MAX_FILE + 1);
-  if (!buffer) {
-    fclose(f);
-    return false;
-  }
-  size_t len = fread(buffer, 1, CONFIG_MAX_FILE, f);
-  fclose(f);
+  memcpy(buffer, json, len);
   buffer[len] = '\0';
 
   jsmntok_t *tokens = (jsmntok_t *)calloc(CONFIG_MAX_TOKENS, sizeof(*tokens));
@@ -323,9 +368,11 @@ bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
       buffer[tokens[i].end] = '\0';
 
   int format = obj_get(buffer, tokens, count, 0, "format");
-  if (format >= 0 && !tok_is(buffer, &tokens[format], CONFIG_FORMAT)) {
+  if (format >= 0 && !tok_is(buffer, &tokens[format], CONFIG_FORMAT))
     warnf(warn, warn_len, "unrecognised config format; ");
-  }
+  int version = obj_get(buffer, tokens, count, 0, "version");
+  if (version >= 0 && tok_int(buffer, &tokens[version]) != CONFIG_VERSION)
+    warnf(warn, warn_len, "unexpected config version; ");
 
   CafeConfig tmp;
   config_init_defaults(&tmp);
@@ -333,11 +380,10 @@ bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
   int cafes = obj_get(buffer, tokens, count, 0, "cafes");
   if (cafes >= 0) {
     int n = tok_int(buffer, &tokens[cafes]);
-    if (n < 1 || n > MAX_CAFES) {
+    if (n < 1 || n > MAX_CAFES)
       warnf(warn, warn_len, "cafe count %d out of range; ", n);
-    } else {
+    else
       tmp.cafes_owned = n;
-    }
   }
 
   int trend = obj_get(buffer, tokens, count, 0, "trend");
@@ -363,12 +409,11 @@ bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
     for (int c = 0; c < n; ++c, i = skip_token(tokens, count, i)) {
       int level = tok_int(buffer, &tokens[i]);
       int max = popularity_max_level(c);
-      if (level < 0 || level > max) {
+      if (level < 0 || level > max)
         warnf(warn, warn_len, "cafe %d popularity %d out of range; ", c + 1,
               level);
-      } else {
+      else
         tmp.cafe_popularity[c] = level;
-      }
     }
   }
 
@@ -383,4 +428,26 @@ bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
   free(tokens);
   free(buffer);
   return true;
+}
+
+bool config_load_file(const char *path, CafeConfig *cfg, char *warn,
+                      size_t warn_len) {
+  if (warn && warn_len > 0)
+    warn[0] = '\0';
+  if (!path || !cfg)
+    return false;
+
+  FILE *f = fopen(path, "rb");
+  if (!f)
+    return false;
+  char *buffer = (char *)malloc(CONFIG_MAX_FILE + 1);
+  if (!buffer) {
+    fclose(f);
+    return false;
+  }
+  size_t len = fread(buffer, 1, CONFIG_MAX_FILE, f);
+  fclose(f);
+  bool ok = config_from_json(buffer, len, cfg, warn, warn_len);
+  free(buffer);
+  return ok;
 }
