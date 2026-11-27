@@ -12,19 +12,19 @@
     de: {
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafés','nav.status':'Status',
       'sub.cafes':'Café-Beliebtheit und Boni','settings.title':'Einstellungen','settings.theme':'Design','settings.import':'Design importieren','settings.language':'Sprache',
-      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren'
+      'settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.reload':'Neu laden'
     },
     ja: {
       'nav.optimizer':'最適化','nav.characters':'キャラクター','nav.dishes':'料理','nav.cafes':'カフェ','nav.status':'ステータス',
       'sub.cafes':'カフェの人気度とボーナス','settings.title':'設定','settings.theme':'テーマ','settings.import':'テーマをインポート','settings.language':'言語',
       'sub.optimizer':'編成最適化ワークスペース','sub.characters':'スタッフの所有状況とレベル','sub.dishes':'メニューの所有状況とレベル','sub.status':'バックエンドとライブラリ情報',
-      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む'
+      'settings.exportConfig':'設定を書き出す','settings.importConfig':'設定を読み込む','settings.reload':'再読み込み'
     },
     'zh-CN': {
       'nav.optimizer':'优化器','nav.characters':'角色','nav.dishes':'菜品','nav.cafes':'咖啡馆','nav.status':'状态',
       'sub.cafes':'咖啡馆人气与奖励','settings.title':'设置','settings.theme':'主题','settings.import':'导入主题','settings.language':'语言',
       'sub.optimizer':'阵容优化工作区','sub.characters':'员工拥有情况与等级','sub.dishes':'菜单拥有情况与等级','sub.status':'后端与库信息',
-      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置'
+      'settings.exportConfig':'导出配置','settings.importConfig':'导入配置','settings.reload':'重新加载'
     }
   };
   const BUILTIN_THEMES = [
@@ -168,11 +168,18 @@
     }
     return names.every(n => typeof window[n] === 'function');
   }
-  function configStatus(msg, kind) {
+  function configStatus(msg, kind, withReload) {
     const el = document.getElementById('configStatus');
     if (!el) return;
     el.textContent = msg || '';
     el.className = 'settings-hint' + (kind ? ' ' + kind : '');
+    if (withReload) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'config-reload';
+      b.textContent = t('settings.reload') || 'Reload';
+      b.addEventListener('click', () => location.reload());
+      el.appendChild(b);
+    }
   }
   function checkResult(raw) {
     const obj = JSON.parse(raw);
@@ -227,8 +234,7 @@
       const d = cfg.dishes[i] || {};
       checkResult(await setDishState(i, !!d.owned, Number(d.level) || 1));
     }
-    configStatus(`Imported ${cfg.characters.length} characters, ${cfg.dishes.length} dishes. Reloading…`, 'ok');
-    setTimeout(() => location.reload(), 500);
+    configStatus(`Imported ${cfg.characters.length} characters, ${cfg.dishes.length} dishes.`, 'ok', true);
   }
   function initSettingsPanel() {
     const eb = document.getElementById('exportConfigBtn');
