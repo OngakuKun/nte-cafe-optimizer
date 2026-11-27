@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en" data-theme="macchiato">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="title.characters">NTE Cafe - Characters</title>
+  <script src="webui.js?v=56cdcd4"></script>
+  <link rel="stylesheet" href="shared.css?v=56cdcd4">
+  <style>
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
+    .toolbar .muted { color: var(--muted); font-size: 13px; }
+    .toolbar-left { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .toolbar .summary { margin: 0; font-size: 13px; color: var(--muted); }
+    .summary strong { color: var(--text); }
+    .save-state { font-size: 13px; color: var(--muted); }
+    .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .bulk-btn {
+      padding:8px 12px; font:inherit; font-size:13px; font-weight:600;
+      background:var(--panel-alt); color:var(--text); border:1px solid var(--border);
+      border-radius:8px; cursor:pointer;
+    }
+    .bulk-btn:hover { border-color:var(--accent); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:14px; }
+    .char-card {
+      position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: visible;
+      box-shadow: 0 1px 2px var(--shadow); transition: border-color .15s ease, transform .15s ease;
+      min-height: 260px;
+    }
+    .char-card:hover { border-color: var(--ctp-surface2); }
+    .char-card:not(.owned) .avatar-wrap { filter: grayscale(.35) brightness(.75); }
+    .avatar-wrap {
+      position: absolute; top: 0; right: 0; bottom: 0; left: 42%;
+      background: transparent;
+      border-radius: 0 14px 14px 0; overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+    }
+    .avatar-wrap img { width:100%; height:100%; object-fit: cover; object-position: center top; display:block; }
+    .avatar-fallback {
+      width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+      font-size: 52px; font-weight: 700; color: var(--accent); background: linear-gradient(160deg, var(--ctp-surface1), var(--ctp-mantle));
+    }
+    .overlay {
+      position:absolute; inset:0; border-radius: 14px;
+      background: linear-gradient(90deg,
+        color-mix(in srgb, var(--ctp-base) 98%, transparent) 0%,
+        color-mix(in srgb, var(--ctp-base) 96%, transparent) 35%,
+        color-mix(in srgb, var(--ctp-base) 74%, transparent) 52%,
+        color-mix(in srgb, var(--ctp-base) 30%, transparent) 72%,
+        color-mix(in srgb, var(--ctp-base) 8%, transparent) 100%);
+    }
+    .owned-badge {
+      position:absolute; top:12px; right:12px; font-size:11px; font-weight:700; padding:4px 8px; border-radius:999px; z-index:2;
+      background: color-mix(in srgb, var(--good) 20%, var(--panel)); color: var(--good); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
+    }
+    .char-card:not(.owned) .owned-badge { background: color-mix(in srgb, var(--muted) 18%, var(--panel)); color: var(--muted); border-color: transparent; }
+    .body { position:relative; z-index:1; padding: 16px; max-width: 62%; min-height: 260px; display:flex; flex-direction:column; justify-content:space-between; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .body { max-width: 72%; } }
+    .name { font-size: 20px; font-weight: 700; margin: 0; }
+    .char-card { cursor: pointer; }
+    .char-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .skills { display:flex; flex-direction:column; align-items:flex-start; gap:6px; max-width: 100%; }
+    .controls { position:absolute; right:16px; bottom:16px; z-index:3; display:flex; gap:8px; align-items:center; }
+    .level-label { font-size: 13px; color: var(--muted); }
+    .level-picker { position: relative; }
+    .level-btn { background: var(--panel-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font: inherit; cursor: pointer; min-width: 64px; }
+    .level-btn:hover:not(:disabled) { border-color: var(--accent); }
+    .level-btn:disabled { opacity: .5; cursor: default; }
+    .level-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .level-menu { display:none; position:absolute; bottom: calc(100% + 6px); right:0; min-width: 100%; background: var(--panel); border:1px solid var(--border); border-radius:8px; padding:4px; box-shadow: 0 8px 24px var(--shadow); z-index: 10; }
+    .level-menu.open { display:block; }
+    .level-option { display:block; width:100%; text-align:left; background:none; color:var(--text); border:0; border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; white-space:nowrap; }
+    .level-option:hover, .level-option.selected { background: var(--ctp-surface0); color: var(--accent); }
+    .skill {
+      font-size: 11px; line-height: 1; padding: 5px 7px; border-radius: 999px; white-space: nowrap;
+      background: var(--ctp-surface0); color: var(--subtext1, var(--ctp-subtext1)); border: 1px solid transparent;
+    }
+    .skill.price { color: var(--ctp-yellow); }
+    .skill.traffic { color: var(--ctp-sky); }
+    .skill.mult { border-color: color-mix(in srgb, currentColor 25%, transparent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub" data-i18n="sub.characters">Character ownership and levels</div>
+    </div>
+    <nav aria-label="Primary">
+      <a class="nav-link" href="index.html" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link active" href="characters.html" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="dishes.html" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link" href="cafes.html" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="status.html" data-i18n="nav.status">Status</a>
+    </nav>
+    <div class="header-right">
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <span id="summary" class="summary"></span>
+        <span id="saveState" class="save-state"></span>
+      </div>
+      <div class="bulk-actions">
+        <button type="button" id="levelSwitch" class="bulk-btn" data-i18n="bulk.max">All to Max Level</button>
+        <button type="button" id="ownedSwitch" class="bulk-btn" data-i18n="bulk.owned">All to Owned</button>
+      </div>
+    </div>
+    <div id="error" class="err"></div>
+    <div id="grid" class="grid"></div>
+  </main>
+  </div>
+  <script src="theme.js?v=56cdcd4"></script>
+  <script>
+    const T = (k, v) => NteTheme.t(k, v);
+    const DN = n => NteTheme.displayName(n);
+    const CN = n => NteTheme.canonicalName(n);
+    const AVATAR_URLS = {
+      'Nanally':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/8b/Nanally_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174651',
+      'Sakiri':   'https://static.wikia.nocookie.net/neverness-to-everness/images/6/61/Sakiri_Portrait.png/revision/latest/scale-to-width-down/411?cb=20260701202236',
+      'Skia':     'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0d/Skia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174906',
+      'Baicang':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/83/Baicang_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173726',
+      'Mint':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/41/Mint_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174611',
+      'Haniel':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a5/Haniel_Portrait.png/revision/latest/scale-to-width-down/419?cb=20260701202324',
+      'Adler':    'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0c/Adler_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173120',
+      'Daffodill': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f0/Daffodill_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173935',
+      'Edgar':    'https://static.wikia.nocookie.net/neverness-to-everness/images/b/b4/Edgar_Portrait.png/revision/latest/scale-to-width-down/415?cb=20260701201907',
+      'Aurelia':  'https://static.wikia.nocookie.net/neverness-to-everness/images/2/22/Aurelia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174756',
+      'Chiz':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/42/Chiz_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173843',
+      'Lacrimosa':'https://static.wikia.nocookie.net/neverness-to-everness/images/c/c1/Lacrimosa_Portrait.png/revision/latest/scale-to-width-down/403?cb=20260701202053',
+      'Shinku':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a8/Shinku_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260708083848',
+      'Iroi':     'https://static.wikia.nocookie.net/neverness-to-everness/images/8/85/Iroi_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260723021205',
+      'Linko':    'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ef/Linko_Portrait.png/revision/latest/scale-to-width-down/342?cb=20260817144327',
+      'Akane Rin':'https://static.wikia.nocookie.net/neverness-to-everness/images/4/4f/Akane_Rin_Portrait.png/revision/latest/scale-to-width-down/317?cb=20260824145412',
+    };
+
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function avatarUrl(name) { return AVATAR_URLS[name] || ''; }
+    function initials(name) { return String(name).split(/\s+/).filter(Boolean).slice(0,2).map(p=>p.charAt(0).toUpperCase()).join(''); }
+    function fmtSkill(s) {
+      const val = s.type.includes('mult') ? (s.value * 100).toFixed(2)+'%' : '+' + s.value.toFixed(2);
+      const kind = s.type.includes('price') ? 'price' : 'traffic';
+      const mult = s.type.includes('mult') ? 'mult' : '';
+      const label = T(s.type.includes('price') ? 'skill.price' : 'skill.traffic') + ' ' + val;
+      return `<span class="skill ${kind} ${mult}">L${s.level} ${esc(label)}</span>`;
+    }
+    function setSave(msg, err) { const el = document.getElementById('saveState'); el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
+    async function saveRow(index, owned, level) {
+      setSave(T('common.saving'));
+      try {
+        const obj = JSON.parse(await setCharacterState(index, owned, level));
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
+      } catch (e) { setSave(T('common.saveFailed'), true); document.getElementById('error').textContent = String(e.message || e); }
+    }
+    function render(chars) {
+      document.getElementById('grid').innerHTML = chars.map((c, i) => {
+        const name = DN(c.name);
+        const url = avatarUrl(CN(c.name));
+        const img = url
+          ? `<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(name))}</div>'">`
+          : `<div class="avatar-fallback">${esc(initials(name))}</div>`;
+        return `
+          <article class="char-card ${c.owned ? 'owned' : ''}" data-card="${i}" data-i="${i}" role="button" tabindex="0" aria-pressed="${c.owned ? 'true' : 'false'}" aria-label="${T('card.toggleOwned', { name: esc(name) })}">
+            <div class="avatar-wrap">${img}</div>
+            <div class="overlay"></div>
+            <div class="owned-badge">${c.owned ? T('card.owned') : T('card.notOwned')}</div>
+            <div class="body">
+              <h2 class="name">${esc(name)}</h2>
+              <div class="skills">${(c.skills||[]).map(fmtSkill).join('')}</div>
+            </div>
+            <div class="controls">
+              <span class="level-label">${T('card.level')}</span>
+              <div class="level-picker" data-i="${i}">
+                <button type="button" class="level-btn" data-i="${i}" ${c.owned?'':'disabled'} aria-haspopup="listbox" aria-expanded="false">${T('card.lv', { n: Number(c.level)||0 })}</button>
+                <div class="level-menu" role="listbox" aria-label="${T('card.levelFor', { name: esc(name) })}">
+                  ${[0,1,2,3,4,5].map(l => `<button type="button" class="level-option ${Number(c.level)===l?'selected':''}" data-i="${i}" data-level="${l}" role="option">${T('card.lv', { n: l })}</button>`).join('')}
+                </div>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+
+      const closeMenus = () => document.querySelectorAll('.level-menu.open').forEach(m => { m.classList.remove('open'); m.previousElementSibling?.setAttribute('aria-expanded','false'); });
+      document.addEventListener('click', closeMenus);
+
+      document.querySelectorAll('[data-card]').forEach(card => {
+        const toggle = async () => {
+          const i = Number(card.dataset.i);
+          const owned = !card.classList.contains('owned');
+          card.classList.toggle('owned', owned);
+          card.setAttribute('aria-pressed', owned ? 'true' : 'false');
+          card.querySelector('.owned-badge').textContent = owned ? T('card.owned') : T('card.notOwned');
+          const levelBtn = card.querySelector('.level-btn');
+          levelBtn.disabled = !owned;
+          await saveRow(i, owned, Number(levelBtn.textContent.replace(/\D/g,'')) || 0);
+        };
+        card.addEventListener('click', (e) => { if (e.target.closest('.controls')) return; toggle(); });
+        card.addEventListener('keydown', (e) => {
+          if (e.target.closest('.controls')) return;
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
+      });
+
+      document.querySelectorAll('.level-picker').forEach(picker => {
+        const btn = picker.querySelector('.level-btn');
+        const menu = picker.querySelector('.level-menu');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (btn.disabled) return;
+          const open = menu.classList.contains('open');
+          closeMenus();
+          if (!open) { menu.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+        });
+        picker.querySelectorAll('.level-option').forEach(opt => opt.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const i = Number(opt.dataset.i);
+          const level = Number(opt.dataset.level);
+          const card = document.querySelector(`[data-card="${i}"]`);
+          btn.textContent = T('card.lv', { n: level });
+          picker.querySelectorAll('.level-option').forEach(o => o.classList.toggle('selected', o === opt));
+          closeMenus();
+          const owned = card.classList.contains('owned');
+          await saveRow(i, owned, level);
+        }));
+      });
+    }
+
+    const LEVEL_STEPS = [
+      { mode: 1, label: 'bulk.max' },
+      { mode: 2, label: 'bulk.min' }
+    ];
+    const OWNED_STEPS = [
+      { mode: 3, label: 'bulk.owned' },
+      { mode: 4, label: 'bulk.unowned' }
+    ];
+    let levelStep = 0;
+    let ownedStep = 0;
+
+    function setupBulkButton(id, steps, getStep, setStep) {
+      const btn = document.getElementById(id);
+      const paint = () => { btn.textContent = T(steps[getStep()].label); };
+      btn.addEventListener('click', async () => {
+        const idx = getStep() % steps.length;
+        const step = steps[idx];
+        setSave(T('common.saving'));
+        try {
+          const obj = JSON.parse(await setAllCharacterStates(step.mode));
+          if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+          setStep((idx + 1) % steps.length);
+          paint();
+          await load();
+          setSave(T('common.saved'));
+        } catch (e) {
+          setSave(T('common.saveFailed'), true);
+          document.getElementById('error').textContent = String(e.message || e);
+        }
+      });
+      paint();
+    }
+
+    setupBulkButton('levelSwitch', LEVEL_STEPS, () => levelStep, v => { levelStep = v; });
+    setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
+
+    async function load() {
+      const status = document.getElementById('status');
+      try {
+        for (let i=0; i<50 && typeof getCharacterStates !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getCharacterStates !== 'function') throw new Error(T('common.noBackend'));
+        const states = JSON.parse(await getCharacterStates());
+        render(states);
+        const active = states.filter(c => c.owned);
+        const counts = new Map();
+        active.forEach(c => { const lv = Number(c.level) || 0; counts.set(lv, (counts.get(lv) || 0) + 1); });
+        const breakdown = [...counts.entries()].sort((a,b) => b[0] - a[0]).map(([lv,n]) => `<strong>${n}</strong> L${lv}`).join(', ');
+        document.getElementById('summary').innerHTML = T('summary.characters', { a: `<strong>${active.length}</strong>`, n: states.length, b: breakdown });
+        levelStep = states.length > 0 && states.every(c => Number(c.level) === 5) ? 1 : 0;
+        ownedStep = states.length > 0 && states.every(c => c.owned) ? 1 : 0;
+        document.getElementById('levelSwitch').textContent = T(LEVEL_STEPS[levelStep].label);
+        document.getElementById('ownedSwitch').textContent = T(OWNED_STEPS[ownedStep].label);
+        status.textContent = T('status.connected'); status.classList.remove('error');
+      } catch (e) {
+        status.textContent = T('status.error'); status.classList.add('error');
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', async () => {
+      NteTheme.initTheme();
+      load();
+      document.addEventListener('nte-langchange', () => location.reload());
+    });
+  </script>
+</body>
+</html>

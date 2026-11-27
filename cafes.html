@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en" data-theme="macchiato">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="title.cafes">NTE Cafe - Cafes</title>
+  <script src="webui.js?v=56cdcd4"></script>
+  <link rel="stylesheet" href="shared.css?v=56cdcd4">
+  <style>
+    .cafe-summary {
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+      padding: 16px 18px; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 14px;
+    }
+    .cafe-summary .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+    .cafe-summary .total { font-size: 30px; font-weight: 700; color: var(--accent); line-height: 1.15; }
+    .cafe-summary .total small { font-size: 14px; font-weight: 600; color: var(--muted); }
+    .cafe-summary .count { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    .cafe-summary select { min-width: 64px; }
+    .cafe-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; align-items: start; }
+    .cafe-card {
+      grid-column: span 2;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
+    }
+    /* First row: three cafes. Second row: cafes 4 and 5 share the width. */
+    .cafe-card:nth-child(4), .cafe-card:nth-child(5) { grid-column: span 3; }
+    .cafe-card.locked { opacity: .55; }
+    .cafe-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .cafe-head h2 { margin: 0; font-size: 16px; color: var(--text); }
+    .cafe-head .state { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .cafe-card.active .state { color: var(--accent); }
+    .tier-list { display: flex; flex-direction: column; gap: 6px; }
+    .tier-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 12px; font: inherit; font-size: 13px; text-align: left;
+      background: var(--panel-alt); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); cursor: pointer;
+    }
+    .tier-btn:hover:not(:disabled) { border-color: var(--accent); }
+    .tier-btn.active {
+      background: color-mix(in srgb, var(--accent) 14%, var(--panel-alt));
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+      color: var(--text);
+    }
+    .tier-btn:disabled { cursor: default; }
+    .tier-btn .bonus { font-weight: 700; color: var(--ctp-yellow); }
+    .tier-btn.clear { justify-content: center; color: var(--muted); font-size: 12px; }
+    .tier-btn.clear.active { color: var(--text); }
+    .cafe-bonus { font-size: 13px; color: var(--muted); text-align: right; }
+    .cafe-bonus strong { color: var(--text); }
+    @media (max-width: 1100px) {
+      .cafe-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .cafe-card, .cafe-card:nth-child(4), .cafe-card:nth-child(5) { grid-column: span 2; }
+    }
+    @media (max-width: 720px) {
+      .cafe-summary { flex-direction: column; align-items: stretch; }
+      .cafe-grid { grid-template-columns: 1fr; }
+      .cafe-card, .cafe-card:nth-child(4), .cafe-card:nth-child(5) { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub" data-i18n="sub.cafes">Cafe ownership and popularity bonuses</div>
+    </div>
+    <nav aria-label="Primary">
+      <a class="nav-link" href="index.html" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="characters.html" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="dishes.html" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link active" href="cafes.html" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="status.html" data-i18n="nav.status">Status</a>
+    </nav>
+    <div class="header-right">
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="cafe-summary">
+      <div>
+        <div class="label" data-i18n="cafe.popularityLabel">Total multiplier for all cafes</div>
+        <div class="total" id="popularityTotal">+0.000 <small>(x1.000)</small></div>
+      </div>
+      <label class="count"><span data-i18n="cafe.cafesOwned">Cafes Owned</span>
+        <select id="cafesOwned" class="input compact-select">
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+        </select>
+      </label>
+    </div>
+    <div id="saveState" class="save-state" style="font-size:13px;color:var(--muted);min-height:1.2em;margin-bottom:10px;"></div>
+    <div id="error" class="err"></div>
+    <div id="cafeGrid" class="cafe-grid"></div>
+  </main>
+  </div>
+  <script src="theme.js?v=56cdcd4"></script>
+  <script>
+    const T = (k, v) => NteTheme.t(k, v);
+
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function setSave(msg, err) {
+      const el = document.getElementById('saveState');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = err ? 'var(--error)' : 'var(--muted)';
+    }
+
+    let current = null;
+
+    function render(settings) {
+      current = settings;
+      const owned = Math.min(5, Math.max(1, Number(settings.cafesOwned) || 1));
+      document.getElementById('cafesOwned').value = String(owned);
+
+      const total = Number(settings.popularityBonus) || 0;
+      document.getElementById('popularityTotal').innerHTML =
+        `+${total.toFixed(3)} <small>(x${(1 + total).toFixed(3)})</small>`;
+
+      document.getElementById('cafeGrid').innerHTML = (settings.cafes || []).map((cafe, idx) => {
+        const active = idx < owned;
+        const selected = Number(cafe.selected) || 0;
+        const levels = cafe.levels || [];
+        const tiers = levels.map(l => {
+          const level = Number(l.level);
+          return `<button type="button" class="tier-btn ${level <= selected ? 'active' : ''}"
+                          data-cafe="${idx}" data-level="${level}" ${active ? '' : 'disabled'}>
+                    <span>${T('cafe.level', { n: level, p: Number(l.popularity) })}</span>
+                    <span class="bonus">+${Number(l.bonus).toFixed(3)}</span>
+                  </button>`;
+        }).join('');
+        return `
+          <section class="cafe-card ${active ? 'active' : 'locked'}">
+            <div class="cafe-head">
+              <h2>${esc(T('cafe.name.' + (idx + 1), { n: idx + 1 }))}</h2>
+              <span class="state">${active ? T('cafe.active') : T('cafe.locked')}</span>
+            </div>
+            <div class="tier-list">
+              <button type="button" class="tier-btn clear ${selected === 0 ? 'active' : ''}"
+                      data-cafe="${idx}" data-level="0" ${active ? '' : 'disabled'}>${T('cafe.noBonus')}</button>
+              ${tiers}
+            </div>
+            <div class="cafe-bonus">${T('cafe.currentBonus')} <strong>+${Number(cafe.bonus || 0).toFixed(3)}</strong></div>
+          </section>`;
+      }).join('');
+
+      document.querySelectorAll('.tier-btn[data-cafe]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = Number(btn.dataset.cafe);
+          const level = Number(btn.dataset.level);
+          setSave(T('common.saving'));
+          try {
+            const obj = JSON.parse(await setCafePopularity(idx, level));
+            if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+            setSave(T('common.saved'));
+            await load();
+          } catch (e) {
+            setSave(T('common.saveFailed'), true);
+            document.getElementById('error').textContent = String(e.message || e);
+          }
+        });
+      });
+    }
+
+    document.getElementById('cafesOwned').addEventListener('change', async (e) => {
+      const count = Number(e.target.value);
+      setSave(T('common.saving'));
+      try {
+        const obj = JSON.parse(await setCafesOwned(count));
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
+        await load();
+      } catch (err) {
+        setSave(T('common.saveFailed'), true);
+        document.getElementById('error').textContent = String(err.message || err);
+      }
+    });
+
+    async function load() {
+      const status = document.getElementById('status');
+      try {
+        for (let i = 0; i < 50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r => setTimeout(r, 100));
+        if (typeof getOptimizerSettings !== 'function') throw new Error(T('common.noBackend'));
+        render(JSON.parse(await getOptimizerSettings()));
+        status.textContent = T('status.connected'); status.classList.remove('error');
+      } catch (e) {
+        status.textContent = T('status.error'); status.classList.add('error');
+        document.getElementById('error').textContent = String(e.message || e);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', async () => {
+      NteTheme.initTheme();
+      load();
+      document.addEventListener('nte-langchange', () => location.reload());
+    });
+  </script>
+</body>
+</html>

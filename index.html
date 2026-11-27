@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" data-theme="macchiato">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="title.optimizer">NTE Cafe - Optimizer</title>
+  <script src="webui.js?v=56cdcd4"></script>
+  <link rel="stylesheet" href="shared.css?v=56cdcd4">
+  <style>
+    .overview { display:flex; justify-content:space-between; gap:10px 18px; flex-wrap:wrap; padding:10px 14px; margin-top: 0; background: var(--panel); border:1px solid var(--border); border-radius:12px; font-size:13px; color: var(--muted); line-height: 1.5; }
+    .overview strong { color: var(--text); font-weight: 700; }
+    .overview .kw { color: var(--ctp-yellow); font-weight: 600; }
+    .panel-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-top: 14px; align-items: stretch; }
+    .panel h2 { margin:0 0 14px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+    .field { display:flex; flex-direction:column; gap:8px; }
+    .field label { font-size:13px; color:var(--muted); }
+    select.input {
+      background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; font: inherit; width: 100%;
+    }
+    select.input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .save-state { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 1.2em; }
+    .run-opt-btn {
+      width: 100%; min-height: 52px; padding: 10px 14px;
+      font: inherit; font-size: 15px; font-weight: 700;
+      background: color-mix(in srgb, var(--accent) 12%, var(--panel-alt));
+      color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+      border-radius: 10px; cursor: pointer;
+    }
+    .run-opt-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, var(--panel-alt)); border-color: var(--accent); }
+    .run-opt-btn:disabled { opacity: .6; cursor: default; }
+    .result-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .result-stat { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); text-align: center; }
+    .result-stat.primary { background: color-mix(in srgb, var(--accent) 12%, var(--panel-alt)); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent); }
+    .result-stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .result-stat .value { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .result-stat.primary .value { color: var(--accent); font-size: 32px; }
+    .result-stat .bonus-note { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .result-stat.split-stat { padding: 0; overflow: hidden; }
+    .result-stat.split-stat .split { display: grid; grid-template-columns: 1fr 1fr; width: 100%; min-height: 100%; }
+    .result-stat.split-stat .split > div { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; }
+    .result-stat.split-stat .split > div + div { position: relative; }
+    .result-stat.split-stat .split > div + div::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+    .result-stat .value.small { font-size: 28px; }
+    .result-stat .split .label { font-size: 12px; margin-bottom: 6px; }
+    .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .result-dish { position: relative; aspect-ratio: 4 / 3; padding: 10px 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+    .result-dish .bg { position: absolute; inset: 0; background-size: 78%; background-position: center 35%; background-repeat: no-repeat; opacity: .95; }
+    .result-dish .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-alt) 10%, transparent) 20%, color-mix(in srgb, var(--panel-alt) 72%, transparent) 60%, color-mix(in srgb, var(--panel-alt) 96%, transparent) 100%); }
+    .result-dish .trend-flame { position: absolute; top: 10px; left: 10px; z-index: 2; font-size: 22px; line-height: 1; padding: 4px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+    .result-dish .content { position: relative; z-index: 1; margin-top: auto; }
+    .result-dish .name { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; line-height: 1.25; text-align: center; overflow: hidden; max-height: 2.5em; }
+    .result-dish .name-inner { display: block; }
+    .result-dish .name.overflow .name-inner { animation: result-name-scroll 8s ease-in-out infinite alternate; }
+    @keyframes result-name-scroll { 0%, 20% { transform: translateY(0); } 80%, 100% { transform: translateY(var(--scroll-y)); } }
+    .result-dish .fph { font-size: 14px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; }
+    .result-dish .fph img { width: 16px; height: 16px; object-fit: contain; flex: 0 0 auto; }
+    .result-dish .fph strong { color: var(--text); }
+    .result-chars { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .result-char { position: relative; aspect-ratio: 4 / 3; padding: 10px 12px; border-radius: 12px; background: var(--panel-alt); border: 1px solid var(--border); min-width: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+    .result-char .bg { position: absolute; inset: 0; background-size: cover; background-position: center top; background-repeat: no-repeat; opacity: .95; }
+    .result-char .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, var(--panel-alt) 6%, transparent) 25%, color-mix(in srgb, var(--panel-alt) 55%, transparent) 58%, color-mix(in srgb, var(--panel-alt) 96%, transparent) 100%); }
+    .result-char .content { position: relative; z-index: 1; margin-top: auto; }
+    .result-char .name { font-size: 15px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.25; }
+    @media (max-width: 1100px) { .result-dishes, .result-chars { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 720px) { .result-dishes, .result-chars { grid-template-columns: repeat(2, minmax(0, 1fr)); } .result-stats { grid-template-columns: 1fr; } }
+
+    .toggle-card {
+      position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+      box-shadow: 0 1px 2px var(--shadow); transition: border-color .15s ease; min-height: 0; height: 100%; cursor: pointer;
+    }
+    .toggle-card:hover { border-color: var(--ctp-surface2); }
+    .toggle-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .toggle-card:not(.owned) .avatar-wrap { filter: grayscale(.35) brightness(.75); }
+    .avatar-wrap {
+      position:absolute; top:0; right:0; bottom:0; left:42%;
+      background: transparent; border-radius: 0 14px 14px 0; overflow:hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 100%);
+    }
+    .avatar-wrap img { width:100%; height:100%; object-fit: contain; object-position: center right; display:block; padding: 12px; }
+    .overlay {
+      position:absolute; inset:0; border-radius:14px; pointer-events:none;
+      background: linear-gradient(90deg,
+        color-mix(in srgb, var(--ctp-base) 98%, transparent) 0%,
+        color-mix(in srgb, var(--ctp-base) 96%, transparent) 35%,
+        color-mix(in srgb, var(--ctp-base) 74%, transparent) 52%,
+        color-mix(in srgb, var(--ctp-base) 30%, transparent) 72%,
+        color-mix(in srgb, var(--ctp-base) 8%, transparent) 100%);
+    }
+    .owned-badge {
+      position:absolute; top:12px; right:12px; font-size:11px; font-weight:700; padding:4px 8px; border-radius:999px; z-index:2;
+      background: color-mix(in srgb, var(--good) 20%, var(--panel)); color: var(--good); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
+    }
+    .toggle-card:not(.owned) .owned-badge { background: color-mix(in srgb, var(--muted) 18%, var(--panel)); color: var(--muted); border-color: transparent; }
+    .toggle-body { position:relative; z-index:1; padding:16px; max-width:62%; min-height:0; height:100%; display:flex; flex-direction:column; justify-content:space-between; }
+    .toggle-name { font-size:20px; font-weight:700; margin:0; }
+    .toggle-desc { font-size:13px; color:var(--muted); margin-top:6px; max-width: 28ch; }
+    .toggle-meta { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
+    .chip { font-size:11px; padding:5px 7px; border-radius:999px; background: var(--ctp-surface0); color: var(--ctp-sky); }
+    .cafe-card .avatar-wrap { left: 38%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 18%, #000 100%); }
+    .cafe-card .avatar-wrap .cafe-icon { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:72px; color: var(--accent); background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--ctp-surface0)), var(--ctp-mantle)); }
+    .cafe-card .toggle-body { max-width: 58%; }
+    .cafe-controls { position:absolute; right:16px; bottom:16px; z-index:3; display:flex; gap:8px; align-items:center; }
+
+    .placeholder {
+      margin-top: 20px; padding: 32px 24px; text-align: center;
+      background: var(--panel); border: 1px dashed var(--border); border-radius: 12px;
+    }
+    .placeholder h2 { margin: 0 0 10px; font-size: 20px; }
+    .placeholder p { margin: 0; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1><span>NTE Cafe</span> Optimizer</h1>
+      <div class="sub" data-i18n="sub.optimizer">Roster optimization workspace</div>
+    </div>
+    <nav aria-label="Primary">
+      <a class="nav-link active" href="index.html" data-i18n="nav.optimizer">Optimizer</a>
+      <a class="nav-link" href="characters.html" data-i18n="nav.characters">Characters</a>
+      <a class="nav-link" href="dishes.html" data-i18n="nav.dishes">Dishes</a>
+      <a class="nav-link" href="cafes.html" data-i18n="nav.cafes">Cafes</a>
+      <a class="nav-link" href="status.html" data-i18n="nav.status">Status</a>
+    </nav>
+    <div class="header-right">
+      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="overview" id="overview" data-i18n="overview.loading">Loading overview...</div>
+    <div class="panel-grid">
+      <section class="toggle-card cafe-card owned" data-i18n-aria="cafe.owned">
+        <div class="avatar-wrap">
+          <div class="cafe-icon" aria-hidden="true">☕</div>
+        </div>
+        <div class="overlay"></div>
+        <div class="owned-badge" data-i18n="cafe.badge">Cafes</div>
+        <div class="toggle-body">
+          <div>
+            <h2 class="toggle-name" data-i18n="cafe.owned">Cafes Owned</h2>
+            <div class="toggle-desc" data-i18n="cafe.ownedDesc">Set how many cafes are used for optimization.</div>
+          </div>
+          <div class="toggle-meta">
+            <span class="chip" id="cafeChip">1 cafe</span>
+          </div>
+        </div>
+        <div class="cafe-controls">
+          <span class="level-label" data-i18n="cafe.count">Count</span>
+          <span class="chip" id="cafeCountInfo">1</span>
+          <a href="cafes.html" data-i18n="cafe.edit" style="font-size:12px;color:var(--accent);text-decoration:none;">Edit cafes →</a>
+        </div>
+      </section>
+
+      <section class="card panel" style="display:flex; flex-direction:column;">
+        <h2 data-i18n="trend.title">Trend</h2>
+        <div class="field">
+          <label for="trendSelect" data-i18n="trend.current">Current trend</label>
+          <select id="trendSelect" class="input"></select>
+          <div class="muted" style="font-size:13px;color:var(--muted);"><span data-i18n="trend.bonus">Trend bonus:</span> <strong id="trendBonus" style="color:var(--text);">+0.00</strong></div>
+        </div>
+        <div style="margin-top:auto; padding-top:14px;">
+          <button id="calcBtn" class="run-opt-btn" type="button" data-i18n="run.optimizer">Run Optimizer</button>
+        </div>
+      </section>
+
+      <section id="decorCard" class="toggle-card" role="button" tabindex="0" aria-pressed="false" data-i18n-aria="decor.title">
+        <div class="avatar-wrap">
+          <img src="assets/decor/exclusive-customer-service.png" data-i18n-alt="decor.alt" alt="Exclusive Customer Service decor" loading="lazy">
+        </div>
+        <div class="overlay"></div>
+        <div id="decorBadge" class="owned-badge">Disabled</div>
+        <div class="toggle-body">
+          <div>
+            <h2 class="toggle-name" data-i18n="decor.title">Hotori's Cat Decor</h2>
+            <div class="toggle-desc" data-i18n="decor.desc">Apply the Hotori cat decor bonus in optimization.</div>
+          </div>
+          <div class="toggle-meta">
+            <span class="chip" data-i18n="decor.bonus">+1% base traffic</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section id="resultCard" class="card panel" style="margin-top:14px; display:flex; flex-direction:column;">
+      <h2 style="text-align:center; margin-bottom:8px;" data-i18n="result.title">Result</h2>
+      <div id="resultTrend" style="text-align:center; font-size:14px; color:var(--muted); margin-bottom:16px;"></div>
+      <div id="resultContent" style="font-size:14px; color:var(--muted); line-height:1.6; flex:1;" data-i18n="result.empty">Run optimizer to see results.</div>
+    </section>
+
+
+  </main>
+
+  <script src="theme.js?v=56cdcd4"></script>
+  <script>
+    const T = (k, v) => NteTheme.t(k, v);
+    const DN = n => NteTheme.displayName(n);
+    const CN = n => NteTheme.canonicalName(n);
+    const TN = n => NteTheme.trendName(n);
+    const DISH_IMAGES = {
+      'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
+      'Iced Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
+      'Apple Pie': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/dc/Item_Apple_Pie.png/revision/latest?cb=20261111041147',
+      'Tomato & Fried Eggs Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ec/Item_Tomato_%26_Fried_Eggs_Croissant.png/revision/latest?cb=20261111041153',
+      'Tuna Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/da/Item_Tuna_Sandwich.png/revision/latest?cb=20261111041511',
+      'Amber Glamor': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/5e/Item_Amber_Glamor.png/revision/latest?cb=20261111041238',
+      'Matcha Lava Mousse': 'https://static.wikia.nocookie.net/neverness-to-everness/images/9/93/Item_Matcha_Lava_Mousse.png/revision/latest?cb=20261111042019',
+      'Snowy Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/5/55/Item_Snowy_Latte.png/revision/latest?cb=20261111041255',
+      'Thick-Cut Fresh Beef Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/c/ca/Item_Thick-Cut_Fresh_Beef_Sandwich.png/revision/latest?cb=20261111041334',
+      'Red Bean & Butter Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d1/Item_Red_Bean_%26_Butter_Croissant.png/revision/latest?cb=20261111041341',
+      'Strawberry Box Cake': 'https://static.wikia.nocookie.net/neverness-to-everness/images/3/30/Item_Strawberry_Box_Cake.png/revision/latest?cb=20261111041346',
+      'Orange Hot Coffee': 'https://static.wikia.nocookie.net/neverness-to-everness/images/b/be/Item_Orange_Hot_Coffee.png/revision/latest?cb=20261111041352',
+      'Pork Cutlet Sandwich': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/d9/Item_Pork_Cutlet_Sandwich.png/revision/latest?cb=20261111041358',
+      'Coconut Macchiato': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f1/Item_Coconut_Macchiato.png/revision/latest?cb=20261111041949',
+      'Matcha Latte with Milk Cap': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/25/Item_Matcha_Latte_with_Milk_Cap.png/revision/latest?cb=20261111041943',
+      'Tiramisu': 'https://static.wikia.nocookie.net/neverness-to-everness/images/1/12/Item_Tiramisu_%28Origen%29.png/revision/latest?cb=20261111041930',
+      'Ham & Cheese Croissant': 'https://static.wikia.nocookie.net/neverness-to-everness/images/d/de/Item_Ham_%26_Cheese_Croissant.png/revision/latest?cb=20261111041443',
+      'Caramel & Cocoa Mille-Feuille': 'https://static.wikia.nocookie.net/neverness-to-everness/images/6/6a/Item_Caramel_%26_Cocoa_Mille-Feuille.png/revision/latest?cb=20261111041925'
+    };
+    const CHAR_IMAGES = {
+      'Nanally':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/8b/Nanally_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174651',
+      'Sakiri':   'https://static.wikia.nocookie.net/neverness-to-everness/images/6/61/Sakiri_Portrait.png/revision/latest/scale-to-width-down/411?cb=20260701202236',
+      'Skia':     'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0d/Skia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174906',
+      'Baicang':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/83/Baicang_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173726',
+      'Mint':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/41/Mint_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174611',
+      'Haniel':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a5/Haniel_Portrait.png/revision/latest/scale-to-width-down/419?cb=20260701202324',
+      'Adler':    'https://static.wikia.nocookie.net/neverness-to-everness/images/0/0c/Adler_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173120',
+      'Daffodill': 'https://static.wikia.nocookie.net/neverness-to-everness/images/f/f0/Daffodill_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173935',
+      'Edgar':    'https://static.wikia.nocookie.net/neverness-to-everness/images/b/b4/Edgar_Portrait.png/revision/latest/scale-to-width-down/415?cb=20260701201907',
+      'Aurelia':  'https://static.wikia.nocookie.net/neverness-to-everness/images/2/22/Aurelia_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174756',
+      'Chiz':     'https://static.wikia.nocookie.net/neverness-to-everness/images/4/42/Chiz_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629173843',
+      'Lacrimosa':'https://static.wikia.nocookie.net/neverness-to-everness/images/c/c1/Lacrimosa_Portrait.png/revision/latest/scale-to-width-down/403?cb=20260701202053',
+      'Shinku':   'https://static.wikia.nocookie.net/neverness-to-everness/images/a/a8/Shinku_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260708083848',
+      'Iroi':     'https://static.wikia.nocookie.net/neverness-to-everness/images/8/85/Iroi_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260723021205',
+      'Linko':    'https://static.wikia.nocookie.net/neverness-to-everness/images/e/ef/Linko_Portrait.png/revision/latest/scale-to-width-down/342?cb=20260817144327',
+      'Akane Rin':'https://static.wikia.nocookie.net/neverness-to-everness/images/4/4f/Akane_Rin_Portrait.png/revision/latest/scale-to-width-down/317?cb=20260824145412'
+    };
+    function esc(s) { return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;"); }
+    function setSave(msg, err) { const el = document.getElementById('saveState'); if (!el) return; el.textContent = msg; el.style.color = err ? 'var(--error)' : 'var(--muted)'; }
+
+    let hotoriCatDecor = false;
+    let cafesOwned = 1;
+
+    function renderDecor() {
+      const card = document.getElementById('decorCard');
+      card.classList.toggle('owned', hotoriCatDecor);
+      card.setAttribute('aria-pressed', hotoriCatDecor ? 'true' : 'false');
+      document.getElementById('decorBadge').textContent = hotoriCatDecor ? T('decor.enabled') : T('decor.disabled');
+    }
+
+    async function saveSettings() {
+      setSave(T('common.saving'));
+      try {
+        const trend = document.getElementById('trendSelect').value;
+        const obj = JSON.parse(await setOptimizerSettings(trend, hotoriCatDecor, cafesOwned));
+        if (!obj.ok) throw new Error(obj.error || T('common.saveFailed'));
+        setSave(T('common.saved'));
+      } catch (e) {
+        setSave(T('common.saveFailed'), true);
+        console.error(e);
+      }
+    }
+
+    function updateResultTrend(trend, bonus) {
+      const fonsIcon = 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/81/Item_Fons.png/revision/latest?cb=20260629185442';
+      const el = document.getElementById('resultTrend');
+      if (!el) return;
+      const b = Number(bonus || 0);
+      el.innerHTML = `🔥 ${T('result.trend')} <strong style="color:var(--text)">${esc(TN(trend || 'None'))}</strong> <span style="color:var(--muted)">(+${b.toFixed(2)} <img src="${fonsIcon}" alt="Fons" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px">)</span>`;
+    }
+
+    /* After a result the trend goes back to "None" — also persisted, so the next run starts trendless. */
+    async function resetTrend() {
+      const sel = document.getElementById('trendSelect');
+      const opts = sel ? Array.from(sel.options) : [];
+      if (!opts.some(o => o.value === 'None')) return;
+      sel.value = 'None';
+      const bonus = opts.find(o => o.value === 'None')?.dataset?.bonus;
+      if (bonus != null) document.getElementById('trendBonus').textContent = `+${Number(bonus).toFixed(2)}`;
+      await saveSettings();
+      await loadOverview();
+    }
+
+    function render(settings) {
+      const sel = document.getElementById('trendSelect');
+      const trends = settings.trends || [];
+      const groups = [
+        { label: '', items: trends.filter(t => t.type === 'none') },
+        { label: T('trend.group.dishTypes'), items: trends.filter(t => t.type === 'tag') },
+        { label: T('trend.group.categories'), items: trends.filter(t => t.type === 'category' && /^fruits?$/i.test(t.name || '')) },
+        { label: T('trend.group.ingredients'), items: trends.filter(t => t.type === 'ingredient') },
+      ].filter(g => g.items.length);
+      sel.innerHTML = groups.map(g => g.label
+        ? `<optgroup label="${esc(g.label)}">${g.items.map(t => `<option value="${esc(t.name)}" data-bonus="${Number(t.bonus||0).toFixed(2)}">${esc(TN(t.name))}</option>`).join('')}</optgroup>`
+        : g.items.map(t => `<option value="${esc(t.name)}" data-bonus="${Number(t.bonus||0).toFixed(2)}">${esc(TN(t.name))}</option>`).join('')
+      ).join('');
+      sel.value = settings.trend || 'None';
+      const bonus = Number(settings.trendBonus ?? (trends.find(t => t.name === sel.value)?.bonus ?? 0));
+      document.getElementById('trendBonus').textContent = `+${bonus.toFixed(2)}`;
+      hotoriCatDecor = !!settings.hotoriCatDecor;
+      cafesOwned = Math.min(5, Math.max(1, Number(settings.cafesOwned) || 1));
+      document.getElementById('cafeCountInfo').textContent = String(cafesOwned);
+      document.getElementById('cafeChip').textContent = cafesOwned === 1 ? T('cafe.one') : T('cafe.many', { n: cafesOwned });
+      renderDecor();
+    }
+
+    function fmtNum(n) { const x = Number(n); return Number.isFinite(x) ? x.toLocaleString() : String(n); }
+    function renderDefaultSetup() {
+      const resultContent = document.getElementById('resultContent');
+      const resultTrend = document.getElementById('resultTrend');
+      if (resultTrend) resultTrend.textContent = '';
+      if (!resultContent) return;
+      resultContent.style.color = 'var(--text)';
+      resultContent.innerHTML = `
+        <div style="max-width:560px;margin:0 auto;text-align:center;padding:8px 0 4px;">
+          <div style="font-size:20px;font-weight:700;margin-bottom:8px;">${T('default.title')}</div>
+          <p style="margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px;">${T('default.desc')}</p>
+          <div class="modal-actions" style="justify-content:center;">
+            <a class="modal-btn primary" href="characters.html">${T('default.configureChars')}</a>
+            <a class="modal-btn" href="dishes.html">${T('default.configureDishes')}</a>
+          </div>
+        </div>`;
+    }
+
+    function renderSetupNotice(missing) {
+      const resultContent = document.getElementById('resultContent');
+      const resultTrend = document.getElementById('resultTrend');
+      if (resultTrend) resultTrend.textContent = '';
+      if (!resultContent) return;
+      resultContent.style.color = 'var(--text)';
+      const links = missing.map(k => `<a class="modal-btn${k === missing[0] ? ' primary' : ''}" href="${k}.html">${T(k === 'characters' ? 'default.configureChars' : 'default.configureDishes')}</a>`);
+      const descKey = missing.length > 1 ? 'setup.descBoth' : (missing[0] === 'characters' ? 'setup.descChars' : 'setup.descDishes');
+      resultContent.innerHTML = `
+        <div style="max-width:560px;margin:0 auto;text-align:center;padding:8px 0 4px;">
+          <div style="font-size:20px;font-weight:700;margin-bottom:8px;">${T('setup.title')}</div>
+          <p style="margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px;">${T(descKey)}</p>
+          <div class="modal-actions" style="justify-content:center;">${links.join('')}</div>
+        </div>`;
+    }
+
+    async function loadOverview() {
+      if (typeof getOptimizerOverview !== 'function') return null;
+      try {
+        const o = JSON.parse(await getOptimizerOverview());
+        document.getElementById('overview').innerHTML = [
+          `<span><span class="kw">${T('overview.characters')}</span> <strong>${fmtNum(o.loadedCharacters)} ${T('overview.owned')}</strong> / <strong>${fmtNum(o.characterSlots)} ${T('overview.slots')}</strong></span>`,
+          `<span><span class="kw">${T('overview.dishes')}</span> <strong>${fmtNum(o.ownedDishes)} ${T('overview.owned')}</strong> / <strong>${fmtNum(o.dishSlots)} ${T('overview.slots')}</strong></span>`,
+          `<span><span class="kw">${T('overview.charCombos')}</span> <strong>${fmtNum(o.characterCombinations)}</strong></span>`,
+          `<span><span class="kw">${T('overview.dishCombos')}</span> <strong>${fmtNum(o.dishCombinations)}</strong></span>`,
+          `<span><span class="kw">${T('overview.total')}</span> <strong>${fmtNum(o.possibleCombinations)}</strong></span>`
+        ].join('');
+        if (o.isDefault) renderDefaultSetup();
+        else {
+          const minChars = 3, minDishes = 2;
+          const missing = [];
+          if (o.loadedCharacters < minChars) missing.push('characters');
+          if (o.ownedDishes < minDishes) missing.push('dishes');
+          if (missing.length) renderSetupNotice(missing);
+        }
+        return o;
+      } catch (_) {}
+      return null;
+    }
+
+    async function runCalc() {
+      const btn = document.getElementById('calcBtn');
+      const resultContent = document.getElementById('resultContent');
+      btn.disabled = true;
+      resultContent.style.color = 'var(--muted)';
+      resultContent.textContent = T('result.calculating');
+      /* no top error */
+      try {
+        for (let i=0; i<50 && typeof runOptimization !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof runOptimization !== 'function') throw new Error(T('common.noBackendOpt'));
+        const res = JSON.parse(await runOptimization());
+        if (!res.ok) throw new Error(res.error || T('common.optimizationFailed'));
+        const fonsIcon = 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/81/Item_Fons.png/revision/latest?cb=20260629185442';
+        const dishCards = (res.dishes || []).map(d => {
+          const name = DN(d.name);
+          const img = DISH_IMAGES[CN(d.name)] || '';
+          const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
+          return `
+            <div class="result-dish">
+              <div class="bg" ${bg}></div>
+              ${d.inTrend ? `<div class="trend-flame" title="${T('result.inTrend')}">🔥</div>` : ''}
+              <div class="content">
+                <div class="fph"><img src="${fonsIcon}" alt="Fons" loading="lazy"><strong>${Number(d.fonsPerHour || 0).toFixed(2)}</strong><span>${T('result.perHour')}</span></div>
+                <div class="name" title="${esc(name)}"><span class="name-inner">${esc(name)}</span></div>
+              </div>
+            </div>`;
+        }).join('');
+        const charCards = (res.characters || []).map(c => {
+          const name = DN(c.name);
+          const img = CHAR_IMAGES[CN(c.name)] || '';
+          const bg = img ? `style="background-image:url('${String(img).replaceAll("'", "%27")}')"` : '';
+          return `
+            <div class="result-char">
+              <div class="bg" ${bg}></div>
+              <div class="content">
+                <div class="name" title="${esc(name)}">${esc(name)}</div>
+              </div>
+            </div>`;
+        }).join('');
+        const popularityBonus = Number(res.popularityBonus || 0);
+        const incomeBase = Number(res.income) / (1 + popularityBonus);
+        const totalMultiplier = 1 + popularityBonus;
+        const income24 = incomeBase * 24 * totalMultiplier;
+        const income48 = incomeBase * 48 * totalMultiplier;
+        const income72 = incomeBase * 72 * totalMultiplier;
+        resultContent.style.color = 'var(--text)';
+        resultContent.innerHTML =
+          `<div class="result-stats">` +
+            `<div class="result-stat"><div class="label">${T('result.traffic')}</div><div class="value">${Number(res.traffic).toFixed(2)}</div></div>` +
+            `<div class="result-stat primary"><div class="label">${T('result.income')}</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24.toFixed(2)} ${T('result.hours', { h: 24 })} - ${income48.toFixed(2)} ${T('result.hours', { h: 48 })} - ${income72.toFixed(2)} ${T('result.hours', { h: 72 })}</div></div>` +
+            `<div class="result-stat split-stat"><div class="split">` +
+              `<div><div class="label">${T('result.priceBuff')}</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
+              `<div><div class="label">${T('result.popularityBonus')}</div><div class="value small">${Number(res.popularityBonus || 0).toFixed(3)}</div></div>` +
+            `</div></div>` +
+          `</div>` +
+          `<div class="result-chars">${charCards || `<div style="color:var(--muted)">${T('result.noChars')}</div>`}</div>` +
+          `<div class="result-dishes">${dishCards || `<div style="color:var(--muted)">${T('result.noDishes')}</div>`}</div>`;
+        updateResultTrend(res.trend, res.trendBonus);
+        await resetTrend();
+        requestAnimationFrame(() => {
+          resultContent.querySelectorAll('.result-dish .name').forEach(name => {
+            const inner = name.querySelector('.name-inner');
+            if (!inner) return;
+            const overflow = inner.scrollHeight - name.clientHeight;
+            if (overflow > 1) {
+              name.classList.add('overflow');
+              name.style.setProperty('--scroll-y', `-${overflow}px`);
+            }
+          });
+        });
+      } catch (e) {
+        resultContent.style.color = 'var(--error)';
+        resultContent.textContent = T('common.failed') + String(e.message || e);
+        console.error(e);
+      } finally { btn.disabled = false; }
+    }
+
+    async function load() {
+      const status = document.getElementById('status');
+      try {
+        for (let i=0; i<50 && typeof getOptimizerSettings !== 'function'; i++) await new Promise(r=>setTimeout(r,100));
+        if (typeof getOptimizerSettings !== 'function') throw new Error(T('common.noBackend'));
+        render(JSON.parse(await getOptimizerSettings()));
+        await loadOverview();
+        status.textContent = T('status.connected'); status.classList.remove('error');
+        document.getElementById('trendSelect').addEventListener('change', async () => {
+          const sel = document.getElementById('trendSelect');
+          const opt = Array.from(sel.options).find(o => o.value === sel.value);
+          const bonus = opt?.dataset?.bonus;
+          if (bonus != null) document.getElementById('trendBonus').textContent = `+${Number(bonus).toFixed(2)}`;
+          await saveSettings(); await loadOverview();
+        });
+        const card = document.getElementById('decorCard');
+        const toggle = async () => { hotoriCatDecor = !hotoriCatDecor; renderDecor(); await saveSettings(); await loadOverview(); };
+        card.addEventListener('click', toggle);
+        card.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+        document.getElementById('calcBtn').addEventListener('click', runCalc);
+      } catch (e) {
+        status.textContent = T('status.error'); status.classList.add('error');
+        console.error(e);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      NteTheme.initTheme();
+      load();
+      document.addEventListener('nte-langchange', () => location.reload());
+    });
+  </script>
+</body>
+</html>
