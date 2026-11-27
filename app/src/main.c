@@ -17,6 +17,28 @@
 #define DISHES_HTML_PATH "/ui/dishes.html"
 #define CAFES_HTML_PATH "/ui/cafes.html"
 
+/* The desktop target compiles with NTE_CAFE_DESKTOP=1. Both binaries share
+ * this source, the UI files and config.json; only the final window mode
+ * differs (native WebView vs. HTTP server). --desktop/--server can override
+ * the compiled default at runtime. */
+#if defined(NTE_CAFE_DESKTOP) && NTE_CAFE_DESKTOP
+#define DESKTOP_BY_DEFAULT true
+#else
+#define DESKTOP_BY_DEFAULT false
+#endif
+
+static void print_usage(const char *exe) {
+  printf("Usage: %s [options]\n"
+         "  --desktop   Open a native WebView window (fallback: default browser)\n"
+         "  --server    Start the HTTP server (default for nte-cafe-app)\n"
+         "  --help      Show this help\n\n"
+         "Environment:\n"
+         "  PORT              Server port (default 80, fallback 8080)\n"
+         "  NTE_CAFE_CONFIG   Path to config.json (default: next to executable)\n"
+         "  NTE_CAFE_GAMEDATA Path to gamedata.json (default: next to executable)\n",
+         exe ? exe : "nte-cafe-app");
+}
+
 static char *read_file(const char *path, size_t *out_len) {
   FILE *f = fopen(path, "rb");
   if (!f)
@@ -759,6 +781,22 @@ static void get_config_path(webui_event_t *e) {
 }
 
 int main(int argc, char **argv) {
+  bool desktop = DESKTOP_BY_DEFAULT;
+  for (int i = 1; i < argc; ++i) {
+    if (strcmp(argv[i], "--desktop") == 0)
+      desktop = true;
+    else if (strcmp(argv[i], "--server") == 0)
+      desktop = false;
+    else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      print_usage(argc > 0 ? argv[0] : NULL);
+      return 0;
+    } else {
+      fprintf(stderr, "Unknown option: %s\n", argv[i]);
+      print_usage(argc > 0 ? argv[0] : NULL);
+      return 1;
+    }
+  }
+
   if (argc > 0 && argv[0] && argv[0][0] != '\0') {
     static char root_buf[1024];
     snprintf(root_buf, sizeof(root_buf), "%s", argv[0]);
@@ -807,10 +845,10 @@ int main(int argc, char **argv) {
   else
     printf("Config: %s not found; using minimum defaults\n", g_config_path);
 
-  webui_set_config(multi_client, true);
+  webui_set_config(multi_client, !desktop);
   size_t win = webui_new_window();
   webui_set_file_handler(win, file_handler);
-  webui_set_public(win, true);
+  webui_set_public(win, !desktop);
   webui_bind(win, "getAppInfo", get_app_info);
   webui_bind(win, "getDishes", get_dishes);
   webui_bind(win, "getDishStates", get_dish_states);
@@ -834,31 +872,45 @@ int main(int argc, char **argv) {
   webui_bind(win, "loadConfig", load_config);
   webui_bind(win, "getConfigPath", get_config_path);
 
-  const char *port_env = getenv("PORT");
-  size_t port = 80;
-  if (port_env && *port_env) {
-    char *end = NULL;
-    unsigned long parsed = strtoul(port_env, &end, 10);
-    if (end != port_env && *end == '\0' && parsed > 0 && parsed <= 65535) {
-      port = (size_t)parsed;
+  if (!desktop) {
+    const char *port_env = getenv("PORT");
+    size_t port = 80;
+    if (port_env && *port_env) {
+      char *end = NULL;
+      unsigned long parsed = strtoul(port_env, &end, 10);
+      if (end != port_env && *end == '\0' && parsed > 0 && parsed <= 65535) {
+        port = (size_t)parsed;
+      }
     }
-  }
-  if (!webui_set_port(win, port)) {
-    if (port == 80 && webui_set_port(win, 8080)) {
-      port = 8080;
-      fprintf(stderr, "Warning: could not bind port 80, falling back to 8080\n");
-    } else {
-      fprintf(stderr, "Warning: could not set preferred port %zu, using a free port\n", port);
+    if (!webui_set_port(win, port)) {
+      if (port == 80 && webui_set_port(win, 8080)) {
+        port = 8080;
+        fprintf(stderr, "Warning: could not bind port 80, falling back to 8080\n");
+      } else {
+        fprintf(stderr, "Warning: could not set preferred port %zu, using a free port\n", port);
+      }
     }
-  }
 
-  const char *url = webui_start_server(win, "/");
-  if (!url) {
-    fprintf(stderr, "Failed to start WebUI server\n");
-    return 1;
+    const char *url = webui_start_server(win, "/");
+    if (!url) {
+      fprintf(stderr, "Failed to start WebUI server\n");
+      return 1;
+    }
+    printf("NTE Cafe server running at %s\n", url);
+  } else {
+    webui_set_size(win, 1280, 800);
+    webui_set_center(win);
+    bool shown = webui_show_wv(win, "/index.html");
+    if (!shown) {
+      fprintf(stderr, "WebView unavailable; opening in the default browser\n");
+      shown = webui_show(win, "/index.html");
+    }
+    if (!shown) {
+      fprintf(stderr, "Failed to open the desktop window\n");
+      return 1;
+    }
+    printf("NTE Cafe desktop running (config: %s)\n", g_config_path);
   }
-
-  printf("NTE Cafe server running at %s\n", url);
   fflush(stdout);
 
   webui_wait();

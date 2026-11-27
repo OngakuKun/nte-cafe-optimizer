@@ -17,6 +17,7 @@ The project includes:
 - **Default setup notice**: when settings are still default, the Result card prompts users to configure characters/dishes.
 - **Themes & language**: shared Catppuccin themes, theme import, and UI language selection (with header subtitle translations for Japanese/Chinese).
 - **Docker deployment**: multi-stage Debian slim image running `nte-cafe-app`.
+- **Desktop app**: `nte-cafe-desktop` runs the same UI and bindings in a native WebView window (falls back to the default browser if WebView is unavailable); both read/write the same `config.json`.
 
 ## Repository Layout
 
@@ -24,7 +25,7 @@ The project includes:
 .
 ├── app/                    # WebUI app/server + static UI
 │   └── src/
-│       ├── main.c          # WebUI bindings, file handler, per-client state
+│       ├── main.c          # WebUI bindings, file handler, per-client state, server/desktop mode
 │       └── ui/             # index/characters/dishes/status pages, theme.js, shared.css
 ├── lib/
 │   ├── nte_cafe/           # Core optimizer library
@@ -89,13 +90,27 @@ cmake --build build --target nte-cafe-app -j
 
 The app serves the UI through WebUI. Open it through the `nte-cafe-app` server (do not open HTML files directly, as bindings require the backend).
 
+## Desktop App
+
+`nte-cafe-desktop` is built from the same `main.c`, uses the same UI files and the same `config.json` as the server. It opens a native WebView window and falls back to the default browser if WebView is not installed.
+
+```bash
+./build.sh Debug
+cmake --build build --target nte-cafe-desktop -j
+./build/app/nte-cafe-desktop
+```
+
+On Linux, native WebView needs GTK3 + WebKitGTK at runtime; without them the browser fallback is used. Either binary can switch modes at runtime: `--desktop` opens the window, `--server` starts the HTTP server, `--help` lists all options. UI assets and `data/gamedata.json` are copied next to each executable by the build, so a desktop binary can be run from its folder. `NTE_CAFE_CONFIG` and `NTE_CAFE_GAMEDATA` override the default paths (next to the executable).
+
 ## Configuration
 
 Environment variables:
 
-- `PORT` – preferred HTTP port. Default: `80`.
+- `PORT` – preferred HTTP port (server mode only). Default: `80`.
   - If `PORT=80` cannot be bound, the app falls back to `8080`.
   - For other ports, if binding fails, WebUI may pick a free port.
+- `NTE_CAFE_CONFIG` – path to the shared `config.json`. Default: next to the executable. The Docker image sets `/app/config/config.json` on a named volume.
+- `NTE_CAFE_GAMEDATA` – path to `gamedata.json`. Default: `<executable dir>/data/gamedata.json`, with an embedded copy as fallback.
 
 ## Docker
 
@@ -151,8 +166,8 @@ Use `--no-build` to sync files without rebuilding/restarting containers.
 
 ## Notes / Current Behavior
 
-- **State is in-memory per WebUI client.** It is not persisted across server restarts.
-- **Defaults are intentionally empty.** Users must configure owned characters/dishes before optimization is meaningful.
+- **Per-client UI state is in memory; the shared config is on disk.** New clients are seeded from `config.json`, which is loaded at startup and can be exported/imported from Settings > Data. With no config file, defaults are the dataset minimums (empty roster, 1 cafe).
+- **Game data comes from `data/gamedata.json`** for both server and CLI; the embedded copy is only a fallback.
 - **Reverse proxy deployment**: the WebUI bridge patch is required for proper operation behind Nginx Proxy Manager/TLS proxy setups.
 - **No secrets should be committed.** If adding accounts/OAuth later, use environment variables or secret files outside git.
 
