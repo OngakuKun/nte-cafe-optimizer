@@ -377,7 +377,7 @@
             `<div class="result-stat primary"><div class="label">Income</div><div class="value">${incomeBase.toFixed(2)}</div><div class="bonus-note">${income24.toFixed(2)} in 24h - ${income48.toFixed(2)} in 48h - ${income72.toFixed(2)} in 72h</div></div>` +
             `<div class="result-stat split-stat"><div class="split">` +
               `<div><div class="label">Price Buff</div><div class="value small">${Number(res.priceBuff).toFixed(2)}</div></div>` +
-              `<div><div class="label">Beliebtheitsbonus</div><div class="value small">${Number(res.priceMultiplier).toFixed(2)}</div></div>` +
+              `<div><div class="label">Beliebtheitsbonus</div><div class="value small">${Number(res.popularityBonus || 0).toFixed(3)}</div></div>` +
             `</div></div>` +
           `</div>` +
           `<div class="result-chars">${charCards || '<div style="color:var(--muted)">No characters selected.</div>'}</div>` +
