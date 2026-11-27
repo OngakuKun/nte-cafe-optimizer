@@ -40,7 +40,7 @@
 
   <main>
     <div class="grid">
-      <div class="card"><div class="label">App</div><div class="value" id="appName">-</div></div>
+      <div class="card"><div class="label">Game Version</div><div class="value" id="gameVersion">-</div></div>
       <div class="card"><div class="label">WebUI Version</div><div class="value" id="webuiVersion">-</div></div>
       <div class="card"><div class="label">Dishes Loaded</div><div class="value" id="dishCount">-</div></div>
       <div class="card"><div class="label">Characters Loaded</div><div class="value" id="charCount">-</div></div>
@@ -66,6 +66,10 @@
 
   <script src="/ui/theme.js"></script>
   <script>
+    /* Mirrors GAME_DATA_VERSION in app/src/main.c; kept here so the card works
+     * before the next binary rebuild. Update both when the data patch changes. */
+    const GAME_VERSION_FALLBACK = 'Unknown';
+
     function esc(s) {
       return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;");
     }
@@ -82,7 +86,7 @@
         if (typeof getAppInfo !== 'function') throw new Error('WebUI backend bindings are not available. Open through nte-cafe-app server.');
         const [infoRaw, dishesRaw, charsRaw] = await Promise.all([getAppInfo(), getDishes(), getCharacters()]);
         const info = JSON.parse(infoRaw), dishes = JSON.parse(dishesRaw), chars = JSON.parse(charsRaw);
-        document.getElementById('appName').textContent = info.app || '-';
+        document.getElementById('gameVersion').textContent = info.gameVersion || GAME_VERSION_FALLBACK;
         document.getElementById('webuiVersion').textContent = info.webui || '-';
         document.getElementById('dishCount').textContent = info.dishCount ?? dishes.length;
         document.getElementById('charCount').textContent = info.characterCount ?? chars.length;
