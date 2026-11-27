@@ -111,6 +111,7 @@
       'default.title':'Welcome to NTE Cafe Optimizer','default.desc':'Your setup is still at defaults. Configure your owned characters, dishes, and cafe settings so the optimizer can calculate meaningful results.','default.configureChars':'Configure Characters','default.configureDishes':'Configure Dishes',
       'summary.characters':'Character active: {a}/{n} ({b})','summary.dishes':'Dishes active: {a}/{n} ({b})',
       'bulk.max':'All to Max Level','bulk.min':'All to Min Level','bulk.owned':'All to Owned','bulk.unowned':'All to Unowned','bulk.reset':'Reset to Defaults',
+      'dialog.confirm':'Confirm','dialog.cancel':'Cancel','dialog.reset':'Reset','dialog.resetTitle':'Reset to Defaults',
       'reset.characters':'Reset ALL characters to unowned and Level 0? Every character setting will be lost.','reset.dishes':'Reset ALL dishes to unowned and Level 1? Every dish setting will be lost.',
       'card.owned':'Owned','card.notOwned':'Not owned','card.level':'Level','card.lv':'Lv {n}','card.toggleOwned':'Toggle {name} owned','card.levelFor':'Level for {name}',
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
@@ -145,6 +146,7 @@
       'default.title':'Willkommen beim NTE Cafe Optimizer','default.desc':'Deine Einstellungen sind noch standardmäßig. Konfiguriere deine Charaktere, Gerichte und Cafes, damit der Optimierer sinnvolle Ergebnisse berechnen kann.','default.configureChars':'Charaktere konfigurieren','default.configureDishes':'Gerichte konfigurieren',
       'summary.characters':'Charaktere aktiv: {a}/{n} ({b})','summary.dishes':'Gerichte aktiv: {a}/{n} ({b})',
       'bulk.max':'Alle auf Max-Stufe','bulk.min':'Alle auf Min-Stufe','bulk.owned':'Alle besitzen','bulk.unowned':'Alle nicht besitzen','bulk.reset':'Auf Standard zurücksetzen',
+      'dialog.confirm':'Bestätigen','dialog.cancel':'Abbrechen','dialog.reset':'Zurücksetzen','dialog.resetTitle':'Auf Standard zurücksetzen',
       'reset.characters':'ALLE Charaktere auf nicht besitzt und Stufe 0 zurücksetzen? Alle Charaktereinstellungen gehen verloren.','reset.dishes':'ALLE Gerichte auf nicht besitzt und Stufe 1 zurücksetzen? Alle Gerichtseinstellungen gehen verloren.',
       'card.owned':'In Besitzt','card.notOwned':'Nicht besitzt','card.level':'Stufe','card.lv':'Lv {n}','card.toggleOwned':'Besitz von {name} umschalten','card.levelFor':'Stufe für {name}',
       'skill.price':'Preis','skill.traffic':'Aufkommen','skill.req':'Benötigt',
@@ -581,6 +583,61 @@
     window.addEventListener('resize', () => { updateHeaderH(); if (window.innerWidth > 900) closeNav(); if (window.innerWidth <= 900) closeSettings(); placeSettings(); });
   }
 
+  /* Central in-app confirmation dialog. Replaces window.confirm so the same
+   * styled popup is used in the browser and the desktop WebView. Resolves to
+   * true only on the confirm button; Escape, backdrop and Cancel resolve false. */
+  function confirmDialog(message, options = {}) {
+    return new Promise((resolve) => {
+      const previous = document.getElementById('nteConfirmDialog');
+      if (previous) previous.remove();
+      const backdrop = document.createElement('div');
+      backdrop.id = 'nteConfirmDialog';
+      backdrop.className = 'nte-dialog-backdrop';
+      const box = document.createElement('div');
+      box.className = 'nte-dialog';
+      box.setAttribute('role', 'alertdialog');
+      box.setAttribute('aria-modal', 'true');
+      const title = document.createElement('div');
+      title.className = 'nte-dialog-title';
+      title.textContent = options.title || t('dialog.confirm');
+      const text = document.createElement('p');
+      text.className = 'nte-dialog-message';
+      text.textContent = message;
+      const actions = document.createElement('div');
+      actions.className = 'modal-actions nte-dialog-actions';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'modal-btn';
+      cancel.textContent = t('dialog.cancel');
+      const accept = document.createElement('button');
+      accept.type = 'button';
+      accept.className = options.danger === false ? 'modal-btn primary' : 'modal-btn danger';
+      accept.textContent = options.confirmLabel || t('dialog.confirm');
+      actions.append(cancel, accept);
+      box.append(title, text, actions);
+      backdrop.appendChild(box);
+      document.body.appendChild(backdrop);
+
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener('keydown', onKey);
+        backdrop.remove();
+        resolve(value);
+      };
+      const onKey = (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+        else if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      };
+      cancel.addEventListener('click', () => finish(false));
+      accept.addEventListener('click', () => finish(true));
+      backdrop.addEventListener('click', (e) => { if (e.target === backdrop) finish(false); });
+      document.addEventListener('keydown', onKey);
+      accept.focus();
+    });
+  }
+
   function initTheme() {
     initNav();
     applyImportedThemeCss(); rebuildThemeSelect();
@@ -609,5 +666,5 @@
     loadGameI18n();
     checkGameDataUpdate();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName, trendName, loadGameI18n, checkGameDataUpdate };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, confirmDialog, exportConfig, importConfigFile, t, displayName, canonicalName, trendName, loadGameI18n, checkGameDataUpdate };
 })();

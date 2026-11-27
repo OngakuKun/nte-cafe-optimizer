@@ -271,7 +271,7 @@
     setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
 
     document.getElementById('resetDefaults').addEventListener('click', async () => {
-      if (!window.confirm(T('reset.characters'))) return;
+      if (!await NteTheme.confirmDialog(T('reset.characters'), { title: T('dialog.resetTitle'), confirmLabel: T('dialog.reset') })) return;
       setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setAllCharacterStates(5));

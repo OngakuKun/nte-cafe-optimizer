@@ -269,7 +269,7 @@
     setupBulkButton('ownedSwitch', OWNED_STEPS, () => ownedStep, v => { ownedStep = v; });
 
     document.getElementById('resetDefaults').addEventListener('click', async () => {
-      if (!window.confirm(T('reset.dishes'))) return;
+      if (!await NteTheme.confirmDialog(T('reset.dishes'), { title: T('dialog.resetTitle'), confirmLabel: T('dialog.reset') })) return;
       setSave(T('common.saving'));
       try {
         const obj = JSON.parse(await setAllDishStates(5));
