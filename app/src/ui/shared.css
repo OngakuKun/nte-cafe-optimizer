@@ -123,7 +123,7 @@ nav { display: flex; gap: 8px; align-items: center; }
   transform: translateX(100%); transition: transform .2s ease; overflow-y: auto;
 }
 .settings-panel.open { transform: translateX(0); }
-.settings-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+.settings-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; text-align: center; font-weight: 700; }
 .settings-row { display: flex; flex-direction: column; gap: 8px; }
 .settings-row label { font-size: 13px; color: var(--muted); }
 .nav-settings { display: flex; flex-direction: column; gap: 8px; }
@@ -137,9 +137,7 @@ nav { display: flex; gap: 8px; align-items: center; }
   border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; cursor: pointer; width: 100%;
 }
 .theme-btn:hover { border-color: var(--accent); }
-.settings-group { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.settings-group:last-child { border-bottom: 0; padding-bottom: 0; }
-.settings-group-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.settings-group { display: flex; flex-direction: column; gap: 8px; }
 .settings-config-row { display: flex; gap: 8px; }
 .settings-config-row .theme-btn { flex: 1; padding: 8px 6px; }
 .settings-hint { font-size: 12px; color: var(--muted); min-height: 1.2em; line-height: 1.4; }
@@ -159,7 +157,7 @@ select.enhanced-select { position: absolute !important; opacity: 0 !important; p
 .cselect.dropup .cselect-menu { top: auto; bottom: calc(100% + 6px); }
 .cselect-option { display:block; width:100%; text-align:left; background:none; color:var(--text); border:0; border-radius:6px; padding:8px 10px; font:inherit; font-size:14px; cursor:pointer; white-space:nowrap; }
 .cselect-option:hover, .cselect-option.selected { background: var(--ctp-surface0); color: var(--accent); }
-.cselect-group { padding: 12px 10px 8px; margin: 6px 2px 4px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); }
+.cselect-group, .settings-group-title { padding: 12px 10px 8px; margin: 6px 2px 4px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); }
 .cselect.compact { width: auto; min-width: 72px; }
 .cselect.compact .cselect-btn { padding: 6px 30px 6px 10px; font-size: 13px; }
 .cselect.compact .cselect-option { font-size: 13px; padding: 6px 10px; }
