@@ -9,7 +9,8 @@
   <style>
     .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; }
     .toolbar .muted { color: var(--muted); font-size: 13px; }
-    .summary { margin-bottom: 8px; font-size: 13px; color: var(--muted); }
+    .toolbar-left { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .toolbar .summary { margin: 0; font-size: 13px; color: var(--muted); }
     .summary strong { color: var(--text); }
     .save-state { font-size: 13px; color: var(--muted); }
     .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
@@ -102,9 +103,11 @@
   </header>
 
   <main>
-    <div id="summary" class="summary"></div>
     <div class="toolbar">
-      <span id="saveState" class="save-state"></span>
+      <div class="toolbar-left">
+        <span id="summary" class="summary"></span>
+        <span id="saveState" class="save-state"></span>
+      </div>
       <div class="bulk-actions">
         <button type="button" id="levelSwitch" class="bulk-btn">All to Max Level</button>
         <button type="button" id="ownedSwitch" class="bulk-btn">All to Owned</button>
