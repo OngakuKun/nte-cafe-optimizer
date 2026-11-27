@@ -39,7 +39,8 @@
     .result-stat.split-stat { padding: 0; overflow: hidden; }
     .result-stat.split-stat .split { display: grid; grid-template-columns: 1fr 1fr; width: 100%; min-height: 100%; }
     .result-stat.split-stat .split > div { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; }
-    .result-stat.split-stat .split > div + div { border-left: 1px solid var(--border); }
+    .result-stat.split-stat .split > div + div { position: relative; }
+    .result-stat.split-stat .split > div + div::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
     .result-stat .value.small { font-size: 28px; }
     .result-stat .split .label { font-size: 12px; margin-bottom: 6px; }
     .result-dishes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
