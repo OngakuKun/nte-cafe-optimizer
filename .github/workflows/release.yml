@@ -26,11 +26,11 @@ jobs:
             bin_dir: build/app/Release
             exe: nte-cafe-desktop.exe
           - os: ubuntu-24.04
-            asset: nte-cafe-optimizer-linux-x64.zip
+            asset: nte-cafe-optimizer-linux-x64.tar.gz
             bin_dir: build/app
             exe: nte-cafe-desktop
           - os: ubuntu-24.04-arm
-            asset: nte-cafe-optimizer-linux-arm64.zip
+            asset: nte-cafe-optimizer-linux-arm64.tar.gz
             bin_dir: build/app
             exe: nte-cafe-desktop
           - os: macos-15-intel
@@ -86,7 +86,10 @@ jobs:
           cp -R data package/data
           cp README.md package/
           cd package
-          cmake -E tar cf "../${{ matrix.asset }}" --format=zip -- .
+          case "${{ matrix.asset }}" in
+            *.tar.gz) tar -czf "../${{ matrix.asset }}" . ;;
+            *) cmake -E tar cf "../${{ matrix.asset }}" --format=zip -- . ;;
+          esac
 
       - uses: actions/upload-artifact@v4
         with:
@@ -110,4 +113,4 @@ jobs:
           tag_name: ${{ inputs.tag || github.ref_name }}
           generate_release_notes: true
           overwrite_files: true
-          files: dist/*.zip
+          files: dist/*

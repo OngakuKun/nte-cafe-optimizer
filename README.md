@@ -110,7 +110,7 @@ Either binary can switch modes at runtime: `--desktop` opens the window, `--serv
 
 ## Downloads
 
-Ready-to-run desktop builds are attached to each `v*` tag by `.github/workflows/release.yml`: Windows x64, Linux x64 + ARM64, and macOS Intel + Apple Silicon (all ZIP). The website's Download button points at `releases/latest`, so the links work once the first release tag is pushed. Arch Linux users can build from source with `makepkg` using `packaging/arch/PKGBUILD`.
+Ready-to-run desktop builds are attached to each `v*` tag by `.github/workflows/release.yml`: Windows x64 and macOS Intel + Apple Silicon as ZIP, Linux x64 + ARM64 as `.tar.gz` (extract with `tar -xzf`). The website's Download button points at `releases/latest`. Arch Linux users can build from source with `makepkg` using `packaging/arch/PKGBUILD`.
 
 ## Configuration
 

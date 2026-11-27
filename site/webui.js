@@ -470,22 +470,22 @@
       windows: 'Windows', linux: 'Linux', macos: 'macOS',
       winX64: 'Windows x64', linuxX64: 'Linux x64', linuxArm: 'Linux ARM64',
       pkgbuild: 'Arch Linux (PKGBUILD)', macIntel: 'macOS Intel', macArm: 'macOS Apple Silicon',
-      zipHint: 'Desktop-App · ZIP', pkgHint: 'Aus dem Quellcode mit makepkg bauen',
+      zipHint: 'Desktop-App · ZIP', tarHint: 'Desktop-App · tar.gz', pkgHint: 'Aus dem Quellcode mit makepkg bauen',
       docker: 'Docker-Build', dockerHint: 'Lieber den Server im Container?',
       copy: 'Kopieren', copied: 'Kopiert!', copyFailed: 'Kopieren fehlgeschlagen',
       compose: 'docker-compose.yml ansehen',
-      note: 'Alle Builds sind ZIP-Archive.', close: 'Schließen'
+      note: 'Windows und macOS sind ZIP-Archive, Linux ist tar.gz.', close: 'Schließen'
     } : {
       title: 'Download NTE Cafe Optimizer',
       intro: 'Pick your platform. Each link points to the latest release build.',
       windows: 'Windows', linux: 'Linux', macos: 'macOS',
       winX64: 'Windows x64', linuxX64: 'Linux x64', linuxArm: 'Linux ARM64',
       pkgbuild: 'Arch Linux (PKGBUILD)', macIntel: 'macOS Intel', macArm: 'macOS Apple Silicon',
-      zipHint: 'Desktop app · ZIP', pkgHint: 'Build from source with makepkg',
+      zipHint: 'Desktop app · ZIP', tarHint: 'Desktop app · tar.gz', pkgHint: 'Build from source with makepkg',
       docker: 'Docker build', dockerHint: 'Prefer the server in a container?',
       copy: 'Copy', copied: 'Copied!', copyFailed: 'Copy failed',
       compose: 'View docker-compose.yml',
-      note: 'All builds are ZIP archives.', close: 'Close'
+      note: 'Windows and macOS are ZIP archives, Linux is tar.gz.', close: 'Close'
     };
   }
 
@@ -564,8 +564,8 @@
         [t.winX64, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-windows-x64.zip']
       ] },
       { key: 'linux', label: t.linux, links: [
-        [t.linuxX64, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-x64.zip'],
-        [t.linuxArm, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-arm64.zip'],
+        [t.linuxX64, t.tarHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-x64.tar.gz'],
+        [t.linuxArm, t.tarHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-arm64.tar.gz'],
         [t.pkgbuild, t.pkgHint, RAW_BASE + 'packaging/arch/PKGBUILD']
       ] },
       { key: 'macos', label: t.macos, links: [
