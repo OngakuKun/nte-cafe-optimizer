@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title data-i18n="title.cafes">NTE Cafe - Cafes</title>
-  <script src="webui.js?v=cdf3386"></script>
-  <link rel="stylesheet" href="shared.css?v=cdf3386">
+  <script src="webui.js?v=dcca2ab"></script>
+  <link rel="stylesheet" href="shared.css?v=dcca2ab">
   <style>
     .cafe-summary {
       display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
@@ -74,7 +74,8 @@
       <a class="nav-link" href="status.html" data-i18n="nav.status">Status</a>
     </nav>
     <div class="header-right">
-      <div class="pill" id="status" data-i18n="status.loading">Loading...</div>
+      <div class="pill" id="status" data-i18n="status.loading" hidden></div>
+      <button id="downloadBtn" class="theme-btn download-btn" type="button" aria-haspopup="dialog">Download</button>
     </div>
   </header>
 
@@ -95,7 +96,7 @@
     <div id="cafeGrid" class="cafe-grid"></div>
   </main>
   </div>
-  <script src="theme.js?v=cdf3386"></script>
+  <script src="theme.js?v=dcca2ab"></script>
   <script>
     const T = (k, v) => NteTheme.t(k, v);
 

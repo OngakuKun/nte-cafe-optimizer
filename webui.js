@@ -453,4 +453,200 @@
     persist();
     return { ok: true };
   });
+
+  /* --- Site-only download popup ---------------------------------------- *
+   * The live app keeps its Connection pill; only the generated Pages copy
+   * swaps it for this button (see site/replacements.json).
+   */
+  const RELEASE_BASE = 'https://github.com/OngakuKun/nte-cafe-optimizer/releases/latest/download/';
+  const REPO_BASE = 'https://github.com/OngakuKun/nte-cafe-optimizer/';
+  const RAW_BASE = 'https://raw.githubusercontent.com/OngakuKun/nte-cafe-optimizer/dev/';
+
+  function downloadText() {
+    const de = (document.documentElement.lang || '').toLowerCase().startsWith('de');
+    return de ? {
+      title: 'NTE Cafe Optimizer herunterladen',
+      intro: 'Plattform wählen. Die Links laden jeweils den neuesten Release-Build.',
+      windows: 'Windows', linux: 'Linux', macos: 'macOS',
+      winX64: 'Windows x64', linuxX64: 'Linux x64', linuxArm: 'Linux ARM64',
+      pkgbuild: 'Arch Linux (PKGBUILD)', macIntel: 'macOS Intel', macArm: 'macOS Apple Silicon',
+      zipHint: 'Desktop-App · ZIP', pkgHint: 'Aus dem Quellcode mit makepkg bauen',
+      docker: 'Docker-Build', dockerHint: 'Lieber den Server im Container?',
+      copy: 'Kopieren', copied: 'Kopiert!', copyFailed: 'Kopieren fehlgeschlagen',
+      compose: 'docker-compose.yml ansehen',
+      note: 'Die Download-Links gehen mit dem ersten v*-Tag live.', close: 'Schließen'
+    } : {
+      title: 'Download NTE Cafe Optimizer',
+      intro: 'Pick your platform. Each link points to the latest release build.',
+      windows: 'Windows', linux: 'Linux', macos: 'macOS',
+      winX64: 'Windows x64', linuxX64: 'Linux x64', linuxArm: 'Linux ARM64',
+      pkgbuild: 'Arch Linux (PKGBUILD)', macIntel: 'macOS Intel', macArm: 'macOS Apple Silicon',
+      zipHint: 'Desktop app · ZIP', pkgHint: 'Build from source with makepkg',
+      docker: 'Docker build', dockerHint: 'Prefer the server in a container?',
+      copy: 'Copy', copied: 'Copied!', copyFailed: 'Copy failed',
+      compose: 'View docker-compose.yml',
+      note: 'Release links go live with the first v* tag.', close: 'Close'
+    };
+  }
+
+  function downloadStyles() {
+    if (document.getElementById('nteDownloadStyles')) return;
+    const s = document.createElement('style');
+    s.id = 'nteDownloadStyles';
+    s.textContent = `
+      #nteDownloadDialog .nte-dialog { width: min(620px, 100%); max-height: min(86dvh, 760px); overflow-y: auto; }
+      #nteDownloadDialog .nte-dialog-title { margin-bottom: 4px; }
+      .nte-dl-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin: 12px 0 14px; }
+      .nte-dl-tab { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 8px 12px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+      .nte-dl-tab:hover { color: var(--text); }
+      .nte-dl-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+      .nte-dl-links { display: grid; gap: 8px; }
+      .nte-dl-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-alt); color: var(--text); text-decoration: none; }
+      .nte-dl-link:hover { border-color: var(--accent); color: var(--accent); }
+      .nte-dl-link small { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; }
+      .nte-dl-arrow { color: var(--muted); font-size: 16px; }
+      .nte-dl-docker { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .nte-dl-docker-title { font-weight: 700; margin-bottom: 4px; }
+      .nte-dl-docker-hint { margin: 0; color: var(--muted); font-size: 13px; }
+      .nte-dl-code { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+      .nte-dl-code code { flex: 1; min-width: 0; overflow: auto; background: var(--ctp-crust); padding: 10px 12px; border-radius: 8px; font-size: 13px; }
+      .nte-dl-source { color: var(--accent); font-size: 13px; }
+      .nte-dl-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; }`;
+    document.head.appendChild(s);
+  }
+
+  function downloadLink(label, hint, url) {
+    const a = document.createElement('a');
+    a.className = 'nte-dl-link';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    const box = document.createElement('span');
+    const name = document.createElement('strong'); name.textContent = label;
+    const sub = document.createElement('small'); sub.textContent = hint;
+    box.append(name, sub);
+    const arrow = document.createElement('span');
+    arrow.className = 'nte-dl-arrow'; arrow.textContent = '↗';
+    a.append(box, arrow);
+    return a;
+  }
+
+  function openDownloadDialog() {
+    const t = downloadText();
+    downloadStyles();
+    const previous = document.getElementById('nteDownloadDialog');
+    if (previous) previous.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'nteDownloadDialog';
+    backdrop.className = 'nte-dialog-backdrop';
+    const box = document.createElement('div');
+    box.className = 'nte-dialog';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-label', t.title);
+
+    const title = document.createElement('div');
+    title.className = 'nte-dialog-title'; title.textContent = t.title;
+    const intro = document.createElement('p');
+    intro.className = 'nte-dialog-message'; intro.textContent = t.intro;
+    const tabs = document.createElement('div');
+    tabs.className = 'nte-dl-tabs'; tabs.setAttribute('role', 'tablist');
+    const panels = document.createElement('div');
+    panels.className = 'nte-dl-panels';
+
+    const groups = [
+      { key: 'windows', label: t.windows, links: [
+        [t.winX64, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-windows-x64.zip']
+      ] },
+      { key: 'linux', label: t.linux, links: [
+        [t.linuxX64, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-x64.zip'],
+        [t.linuxArm, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-arm64.zip'],
+        [t.pkgbuild, t.pkgHint, RAW_BASE + 'packaging/arch/PKGBUILD']
+      ] },
+      { key: 'macos', label: t.macos, links: [
+        [t.macIntel, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-macos-intel.zip'],
+        [t.macArm, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-macos-arm64.zip']
+      ] }
+    ];
+    groups.forEach((group, i) => {
+      const tab = document.createElement('button');
+      tab.type = 'button'; tab.className = 'nte-dl-tab'; tab.textContent = group.label;
+      tab.id = 'nteDlTab-' + group.key;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', 'nteDlPanel-' + group.key);
+      tab.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      const panel = document.createElement('div');
+      panel.className = 'nte-dl-panel'; panel.id = 'nteDlPanel-' + group.key;
+      panel.setAttribute('role', 'tabpanel');
+      panel.setAttribute('aria-labelledby', tab.id);
+      panel.hidden = i !== 0;
+      const list = document.createElement('div'); list.className = 'nte-dl-links';
+      group.links.forEach((link) => list.appendChild(downloadLink(link[0], link[1], link[2])));
+      panel.appendChild(list);
+      tab.addEventListener('click', () => {
+        tabs.querySelectorAll('.nte-dl-tab').forEach((x) => x.setAttribute('aria-selected', 'false'));
+        panels.querySelectorAll('.nte-dl-panel').forEach((x) => { x.hidden = true; });
+        tab.setAttribute('aria-selected', 'true');
+        panel.hidden = false;
+      });
+      tabs.appendChild(tab);
+      panels.appendChild(panel);
+    });
+
+    const docker = document.createElement('div');
+    docker.className = 'nte-dl-docker';
+    const dockerTitle = document.createElement('div');
+    dockerTitle.className = 'nte-dl-docker-title'; dockerTitle.textContent = t.docker;
+    const dockerHint = document.createElement('p');
+    dockerHint.className = 'nte-dl-docker-hint'; dockerHint.textContent = t.dockerHint;
+    const codeRow = document.createElement('div');
+    codeRow.className = 'nte-dl-code';
+    const code = document.createElement('code'); code.textContent = 'docker compose up -d --build';
+    const copy = document.createElement('button');
+    copy.type = 'button'; copy.className = 'theme-btn'; copy.textContent = t.copy;
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        copy.textContent = t.copied;
+      } catch (_) { copy.textContent = t.copyFailed; }
+    });
+    codeRow.append(code, copy);
+    const compose = document.createElement('a');
+    compose.className = 'nte-dl-source'; compose.textContent = t.compose;
+    compose.href = REPO_BASE + 'blob/dev/docker-compose.yml';
+    compose.target = '_blank'; compose.rel = 'noopener noreferrer';
+    const note = document.createElement('p');
+    note.className = 'nte-dl-note'; note.textContent = t.note;
+    docker.append(dockerTitle, dockerHint, codeRow, compose, note);
+
+    const actions = document.createElement('div');
+    actions.className = 'modal-actions nte-dialog-actions';
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button'; closeButton.className = 'modal-btn primary';
+    closeButton.textContent = t.close;
+    const close = () => {
+      document.removeEventListener('keydown', onKey);
+      backdrop.remove();
+    };
+    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+    closeButton.addEventListener('click', close);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+    actions.appendChild(closeButton);
+
+    box.append(title, intro, tabs, panels, docker, actions);
+    backdrop.appendChild(box);
+    document.body.appendChild(backdrop);
+    document.addEventListener('keydown', onKey);
+    closeButton.focus();
+  }
+
+  function initDownloadButton() {
+    const button = document.getElementById('downloadBtn');
+    if (!button) return;
+    button.addEventListener('click', openDownloadDialog);
+  }
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', initDownloadButton, { once: true });
+  else initDownloadButton();
 })();
