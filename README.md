@@ -8,6 +8,9 @@ The project includes:
 - **`app/`** – WebUI-based server/app that serves the static UI and exposes bindings for optimizer state and calculations.
 - **`tools/`** – CLI tools.
 - **`tests/`** – optimizer/trend/full-dataset regression tests.
+- **`docs/`** – source for the project website at <https://ongakukun.github.io/nte-cafe-optimizer/>.
+
+> **Project website:** <https://ongakukun.github.io/nte-cafe-optimizer/> · **Live WebUI:** <https://nte.ongakukun.de/>
 
 ## Features
 
@@ -32,6 +35,7 @@ The project includes:
 │   └── webui/              # WebUI submodule
 ├── patches/
 │   └── webui-proxy-bridge.patch  # Proxy/bridge fixes for reverse-proxied WebUI
+├── docs/                   # GitHub Pages project website
 ├── scripts/
 │   └── sync-server.sh      # Sync remote server to origin/dev and redeploy
 ├── tests/                  # C tests
