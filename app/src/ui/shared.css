@@ -138,6 +138,7 @@ nav { display: flex; gap: 8px; align-items: center; }
 }
 .theme-btn:hover { border-color: var(--accent); }
 .settings-group { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.settings-group:last-child { border-bottom: 0; padding-bottom: 0; }
 .settings-group-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .settings-config-row { display: flex; gap: 8px; }
 .settings-config-row .theme-btn { flex: 1; padding: 8px 6px; }

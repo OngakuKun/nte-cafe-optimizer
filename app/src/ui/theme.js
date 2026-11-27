@@ -90,7 +90,7 @@
       'nav.optimizer':'Optimizer','nav.characters':'Characters','nav.dishes':'Dishes','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menu',
       'sub.optimizer':'Roster optimization workspace','sub.characters':'Character ownership and levels','sub.dishes':'Dish ownership and levels','sub.cafes':'Cafe ownership and popularity bonuses','sub.status':'Backend status and loaded data',
       'status.loading':'Loading...','status.connected':'Connected','status.error':'Error',
-      'settings.title':'Settings','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
+      'settings.title':'Settings','settings.group.appearance':'Appearance','settings.group.data':'Data','settings.config':'Config','settings.exportConfig':'Export Config','settings.importConfig':'Import Config','settings.language':'Language','settings.theme':'Theme','settings.import':'Import Theme','settings.reload':'Reload',
       'common.saving':'Saving...','common.saved':'Saved','common.saveFailed':'Save failed',
       'common.noBackend':'WebUI backend bindings unavailable. Open through nte-cafe-app server.',
       'common.noBackendOpt':'Optimization binding unavailable. Restart nte-cafe-app.',
@@ -124,7 +124,7 @@
       'nav.optimizer':'Optimierer','nav.characters':'Charaktere','nav.dishes':'Gerichte','nav.cafes':'Cafes','nav.status':'Status','nav.menu':'Menü',
       'sub.optimizer':'Arbeitsbereich für Besetzungsoptimierung','sub.characters':'Charakterbesitz und Stufen','sub.dishes':'Gerichtbesitz und Stufen','sub.cafes':'Café-Beliebtheit und Boni','sub.status':'Backend-Status und geladene Daten',
       'status.loading':'Lädt...','status.connected':'Verbunden','status.error':'Fehler',
-      'settings.title':'Einstellungen','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
+      'settings.title':'Einstellungen','settings.group.appearance':'Darstellung','settings.group.data':'Daten','settings.config':'Config','settings.exportConfig':'Config exportieren','settings.importConfig':'Config importieren','settings.language':'Sprache','settings.theme':'Design','settings.import':'Design importieren','settings.reload':'Neu laden',
       'common.saving':'Speichern...','common.saved':'Gespeichert','common.saveFailed':'Speichern fehlgeschlagen',
       'common.noBackend':'WebUI-Bindings nicht verfügbar. Über den nte-cafe-app-Server öffnen.',
       'common.noBackendOpt':'Optimizer-Binding nicht verfügbar. nte-cafe-app neu starten.',
@@ -493,21 +493,24 @@
       settings.innerHTML = `
         <div class="settings-title" data-i18n="settings.title">Settings</div>
         <div class="settings-group">
-          <div class="settings-group-title" id="configGroupTitle" data-i18n="settings.config">Config</div>
+          <div class="settings-group-title" data-i18n="settings.group.appearance">Appearance</div>
+          <div class="settings-row">
+            <label for="langSelect" data-i18n="settings.language">Language</label>
+            <select id="langSelect" class="theme-select" data-i18n-aria="settings.language"></select>
+            <label for="themeSelect" data-i18n="settings.theme">Theme</label>
+            <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
+            <button id="importThemeBtn" class="theme-btn" type="button" data-i18n="settings.import">Import Theme</button>
+            <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="settings-group-title" id="configGroupTitle" data-i18n="settings.group.data">Data</div>
           <div class="settings-config-row">
             <button id="exportConfigBtn" class="theme-btn" type="button" data-i18n="settings.exportConfig">Export Config</button>
             <button id="importConfigBtn" class="theme-btn" type="button" data-i18n="settings.importConfig">Import Config</button>
           </div>
           <input id="importConfigFile" type="file" accept=".json,application/json" hidden>
           <div id="configStatus" class="settings-hint"></div>
-        </div>
-        <div class="settings-row">
-          <label for="langSelect" data-i18n="settings.language">Language</label>
-          <select id="langSelect" class="theme-select" data-i18n-aria="settings.language"></select>
-          <label for="themeSelect" data-i18n="settings.theme">Theme</label>
-          <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
-          <button id="importThemeBtn" class="theme-btn" type="button" data-i18n="settings.import">Import Theme</button>
-          <input id="importThemeFile" type="file" accept=".json,application/json" hidden>
         </div>`;
     }
 
