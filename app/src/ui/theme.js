@@ -30,6 +30,12 @@
     'Red Bean & Butter Croissant': 'Croissant mit roten Bohnen und Butter',
     'Strawberry Box Cake': 'Erdbeer-Kastenkuchen',
     'Orange Hot Coffee': 'Heißer Orangen-Kaffee',
+    'Pork Cutlet Sandwich': 'Schweineschnitzel-Sandwich',
+    'Coconut Macchiato': 'Kokos-Macchiato',
+    'Matcha Latte with Milk Cap': 'Milchschaum-Matcha-Latte',
+    /* 'Tiramisu' is identical in both languages — no mapping needed. */
+    'Ham & Cheese Croissant': 'Schinken-Käse-Croissant',
+    'Caramel & Cocoa Mille-Feuille': 'Mille-Feuille mit Karamell und Kakao',
   };
   const I18N = {
     en: {
