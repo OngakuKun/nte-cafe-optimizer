@@ -122,6 +122,7 @@
   <script>
     const T = (k, v) => NteTheme.t(k, v);
     const DN = n => NteTheme.displayName(n);
+    const CN = n => NteTheme.canonicalName(n);
     const AVATAR_URLS = {
       'Nanally':  'https://static.wikia.nocookie.net/neverness-to-everness/images/8/8b/Nanally_Portrait.png/revision/latest/scale-to-width-down/422?cb=20260629174651',
       'Sakiri':   'https://static.wikia.nocookie.net/neverness-to-everness/images/6/61/Sakiri_Portrait.png/revision/latest/scale-to-width-down/411?cb=20260701202236',
@@ -163,7 +164,7 @@
     function render(chars) {
       document.getElementById('grid').innerHTML = chars.map((c, i) => {
         const name = DN(c.name);
-        const url = avatarUrl(name);
+        const url = avatarUrl(CN(c.name));
         const img = url
           ? `<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(name))}</div>'">`
           : `<div class="avatar-fallback">${esc(initials(name))}</div>`;

@@ -16,6 +16,21 @@
     'Ham & Cheese': 'Ham & Cheese Croissant',
     'Dafodil': 'Daffodill',
   };
+  /* German display names from Fuu's translation table; keys are canonical wiki names. */
+  const DE_NAMES = {
+    'Coconut Latte': 'Kokos-Latte',
+    'Iced Mocha': 'Eis-Mokka',
+    'Apple Pie': 'Apfelkuchen',
+    'Tomato & Fried Eggs Croissant': 'Croissant mit Tomaten und Spiegelei',
+    'Tuna Sandwich': 'Thunfisch-Sandwich',
+    'Amber Glamor': 'Goldglanz-Traum',
+    'Matcha Lava Mousse': 'Matcha-Lave-Mousse',
+    'Snowy Latte': 'Snowy Latte',
+    'Thick-Cut Fresh Beef Sandwich': 'Frisches dickes Rindfleisch-Sandwich',
+    'Red Bean & Butter Croissant': 'Croissant mit roten Bohnen und Butter',
+    'Strawberry Box Cake': 'Erdbeer-Kastenkuchen',
+    'Orange Hot Coffee': 'Heißer Orangen-Kaffee',
+  };
   const I18N = {
     en: {
       'title.optimizer':'NTE Cafe - Optimizer','title.characters':'NTE Cafe - Characters','title.dishes':'NTE Cafe - Dishes','title.cafes':'NTE Cafe - Cafes','title.status':'NTE Cafe - Status',
@@ -45,7 +60,9 @@
       'skill.price':'Price','skill.traffic':'Traffic','skill.req':'req',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Beverages','type.Desserts':'Desserts','type.Main Dishes':'Main Dishes',
-      'cafe.popularityLabel':'Total multiplier for all cafes','cafe.cafesOwned':'Cafes Owned','cafe.level':'Level {n} · Popularity {p}','cafe.active':'Active','cafe.locked':'Locked','cafe.noBonus':'No bonus','cafe.currentBonus':'Current bonus:','cafe.name':'Cafe {n}',
+      'cafe.popularityLabel':'Total multiplier for all cafes','cafe.cafesOwned':'Cafes Owned','cafe.level':'Level {n} · Popularity {p}','cafe.active':'Active','cafe.locked':'Locked','cafe.noBonus':'No bonus','cafe.currentBonus':'Current bonus:',
+      /* Branch names from the wiki's "Café Locations" table. */
+      'cafe.name.1':'Bluebird Street','cafe.name.2':'Fiscus Avenue','cafe.name.3':'North Davidia Alley','cafe.name.4':'Moomin Street','cafe.name.5':'Hankaku Street Square','cafe.name':'Cafe {n}',
       'status.gameVersion':'Game Version','status.webuiVersion':'WebUI Version','status.dishesLoaded':'Dishes Loaded','status.charsLoaded':'Characters Loaded',
       'status.section.dishes':'Dishes','status.section.characters':'Characters',
       'status.col.num':'#','status.col.name':'Name','status.col.type':'Type','status.col.priceL1':'Price L1','status.col.priceL2':'Price L2','status.col.ingredients':'Ingredients','status.col.skills':'Skills','status.col.skillDetails':'Skill Details'
@@ -78,7 +95,9 @@
       'skill.price':'Preis','skill.traffic':'Traffic','skill.req':'Benötigt',
       'dish.prices':'L{a} {p1} · L{b} {p2}',
       'type.Beverages':'Getränke','type.Desserts':'Desserts','type.Main Dishes':'Hauptgerichte',
-      'cafe.popularityLabel':'Gesamtmultiplikator für alle Läden','cafe.cafesOwned':'Cafés im Besitz','cafe.level':'Stufe {n} · Beliebtheit {p}','cafe.active':'Aktiv','cafe.locked':'Gesperrt','cafe.noBonus':'Kein Bonus','cafe.currentBonus':'Aktueller Bonus:','cafe.name':'Café {n}',
+      'cafe.popularityLabel':'Gesamtmultiplikator für alle Läden','cafe.cafesOwned':'Cafés im Besitz','cafe.level':'Stufe {n} · Beliebtheit {p}','cafe.active':'Aktiv','cafe.locked':'Gesperrt','cafe.noBonus':'Kein Bonus','cafe.currentBonus':'Aktueller Bonus:',
+      /* Branch names from Fuu's translation table. */
+      'cafe.name.1':'Standort Blaubart-Straße','cafe.name.2':'Standort Fiskus-Allee','cafe.name.3':'Standort Davidia-Allee Nord','cafe.name.4':'Standort Mumin-Straße','cafe.name.5':'Standort Hankaku-Straße','cafe.name':'Café {n}',
       'status.gameVersion':'Spielversion','status.webuiVersion':'WebUI-Version','status.dishesLoaded':'Gerichte geladen','status.charsLoaded':'Charaktere geladen',
       'status.section.dishes':'Gerichte','status.section.characters':'Charaktere',
       'status.col.num':'#','status.col.name':'Name','status.col.type':'Typ','status.col.priceL1':'Preis L1','status.col.priceL2':'Preis L2','status.col.ingredients':'Zutaten','status.col.skills':'Skills','status.col.skillDetails':'Skill-Details'
@@ -189,7 +208,13 @@
     if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll('{' + k + '}', String(v));
     return s;
   }
-  function displayName(name) { return NAME_MAP[name] || name; }
+  /* Canonical wiki name — stable key for image lookups, independent of UI language. */
+  function canonicalName(name) { return NAME_MAP[name] || name; }
+  /* Localised display name. German dish names come from Fuu's translation table. */
+  function displayName(name) {
+    const canonical = canonicalName(name);
+    return (document.documentElement.lang || 'en') === 'de' ? (DE_NAMES[canonical] || canonical) : canonical;
+  }
   function applyLanguage(lang, persist) {
     const next = LANGS.some(l => l.id === lang) ? lang : 'en';
     document.documentElement.lang = next;
@@ -494,5 +519,5 @@
     enhanceSelects(document);
     initSettingsPanel();
   }
-  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName };
+  window.NteTheme = { initTheme, applyTheme, applyLanguage, enhanceSelects, exportConfig, importConfigFile, t, displayName, canonicalName };
 })();

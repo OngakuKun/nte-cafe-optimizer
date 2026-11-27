@@ -118,6 +118,7 @@
   <script>
     const T = (k, v) => NteTheme.t(k, v);
     const DN = n => NteTheme.displayName(n);
+    const CN = n => NteTheme.canonicalName(n);
     const DISH_IMAGES = {
       'Coconut Latte': 'https://static.wikia.nocookie.net/neverness-to-everness/images/2/27/Item_Coconut_Latte.png/revision/latest?cb=20261111041647',
       'Iced Mocha': 'https://static.wikia.nocookie.net/neverness-to-everness/images/8/84/Item_Iced_Mocha.png/revision/latest?cb=20261111041712',
@@ -156,7 +157,7 @@
     function render(dishes) {
       document.getElementById('grid').innerHTML = dishes.map((d, i) => {
         const name = DN(d.name);
-        const url = DISH_IMAGES[name] || '';
+        const url = DISH_IMAGES[CN(d.name)] || '';
         const img = url
           ? `<img src="${esc(url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'avatar-fallback\\'>${esc(initials(name))}</div>'">`
           : `<div class="avatar-fallback">${esc(initials(name))}</div>`;

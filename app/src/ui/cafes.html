@@ -133,7 +133,7 @@
         return `
           <section class="cafe-card ${active ? 'active' : 'locked'}">
             <div class="cafe-head">
-              <h2>${esc(T('cafe.name', { n: idx + 1 }))}</h2>
+              <h2>${esc(T('cafe.name.' + (idx + 1), { n: idx + 1 }))}</h2>
               <span class="state">${active ? T('cafe.active') : T('cafe.locked')}</span>
             </div>
             <div class="tier-list">
