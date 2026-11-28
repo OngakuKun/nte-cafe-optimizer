@@ -2,7 +2,7 @@
 # Source build for Arch Linux; tracks the v* release tags.
 pkgname=nte-cafe-optimizer
 pkgver=0.1.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Desktop optimizer for NTE Cafe rosters, dishes and cafes'
 arch=('x86_64' 'aarch64')
 url='https://ongakukun.github.io/nte-cafe-optimizer/'
@@ -45,4 +45,18 @@ mkdir -p "$(dirname "$NTE_CAFE_CONFIG")"
 exec /usr/share/nte-cafe/nte-cafe-desktop "$@"
 EOF
   chmod 755 "$pkgdir/usr/bin/nte-cafe"
+
+  # Desktop launcher so the app shows up in the application menu.
+  install -d "$pkgdir/usr/share/applications"
+  cat > "$pkgdir/usr/share/applications/nte-cafe.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=NTE Cafe Optimizer
+Comment=Optimize NTE Cafe rosters, dishes and cafes
+Exec=nte-cafe
+Icon=applications-games
+Terminal=false
+Categories=Game;Utility;
+EOF
+  chmod 644 "$pkgdir/usr/share/applications/nte-cafe.desktop"
 }
