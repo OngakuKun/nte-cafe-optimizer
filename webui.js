@@ -461,6 +461,8 @@
   const RELEASE_BASE = 'https://github.com/OngakuKun/nte-cafe-optimizer/releases/latest/download/';
   const REPO_BASE = 'https://github.com/OngakuKun/nte-cafe-optimizer/';
   const RAW_BASE = 'https://raw.githubusercontent.com/OngakuKun/nte-cafe-optimizer/dev/';
+  const ARCH_PKGBUILD = RAW_BASE + 'packaging/arch/PKGBUILD';
+  const ARCH_COMMAND = 'curl -fsSLO ' + ARCH_PKGBUILD + ' && makepkg -si';
 
   function downloadText() {
     const de = (document.documentElement.lang || '').toLowerCase().startsWith('de');
@@ -473,7 +475,7 @@
       zipHint: 'Desktop-App · ZIP', tarHint: 'Desktop-App · tar.gz', pkgHint: 'Aus dem Quellcode mit makepkg bauen',
       docker: 'Docker-Build', dockerHint: 'Lieber den Server im Container?',
       copy: 'Kopieren', copied: 'Kopiert!', copyFailed: 'Kopieren fehlgeschlagen',
-      compose: 'docker-compose.yml ansehen',
+      archView: 'PKGBUILD ansehen', compose: 'docker-compose.yml ansehen',
       note: 'Windows und macOS sind ZIP-Archive, Linux ist tar.gz.', close: 'Schließen'
     } : {
       title: 'Download NTE Cafe Optimizer',
@@ -484,7 +486,7 @@
       zipHint: 'Desktop app · ZIP', tarHint: 'Desktop app · tar.gz', pkgHint: 'Build from source with makepkg',
       docker: 'Docker build', dockerHint: 'Prefer the server in a container?',
       copy: 'Copy', copied: 'Copied!', copyFailed: 'Copy failed',
-      compose: 'View docker-compose.yml',
+      archView: 'View PKGBUILD', compose: 'View docker-compose.yml',
       note: 'Windows and macOS are ZIP archives, Linux is tar.gz.', close: 'Close'
     };
   }
@@ -535,6 +537,29 @@
     return a;
   }
 
+  function copyRow(command, t) {
+    const row = document.createElement('div');
+    row.className = 'nte-dl-code';
+    const code = document.createElement('code'); code.textContent = command;
+    const copy = document.createElement('button');
+    copy.type = 'button'; copy.className = 'theme-btn'; copy.textContent = t.copy;
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(command);
+        copy.textContent = t.copied;
+      } catch (_) { copy.textContent = t.copyFailed; }
+    });
+    row.append(code, copy);
+    return row;
+  }
+
+  function sourceLink(label, href) {
+    const a = document.createElement('a');
+    a.className = 'nte-dl-source'; a.textContent = label;
+    a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    return a;
+  }
+
   function openDownloadDialog() {
     const t = downloadText();
     downloadStyles();
@@ -565,8 +590,7 @@
       ] },
       { key: 'linux', label: t.linux, links: [
         [t.linuxX64, t.tarHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-x64.tar.gz'],
-        [t.linuxArm, t.tarHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-arm64.tar.gz'],
-        [t.pkgbuild, t.pkgHint, RAW_BASE + 'packaging/arch/PKGBUILD']
+        [t.linuxArm, t.tarHint, RELEASE_BASE + 'nte-cafe-optimizer-linux-arm64.tar.gz']
       ] },
       { key: 'macos', label: t.macos, links: [
         [t.macIntel, t.zipHint, RELEASE_BASE + 'nte-cafe-optimizer-macos-intel.zip'],
@@ -598,31 +622,23 @@
       panels.appendChild(panel);
     });
 
+    const arch = document.createElement('div');
+    arch.className = 'nte-dl-docker';
+    const archTitle = document.createElement('div');
+    archTitle.className = 'nte-dl-docker-title'; archTitle.textContent = t.pkgbuild;
+    const archHint = document.createElement('p');
+    archHint.className = 'nte-dl-docker-hint'; archHint.textContent = t.pkgHint;
+    arch.append(archTitle, archHint, copyRow(ARCH_COMMAND, t), sourceLink(t.archView, ARCH_PKGBUILD));
+
     const docker = document.createElement('div');
     docker.className = 'nte-dl-docker';
     const dockerTitle = document.createElement('div');
     dockerTitle.className = 'nte-dl-docker-title'; dockerTitle.textContent = t.docker;
     const dockerHint = document.createElement('p');
     dockerHint.className = 'nte-dl-docker-hint'; dockerHint.textContent = t.dockerHint;
-    const codeRow = document.createElement('div');
-    codeRow.className = 'nte-dl-code';
-    const code = document.createElement('code'); code.textContent = 'docker compose up -d --build';
-    const copy = document.createElement('button');
-    copy.type = 'button'; copy.className = 'theme-btn'; copy.textContent = t.copy;
-    copy.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(code.textContent);
-        copy.textContent = t.copied;
-      } catch (_) { copy.textContent = t.copyFailed; }
-    });
-    codeRow.append(code, copy);
-    const compose = document.createElement('a');
-    compose.className = 'nte-dl-source'; compose.textContent = t.compose;
-    compose.href = REPO_BASE + 'blob/dev/docker-compose.yml';
-    compose.target = '_blank'; compose.rel = 'noopener noreferrer';
     const note = document.createElement('p');
     note.className = 'nte-dl-note'; note.textContent = t.note;
-    docker.append(dockerTitle, dockerHint, codeRow, compose, note);
+    docker.append(dockerTitle, dockerHint, copyRow('docker compose up -d --build', t), sourceLink(t.compose, REPO_BASE + 'blob/dev/docker-compose.yml'), note);
 
     const actions = document.createElement('div');
     actions.className = 'modal-actions nte-dialog-actions';
@@ -638,7 +654,7 @@
     backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
     actions.appendChild(closeButton);
 
-    box.append(title, intro, tabs, panels, docker, actions);
+    box.append(title, intro, tabs, panels, arch, docker, actions);
     backdrop.appendChild(box);
     document.body.appendChild(backdrop);
     document.addEventListener('keydown', onKey);
