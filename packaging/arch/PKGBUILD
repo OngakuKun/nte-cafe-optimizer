@@ -15,6 +15,8 @@ sha256sums=('SKIP')
 prepare() {
   cd "$srcdir/nte-cafe-optimizer"
   git submodule update --init --recursive
+  # The patch paths are relative to lib/webui (same as release.yml).
+  cd lib/webui
   git apply -p1 ../../patches/webui-proxy-bridge.patch
 }
 
@@ -34,6 +36,7 @@ package() {
 
   # The binary looks for UI/data/config next to itself. Keep it in /usr/share
   # and use a wrapper so the user's config lands in XDG_CONFIG_HOME instead.
+  install -d "$pkgdir/usr/bin"
   cat > "$pkgdir/usr/bin/nte-cafe" <<'EOF'
 #!/bin/sh
 export NTE_CAFE_GAMEDATA=/usr/share/nte-cafe/data/gamedata.json
